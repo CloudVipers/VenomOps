@@ -1,0 +1,23 @@
+name: CI kdoctor
+
+on:
+  pull_request:
+    paths:
+      - "packages/kdoctor/**"
+      - ".github/workflows/ci-kdoctor.yml"
+  push:
+    branches: [main]
+    paths:
+      - "packages/kdoctor/**"
+
+permissions:
+  contents: read
+
+jobs:
+  placeholder:
+    name: CI kdoctor (placeholder)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Se llena en la fase correspondiente (lint + tests del paquete).
+      - run: echo "CI de kdoctor - sin pasos todavía"

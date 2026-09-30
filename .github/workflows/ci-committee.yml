@@ -1,0 +1,23 @@
+name: CI arch-committee
+
+on:
+  pull_request:
+    paths:
+      - "packages/arch-committee/**"
+      - ".github/workflows/ci-committee.yml"
+  push:
+    branches: [main]
+    paths:
+      - "packages/arch-committee/**"
+
+permissions:
+  contents: read
+
+jobs:
+  placeholder:
+    name: CI arch-committee (placeholder)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Se llena en la fase correspondiente (lint + tests del paquete).
+      - run: echo "CI de arch-committee - sin pasos todavía"

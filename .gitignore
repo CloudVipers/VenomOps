@@ -1,0 +1,40 @@
+# Secretos y entornos locales (nunca al repo)
+.env
+.env.*
+*.pem
+*.key
+credentials*
+*.tfvars
+!*.tfvars.example
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfplan
+plan.out
+
+# Go
+/packages/kdoctor/bin/
+/packages/kdoctor/dist/
+*.test
+*.out
+coverage.*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Editores / SO
+.idea/
+.vscode/
+.DS_Store
