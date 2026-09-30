@@ -4,20 +4,59 @@ on:
   pull_request:
     paths:
       - "packages/pr-agent/**"
+      - "packages/findings-schema/**"   # pr-agent depende del contrato (se instala en modo editable)
+      - "examples/terraform/**"
+      - "examples/findings/**"
       - ".github/workflows/ci-pr-agent.yml"
   push:
     branches: [main]
     paths:
       - "packages/pr-agent/**"
+      - "packages/findings-schema/**"
+      - "examples/terraform/**"
+      - "examples/findings/**"
 
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: packages/pr-agent
+
 jobs:
-  placeholder:
-    name: CI pr-agent (placeholder)
+  pr-agent:
+    name: ruff + mypy + pytest (terraform real)
     runs-on: ubuntu-latest
+    env:
+      TF_PLUGIN_CACHE_DIR: ${{ github.workspace }}/.terraform-plugin-cache
     steps:
       - uses: actions/checkout@v4
-      # Se llena en la fase correspondiente (lint + tests del paquete).
-      - run: echo "CI de pr-agent - sin pasos todavía"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      # Reutiliza el provider de AWS entre ejecuciones (es pesado de descargar).
+      - name: Create Terraform plugin cache
+        run: mkdir -p "$TF_PLUGIN_CACHE_DIR"
+        working-directory: .
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.terraform-plugin-cache
+          key: tf-plugins-${{ hashFiles('examples/terraform/*/versions.tf') }}
+
+      - name: Install (findings-schema first, then pr-agent)
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -q -e ../findings-schema/python -e ".[dev]"
+
+      - name: Lint (ruff, ruff format, mypy --strict)
+        run: make lint
+
+      - name: Test (includes real terraform init/validate/plan in a sandbox)
+        run: make test

@@ -209,24 +209,24 @@ type Rule interface {
 
 **Pasos:**
 
-- [ ] CLI: `pr-agent fix --finding finding.json --repo ./ruta/terraform [--dry-run]`.
-- [ ] Cargar y validar el finding con `findings-schema`.
-- [ ] Definir herramientas del agente (tool use) con permisos mínimos:
+- [x] CLI: `pr-agent fix --finding finding.json --repo ./ruta/terraform [--dry-run]`.
+- [x] Cargar y validar el finding con `findings-schema`.
+- [x] Definir herramientas del agente (tool use) con permisos mínimos:
   - `read_file(path)` — solo dentro del repo indicado.
   - `list_files(glob)`.
   - `edit_hcl(path, patch)` — edición acotada y verificable.
   - `terraform_validate()` — único comando de Terraform permitido junto con `plan`.
   - `terraform_plan()` — solo para adjuntar el resultado al PR.
-- [ ] Bloqueo duro en código: cualquier comando fuera de la allowlist lanza excepción (no depender solo del prompt).
-- [ ] Primer fixer (MVP): **S3 bucket sin cifrado** → agregar `aws_s3_bucket_server_side_encryption_configuration`.
-- [ ] Segundo fixer: **tags obligatorios faltantes**. Tercer fixer: **volumen gp2 → gp3**.
-- [ ] Flujo: crear rama `fix/<finding-id>-<slug>` → aplicar cambio → `validate` → `plan` → commit → abrir PR.
-- [ ] Plantilla del PR: finding original, cambio propuesto, salida del plan, nivel de riesgo, checklist de revisión humana.
-- [ ] Modo `--dry-run`: imprime el diff y el cuerpo del PR sin tocar GitHub.
-- [ ] Verificación post-edición: el diff debe ser mínimo; si el agente toca archivos no relacionados, se aborta.
-- [ ] Tests con un repo de ejemplo en `examples/terraform/` (bucket sin cifrado) y GitHub mockeado.
-- [ ] README en español con diagrama del flujo y ejemplo de PR generado.
-- [ ] CI: `ruff`, `mypy`, `pytest`.
+- [x] Bloqueo duro en código: cualquier comando fuera de la allowlist lanza excepción (no depender solo del prompt).
+- [x] Primer fixer (MVP): **S3 bucket sin cifrado** → agregar `aws_s3_bucket_server_side_encryption_configuration`.
+- [x] Segundo fixer: **tags obligatorios faltantes**. Tercer fixer: **volumen gp2 → gp3**.
+- [x] Flujo: crear rama `fix/<finding-id>-<slug>` → aplicar cambio → `validate` → `plan` → commit → abrir PR.
+- [x] Plantilla del PR: finding original, cambio propuesto, salida del plan, nivel de riesgo, checklist de revisión humana.
+- [x] Modo `--dry-run`: imprime el diff y el cuerpo del PR sin tocar GitHub.
+- [x] Verificación post-edición: el diff debe ser mínimo; si el agente toca archivos no relacionados, se aborta.
+- [x] Tests con un repo de ejemplo en `examples/terraform/` (bucket sin cifrado) y GitHub mockeado.
+- [x] README en español con diagrama del flujo y ejemplo de PR generado.
+- [x] CI: `ruff`, `mypy`, `pytest`.
 
 **DoD:** en `--dry-run` sobre el repo de ejemplo produce un diff correcto que pasa `terraform validate`; los tests demuestran que un comando fuera de la allowlist es rechazado.
 

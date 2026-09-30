@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
-from typing import ClassVar
 
 import pytest
 from findings_schema import Finding
@@ -22,7 +21,7 @@ Factory = Callable[[Path], SafeRunner]
 class FakeGitHub:
     """Records what would be sent to GitHub. It has no merge capability, like the real client."""
 
-    opened: ClassVar[list[dict[str, str]]]
+    opened: list[dict[str, str]]
 
     def __init__(self) -> None:
         self.opened = []
@@ -147,7 +146,7 @@ def test_missing_repo_directory(tmp_path: Path, runner_factory: Factory) -> None
 # ---- minimal-diff enforcement -----------------------------------------------------------------
 
 
-def _agent(edit: Callable[[ToolBox], None], files: set[str]) -> Callable[[Finding, ToolBox], FixOutcome]:
+def _agent(edit: Callable[[ToolBox], object], files: set[str]) -> Callable[[Finding, ToolBox], FixOutcome]:
     def run(_finding: Finding, tools: ToolBox) -> FixOutcome:
         edit(tools)
         return FixOutcome(summary="Cambio de prueba.", files=frozenset(files))
@@ -281,7 +280,7 @@ def test_github_failure_after_push_keeps_the_branch_and_returns_to_the_users_bra
     work, remote = git_repo
 
     class Boom(FakeGitHub):
-        def open_pull_request(self, slug: str, **_kw: str) -> str:  # type: ignore[override]
+        def open_pull_request(self, slug: str, **_kw: str) -> str:
             raise RuntimeError("GitHub is down")
 
     with pytest.raises(RuntimeError, match="GitHub is down"):
