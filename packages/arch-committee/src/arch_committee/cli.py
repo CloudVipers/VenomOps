@@ -69,6 +69,9 @@ def review(
     max_rounds: Annotated[
         int, typer.Option("--max-rounds", min=1, max=2, help="1 = analysis only, 2 = adds the rebuttal round.")
     ] = 2,
+    max_output_tokens: Annotated[
+        int, typer.Option("--max-output-tokens", min=1024, max=64000, help="Output cap of each model call.")
+    ] = 8192,
     context_findings: Annotated[
         list[Path] | None,
         typer.Option(
@@ -90,7 +93,7 @@ def review(
     except ContextError as exc:
         raise _usage_error(str(exc)) from exc
 
-    config = CommitteeConfig(max_total_tokens=max_tokens, max_rounds=max_rounds)
+    config = CommitteeConfig(max_total_tokens=max_tokens, max_rounds=max_rounds, max_output_tokens=max_output_tokens)
     _describe_plan(parsed)
     if context:
         typer.echo(f"Context: {len(context)} prior findings ({', '.join(sorted({f.source.value for f in context}))})")

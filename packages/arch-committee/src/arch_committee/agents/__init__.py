@@ -30,7 +30,7 @@ SPECIALISTS: tuple[AgentSpec, ...] = (
     AgentSpec("reliability", "REL", "reliability.v1.md"),
     AgentSpec("operations", "OPS", "operations.v1.md"),
 )
-MODERATOR = AgentSpec("moderator", "MOD", "moderator.v1.md")
+MODERATOR = AgentSpec("moderator", "MOD", "moderator.v2.md")
 
 
 def prompt_versions() -> dict[str, str]:

@@ -43,3 +43,11 @@ Se implementa un **orquestador propio** (`orchestrator.py`) sobre la API **Conve
 - Se mantiene la regla 5: **no hay modelo por defecto**; toda ejecución exige `--model-id` o
   `ARCH_COMMITTEE_BEDROCK_MODEL`. `--dry-run` muestra exactamente qué se enviaría (ya redactado) sin llamar al modelo.
 - La elección de modelos de Bedrock por defecto (sección 11) sigue abierta a propósito.
+
+
+## Validación con un modelo real (2026-09-30)
+
+El orquestador se probó contra Bedrock (Claude Haiku 4.5). Confirmó la elección (el flujo fijo y la estructura forzada por
+herramienta funcionan) y obligó a tres cambios de diseño: el moderador decide **por referencia** (no re-emite evidencia ni
+arreglos; prompt v2), una respuesta cortada en `max_tokens` es un **error** y no un resultado parcial, y los valores
+desconocidos del plan se conservan como `(known after apply)`. Detalle en el README del paquete.

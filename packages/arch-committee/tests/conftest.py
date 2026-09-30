@@ -184,28 +184,37 @@ class FakeCommittee:
     def _moderate(self, user: str) -> dict[str, Any]:
         raised = self._section(user, "raised")
         challenges = self._section(user, "challenges")
+        retrying = "previous answer was unusable" in user
+        if self.moderator_mode == "always_empty" or (self.moderator_mode == "empty_then_ok" and not retrying):
+            # Seen with a real model: a good summary but an empty `findings` list.
+            return {"summary": "Consolidé los hallazgos (pero no los devolví).", "findings": [],
+                    "disagreements": [], "accepted_risks": []}  # fmt: skip
         by_id = {r["id"]: r for r in raised}
+        targets = {c["target"] for c in challenges if c["stance"] == "disagree"}
         keep = raised[:-1] if self.moderator_mode == "omit_one" and raised else raised
+        if self.moderator_mode == "omit_target":
+            keep = [r for r in raised if r["id"] not in targets]
         final = []
         for r in keep:
             confirmed = any(e["kind"] == "prior-finding" for e in r["evidence"])
             decision = f"Se mantiene la severidad {r['severity']} según el análisis de {r['agent']}."
             if confirmed:
                 decision += " Confirmado por un finding previo observado en el sistema en ejecución."
-            final.append({**{k: r[k] for k in ("title", "severity", "resource", "evidence", "root_cause")},
-                "suggested_fix": {"summary": "Aplicar la corrección propuesta.", "steps": ["Aplicar la corrección propuesta."]},
-                "risk_of_fix": "low", "merged_from": [r["id"]], "decision": decision})  # fmt: skip
+            # Lean format: the moderator only decides by reference; evidence and fix are attached by the orchestrator.
+            final.append({"title": r["title"], "severity": r["severity"], "decision": decision,
+                "merged_from": [f"[{r['id'].lower()}]"] if self.moderator_mode == "lenient_ids" else [r["id"]]})  # fmt: skip
         if self.moderator_mode == "hallucinate":
-            final.append({"title": "Invento", "severity": "high", "resource": "aws_fake.nothing",
-                "evidence": [{"kind": "x", "detail": "y"}], "root_cause": "z",
-                "suggested_fix": {"summary": "s", "steps": ["s"]}, "risk_of_fix": "low",
-                "merged_from": ["ZZZ-9"], "decision": "d"})  # fmt: skip
+            final.append({"title": "Invento", "severity": "high", "merged_from": ["ZZZ-9"], "decision": "d"})
             final.append({"title": "Con id real pero recurso falso", "severity": "low", "resource": "aws_fake.nothing",
-                "evidence": [{"kind": "x", "detail": "y"}], "root_cause": "z",
-                "suggested_fix": {"summary": "s", "steps": ["s"]}, "risk_of_fix": "low",
                 "merged_from": [raised[0]["id"]] if raised else ["ZZZ-9"], "decision": "d"})  # fmt: skip
+        if self.moderator_mode == "merge_duplicates":
+            by_title: dict[str, list[dict[str, Any]]] = {}
+            for r in raised:
+                by_title.setdefault(r["resource"], []).append(r)
+            final = [{"title": rs[0]["title"], "severity": "critical", "decision": "Consolidado por recurso.",
+                      "merged_from": [x["id"] for x in rs]} for rs in by_title.values()]  # fmt: skip
         disagreements, accepted = [], []
-        if self.moderator_mode != "omit_one":
+        if self.moderator_mode not in ("omit_one", "omit_target", "ignore_disagreements"):
             for c in challenges:
                 if c["stance"] != "disagree":
                     continue

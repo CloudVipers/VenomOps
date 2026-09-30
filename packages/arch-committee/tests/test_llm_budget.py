@@ -110,3 +110,11 @@ def test_budget_is_thread_safe() -> None:
     for t in threads:
         t.join()
     assert sum(granted) == 100 and b.remaining == 0  # never over-commits
+
+
+def test_a_truncated_answer_is_an_error_not_a_partial_result() -> None:
+    """Seen with a real model: at max_tokens Bedrock returns the tool input cut off (only the first keys)."""
+    cut = tool_response(payload={"summary": "only the first key arrived"})
+    cut["stopReason"] = "max_tokens"
+    with pytest.raises(LLMError, match="cut off at max_tokens=99"):
+        call(BedrockLLM(FakeClient(cut), "m"))

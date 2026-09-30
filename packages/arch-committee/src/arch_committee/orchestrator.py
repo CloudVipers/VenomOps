@@ -9,6 +9,7 @@ a disagreement silently.
 from __future__ import annotations
 
 import json
+import re
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -24,7 +25,9 @@ from .models import (
     AgentFinding,
     Challenge,
     Disagreement,
+    Evidence,
     FinalFinding,
+    ModeratorFinding,
     ModeratorOutput,
     Position,
     Round1Output,
@@ -44,7 +47,7 @@ PLAN_BRIEF_CHARS = 12_000
 class CommitteeConfig:
     max_total_tokens: int = 200_000
     max_rounds: int = 2  # 1 = analysis + moderator (no cross-examination); 2 = adds the rebuttal round
-    max_output_tokens: int = 4096
+    max_output_tokens: int = 8192
     plan_max_chars: int = 60_000
     workers: int = 4
 
@@ -199,6 +202,62 @@ def _consolidate_without_moderator(
     return final, disagreements
 
 
+_ID_RE = re.compile(r"[A-Za-z]+-\d+")
+
+RETRY_INSTRUCTIONS = (
+    "\n\nYour previous answer was unusable: it had no consolidated `findings`, or none referenced a raised id in "
+    "`merged_from`. Call the tool again and return the FULL consolidated `findings` list: every finding must carry "
+    '`merged_from` with ids copied exactly from <raised> (for example ["SEC-1", "COST-1"]).'
+)
+
+
+def _ids(values: list[str]) -> list[str]:
+    """Extract finding ids leniently: models sometimes answer "SEC-1, COST-1", "sec-1" or "[SEC-1]"."""
+    found: list[str] = []
+    for v in values:
+        found.extend(m.upper() for m in _ID_RE.findall(v))
+    return list(dict.fromkeys(found))
+
+
+_RISK_RANK = {"low": 0, "medium": 1, "high": 2}
+MAX_MERGED_EVIDENCE = 8
+
+
+def _build_final(mf: ModeratorFinding, by_id: dict[str, Raised], valid: set[str]) -> FinalFinding | None:
+    """Full final finding = the moderator's decision + what the cited agents reported (evidence, cause, fix)."""
+    refs = [by_id[i] for i in _ids(mf.merged_from) if i in by_id]
+    if not refs:
+        return None
+    primary = min(refs, key=lambda r: SEVERITY_RANK[r.finding.severity])  # the most severe (first on ties) is the base
+    resource = mf.resource if mf.resource in valid else primary.finding.resource
+    evidence: list[Evidence] = []
+    seen: set[tuple[str, str]] = set()
+    for r in refs:
+        for e in r.finding.evidence:
+            if (e.kind, e.detail) not in seen and len(evidence) < MAX_MERGED_EVIDENCE:
+                seen.add((e.kind, e.detail))
+                evidence.append(e)
+    tags = list(dict.fromkeys(t for r in refs for t in r.finding.tags))
+    return FinalFinding(
+        title=mf.title,
+        severity=mf.severity,
+        resource=resource,
+        evidence=evidence,
+        root_cause=primary.finding.root_cause,
+        suggested_fix=primary.finding.suggested_fix,
+        risk_of_fix=max((r.finding.risk_of_fix for r in refs), key=lambda risk: _RISK_RANK[risk]),
+        tags=tags,
+        merged_from=[r.fid for r in refs],
+        decision=mf.decision,
+    )
+
+
+def _moderator_usable(out: ModeratorOutput, raised: list[Raised]) -> bool:
+    """At least one decision that points to a real raised finding."""
+    ids = {r.fid for r in raised}
+    return any(any(i in ids for i in _ids(f.merged_from)) for f in out.findings)
+
+
 def _normalize_moderator(
     out: ModeratorOutput, raised: list[Raised], challenges: list[ChallengeRecord], valid: set[str], notes: list[str]
 ) -> tuple[list[FinalFinding], list[Disagreement]]:
@@ -206,19 +265,17 @@ def _normalize_moderator(
     ids = {r.fid for r in raised}
     by_id = {r.fid: r for r in raised}
     final: list[FinalFinding] = []
-    for f in out.findings:
-        refs = [i for i in f.merged_from if i in ids]
-        if not refs:
-            notes.append(f"moderador: se descartó «{f.title}» porque no referencia ningún hallazgo real")
+    for mf in out.findings:
+        built = _build_final(mf, by_id, valid)
+        if built is None:
+            notes.append(f"moderador: se descartó «{mf.title}» porque no referencia ningún hallazgo real")
             continue
-        if f.resource not in valid:
-            notes.append(f"moderador: se descartó «{f.title}» por un recurso que no está en el plan ({f.resource})")
-            continue
-        final.append(f.model_copy(update={"merged_from": refs}))
+        final.append(built)
 
-    covered = {i for f in final for i in f.merged_from}
+    decided = {i: f for f in final for i in f.merged_from}  # findings the moderator actually ruled on
+    covered = set(decided)
     for ar in out.accepted_risks:
-        covered.update(i for i in ar.finding_ids if i in ids)
+        covered.update(i for i in _ids(ar.finding_ids) if i in ids)
     for r in raised:
         if r.fid not in covered:
             final.append(
@@ -237,14 +294,29 @@ def _normalize_moderator(
     for target in sorted({c.challenge.target for c in challenges if c.challenge.stance == "disagree"} - handled):
         r = by_id[target]
         against = [c for c in challenges if c.challenge.target == target and c.challenge.stance == "disagree"]
+        positions = [
+            Position(agent=r.agent, stance=f"Reporta {r.finding.severity}: {r.finding.root_cause}"),
+            *[Position(agent=c.by, stance=c.challenge.argument) for c in against],
+        ]
+        ruling = decided.get(target)
+        if ruling is not None:
+            # The moderator did rule on this finding (final severity + decision) without filing it as a disagreement:
+            # that decision IS the resolution, so do not present it as open.
+            disagreements.append(
+                Disagreement(
+                    topic=r.finding.title,
+                    finding_ids=[target],
+                    positions=positions,
+                    resolution="resolved",
+                    rationale=f"El moderador fijó la severidad final en {ruling.severity}: {ruling.decision}",
+                )
+            )
+            continue
         disagreements.append(
             Disagreement(
                 topic=r.finding.title,
                 finding_ids=[target],
-                positions=[
-                    Position(agent=r.agent, stance=f"Reporta {r.finding.severity}: {r.finding.root_cause}"),
-                    *[Position(agent=c.by, stance=c.challenge.argument) for c in against],
-                ],
+                positions=positions,
                 resolution="unresolved",
                 rationale="El moderador no se pronunció sobre este desacuerdo: requiere decisión humana.",
             )
@@ -390,6 +462,25 @@ def run_committee(
         usage.append(StepUsage("moderator", MODERATOR.name, tokens))
         if note:
             notes.append(note)
+        if out is not None and not _moderator_usable(out, raised):
+            # Seen with a real model: the summary described a consolidation but `findings` came back empty.
+            notes.append(
+                "el moderador no devolvió hallazgos utilizables; se le pidió corregir la respuesta (un reintento)"
+            )
+            retry, tokens2, note2 = runner.call(
+                MODERATOR,
+                user + RETRY_INSTRUCTIONS,
+                "finalize",
+                "Publish the committee's final decisions.",
+                ModeratorOutput,
+            )
+            usage.append(StepUsage("moderator", MODERATOR.name, tokens2))
+            if note2:
+                notes.append(note2)
+            if retry is not None and _moderator_usable(retry, raised):
+                out = retry
+            else:
+                notes.append("el reintento tampoco fue utilizable: se conservan los hallazgos de los especialistas")
         if out is not None:
             moderator_ran = True
             final, disagreements = _normalize_moderator(out, raised, challenges, valid, notes)

@@ -80,9 +80,21 @@ class FinalFinding(AgentFinding):
     decision: str = Field(min_length=1, description="Moderator rationale for the final severity and priority.")
 
 
+class ModeratorFinding(_Lenient):
+    """The moderator DECIDES by reference: evidence, root cause and fix are attached from the raised findings it
+    cites (``merged_from``), so it never re-types them (which blew the output limit and risked altering what the
+    agents reported)."""
+
+    title: str = Field(min_length=1, max_length=200, description="Final title (Spanish).")
+    severity: Severity
+    merged_from: list[str] = Field(min_length=1, description='Raised ids this consolidates, e.g. ["SEC-1", "COST-1"].')
+    decision: str = Field(min_length=1, description="Why this severity/priority (Spanish, 1-3 sentences).")
+    resource: str | None = Field(default=None, description="Only if it differs from the main cited finding's resource.")
+
+
 class ModeratorOutput(_Lenient):
     summary: str = Field(min_length=1)
-    findings: list[FinalFinding] = Field(default_factory=list)
+    findings: list[ModeratorFinding] = Field(default_factory=list)
     disagreements: list[Disagreement] = Field(default_factory=list)
     accepted_risks: list[AcceptedRisk] = Field(default_factory=list)
 

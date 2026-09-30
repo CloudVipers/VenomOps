@@ -56,7 +56,7 @@ def test_the_report_has_the_sections_a_reader_needs(committee: FakeCommittee, tm
     assert "**cost:**" in text and "**reliability:**" in text  # both positions of the disagreement
     assert "Riesgo aceptado" in text  # its resolution
     assert "`test-model`" in text and "Tokens:" in text
-    assert "security v1" in text and "moderator v1" in text  # prompt versions for traceability
+    assert "security v1" in text and "moderator v2" in text  # prompt versions for traceability
     assert "El comité no aplica ningún cambio" in text
 
 

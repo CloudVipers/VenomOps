@@ -68,6 +68,10 @@ class BedrockLLM:
 
         usage = response.get("usage", {})
         used = Usage(int(usage.get("inputTokens", 0)), int(usage.get("outputTokens", 0)))
+        if response.get("stopReason") == "max_tokens":
+            # Bedrock returns the tool input cut off mid-way; fields that come later are simply missing, which models
+            # with defaults would accept silently (found in a real run). Never use a truncated answer.
+            raise LLMError(f"the answer was cut off at max_tokens={max_tokens}; raise --max-output-tokens")
         for block in response.get("output", {}).get("message", {}).get("content", []):
             call = block.get("toolUse")
             if call and call.get("name") == tool_name:
