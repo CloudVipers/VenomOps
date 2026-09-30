@@ -19,11 +19,21 @@ Las reglas de seguridad no cambian: los comandos originales siguen disponibles, 
 explícitas (`--explain`, `--agent`, `--model-id`), no hay modelo por defecto ([ADR 0005](../../docs/decisiones/0005-modelos-bedrock.md))
 y nunca se ejecuta `terraform apply` ni nada que modifique infraestructura. Decisión: [ADR 0006](../../docs/decisiones/0006-comando-venom.md).
 
-## Instalación (desde el monorepo)
+## Instalación
+
+**Paquete (recomendado, sin Python):** `.rpm` para RHEL 9 / Rocky / Alma / Amazon Linux 2023 y `.deb` para Debian 12+ /
+Ubuntu 22.04+; instalan `venom` y `kubectl-doctor`. Ver [`packaging/`](../../packaging/README.md).
+
+```bash
+sudo dnf install https://github.com/CloudVipers/VenomOps/releases/download/venom-v0.1.0/venom-0.1.0-1.x86_64.rpm
+```
+
+**Desde el monorepo (desarrollo):**
 
 ```bash
 cd packages/venom && make setup   # venv con findings-schema, pr-agent, arch-committee y venom
 .venv/bin/venom --help
 ```
 
-`venom doctor` necesita `kubectl-doctor` en el `PATH` (plugin de kubectl o `go build ./cmd/kubectl-doctor` en `packages/kdoctor`).
+`venom doctor` necesita `kubectl-doctor` en el `PATH` (lo trae el paquete; si no, plugin de kubectl o `go build ./cmd/kubectl-doctor`).
+`venom fix` necesita `terraform` en el `PATH` para validar el arreglo.

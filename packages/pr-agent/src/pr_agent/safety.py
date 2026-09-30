@@ -221,13 +221,22 @@ class SafeRunner:
 
     def run(self, argv: Sequence[str]) -> CommandResult:
         check_command(argv)
-        proc = subprocess.run(  # noqa: S603 - argv validated by check_command, no shell
-            list(argv),
-            cwd=self.cwd,
-            env=_sanitized_env(self._extra_env),
-            capture_output=True,
-            text=True,
-            timeout=self.timeout,
-            check=False,
-        )
+        try:
+            proc = subprocess.run(  # noqa: S603 - argv validated by check_command, no shell
+                list(argv),
+                cwd=self.cwd,
+                env=_sanitized_env(self._extra_env),
+                capture_output=True,
+                text=True,
+                timeout=self.timeout,
+                check=False,
+            )
+        except FileNotFoundError:
+            # Seen on a clean machine: the tool is simply not installed. Report it, do not crash with a traceback.
+            return CommandResult(
+                tuple(argv),
+                127,
+                "",
+                f"`{argv[0]}` was not found on PATH; install it (terraform is needed to validate the fix)",
+            )
         return CommandResult(tuple(argv), proc.returncode, proc.stdout, proc.stderr)

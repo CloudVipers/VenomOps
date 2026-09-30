@@ -186,3 +186,11 @@ def test_symlink_escaping_the_repo_is_refused(tmp_path: Path) -> None:
     (repo / "link").symlink_to(outside)
     with pytest.raises(PathNotAllowedError):
         resolve_in_repo(repo, "link/x.tf")
+
+
+def test_a_missing_binary_is_reported_not_raised(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """On a clean machine without terraform the runner used to crash with FileNotFoundError and a traceback."""
+    monkeypatch.setenv("PATH", str(tmp_path))  # an empty directory: nothing can be found
+    result = SafeRunner(tmp_path).run(["terraform", "validate"])
+    assert not result.ok and result.returncode == 127
+    assert "was not found on PATH" in result.stderr and "terraform" in result.stderr

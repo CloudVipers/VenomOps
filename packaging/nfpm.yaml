@@ -1,0 +1,28 @@
+# nfpm: builds the .rpm and .deb of `venom`. Variables come from packaging/build.sh (VERSION, ARCH, GOARCH-style arch).
+name: venom
+arch: ${PKG_ARCH}
+platform: linux
+version: ${VERSION}
+section: utils
+priority: optional
+maintainer: CloudVipers <noreply@example.com>
+description: |
+  VenomOps: diagnose Kubernetes (venom doctor), fix a finding with a Pull Request (venom fix)
+  and review a Terraform plan with a virtual committee (venom review). Also installs kubectl-doctor.
+vendor: CloudVipers
+homepage: https://github.com/CloudVipers/VenomOps
+license: Apache-2.0
+contents:
+  # Self-contained PyInstaller bundle: no Python needed on the target machine.
+  - src: ${STAGE}/venom-dist/
+    dst: /usr/lib/venom/
+    type: tree
+  - src: /usr/lib/venom/venom
+    dst: /usr/bin/venom
+    type: symlink
+  - src: ${STAGE}/kubectl-doctor
+    dst: /usr/bin/kubectl-doctor
+    file_info:
+      mode: 0755
+  - src: ${ROOT}/LICENSE
+    dst: /usr/share/doc/venom/LICENSE
