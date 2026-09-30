@@ -54,27 +54,30 @@ func JSON(w io.Writer, fs []findings.Finding) error {
 	return enc.Encode(fs)
 }
 
-// Table writes a summary table followed by a plain-language detail block for each finding.
+// Table writes a summary table followed by a plain-language detail block for each finding. The whole
+// report is rendered in memory and written once, so a write error is returned and output is never torn.
 func Table(w io.Writer, fs []findings.Finding, ruleErrors []engine.RuleError) error {
+	var b strings.Builder
 	if len(fs) == 0 {
-		fmt.Fprintln(w, "✔ No se encontraron problemas con las reglas activas.")
+		fmt.Fprintln(&b, "✔ No se encontraron problemas con las reglas activas.")
 	} else {
-		tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
-		fmt.Fprintln(tw, "SEVERIDAD\tID\tRECURSO\tPROBLEMA")
+		tw := tabwriter.NewWriter(&b, 0, 0, 2, ' ', 0)
+		_, _ = fmt.Fprintln(tw, "SEVERIDAD\tID\tRECURSO\tPROBLEMA")
 		for _, f := range fs {
-			fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", strings.ToUpper(string(f.Severity)), f.ID, resourceLabel(f.Resource), f.Title)
+			_, _ = fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", strings.ToUpper(string(f.Severity)), f.ID, resourceLabel(f.Resource), f.Title)
 		}
 		if err := tw.Flush(); err != nil {
 			return err
 		}
 		for _, f := range fs {
-			writeDetail(w, f)
+			writeDetail(&b, f)
 		}
 	}
 	for _, re := range ruleErrors {
-		fmt.Fprintf(w, "\n⚠ La regla %s no pudo ejecutarse: %v\n", re.RuleID, re.Err)
+		fmt.Fprintf(&b, "\n⚠ La regla %s no pudo ejecutarse: %v\n", re.RuleID, re.Err)
 	}
-	return nil
+	_, err := io.WriteString(w, b.String())
+	return err
 }
 
 func resourceLabel(r findings.Resource) string {
@@ -92,7 +95,7 @@ func indent(s, prefix string) string {
 	return strings.Join(lines, "\n")
 }
 
-func writeDetail(w io.Writer, f findings.Finding) {
+func writeDetail(w *strings.Builder, f findings.Finding) {
 	fmt.Fprintf(w, "\n── [%s] %s · %s\n", strings.ToUpper(string(f.Severity)), f.ID, f.Title)
 	fmt.Fprintf(w, "Recurso: %s\n", resourceLabel(f.Resource))
 	fmt.Fprintf(w, "Causa probable: %s\n", f.RootCause)

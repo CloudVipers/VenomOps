@@ -3,6 +3,9 @@ package rules
 import (
 	"context"
 	"fmt"
+	"strings"
+
+	corev1 "k8s.io/api/core/v1"
 
 	findings "github.com/CloudVipers/VenomOps/packages/findings-schema/go"
 	"github.com/CloudVipers/VenomOps/packages/kdoctor/internal/engine"
@@ -45,6 +48,27 @@ func exitCodeMeaning(code int32) string {
 	}
 }
 
+// crashLoopThreshold is how many restarts make a container that is momentarily in a "Terminated"
+// (Error) state count as crash-looping: the kubelet only shows Waiting/CrashLoopBackOff during the
+// back-off window, so a snapshot taken between restarts would otherwise be missed.
+const crashLoopThreshold = 3
+
+func isCrashLooping(cs corev1.ContainerStatus) bool {
+	if cs.State.Waiting != nil && cs.State.Waiting.Reason == "CrashLoopBackOff" {
+		return true
+	}
+	t := cs.State.Terminated
+	return t != nil && t.ExitCode != 0 && cs.RestartCount >= crashLoopThreshold
+}
+
+// usableLogs reports whether the text is a real log. The kubelet answers "unable to retrieve container
+// logs for containerd://..." with a 200 body when the previous container instance was garbage
+// collected, so that message must not be presented as evidence.
+func usableLogs(logs string) bool {
+	logs = strings.TrimSpace(logs)
+	return logs != "" && !strings.HasPrefix(logs, "unable to retrieve container logs")
+}
+
 // Check implements engine.Rule.
 func (r CrashLoopBackOff) Check(ctx context.Context, cluster engine.ClusterReader) ([]findings.Finding, error) {
 	pods, err := cluster.ListPods(ctx, r.Namespace)
@@ -55,23 +79,30 @@ func (r CrashLoopBackOff) Check(ctx context.Context, cluster engine.ClusterReade
 	for i := range pods {
 		pod := &pods[i]
 		for _, cs := range containerStatuses(pod) {
-			if cs.State.Waiting == nil || cs.State.Waiting.Reason != "CrashLoopBackOff" {
+			if !isCrashLooping(cs.ContainerStatus) {
 				continue
 			}
+			if oomTerminated(cs.ContainerStatus) != nil {
+				continue // killed for memory: reported by KD-K8S-002, with the actionable fix
+			}
 			ev := []findings.Evidence{
-				{Kind: "pod-status", Detail: fmt.Sprintf("%s %q in CrashLoopBackOff, restartCount=%d", kindLabel(cs.Init), cs.Name, cs.RestartCount)},
+				{Kind: "pod-status", Detail: fmt.Sprintf("%s %q crash-looping, restartCount=%d", kindLabel(cs.Init), cs.Name, cs.RestartCount)},
 			}
 			rootCause := "El contenedor se cae repetidamente y el kubelet lo reinicia con espera creciente."
-			if t := cs.LastTerminationState.Terminated; t != nil {
-				ev = append(ev, findings.Evidence{Kind: "exit-code", Detail: fmt.Sprintf("Last state: Terminated, exitCode=%d, reason=%q", t.ExitCode, t.Reason)})
-				rootCause = exitCodeMeaning(t.ExitCode)
+			last := cs.LastTerminationState.Terminated
+			if last == nil {
+				last = cs.State.Terminated // snapshot taken right after a crash, before the back-off state
+			}
+			if last != nil {
+				ev = append(ev, findings.Evidence{Kind: "exit-code", Detail: fmt.Sprintf("Last state: Terminated, exitCode=%d, reason=%q", last.ExitCode, last.Reason)})
+				rootCause = exitCodeMeaning(last.ExitCode)
 			}
 			logs, lerr := cluster.PodLogs(ctx, pod.Namespace, pod.Name, cs.Name, true, logLines)
-			if lerr != nil || logs == "" {
-				// The previous instance may have no logs yet; fall back to the current one.
+			if lerr != nil || !usableLogs(logs) {
+				// The previous instance may be gone; fall back to the current one.
 				logs, lerr = cluster.PodLogs(ctx, pod.Namespace, pod.Name, cs.Name, false, logLines)
 			}
-			if lerr == nil && logs != "" {
+			if lerr == nil && usableLogs(logs) {
 				ev = append(ev, findings.Evidence{Kind: "log-tail", Detail: logTail(logs, logLines)})
 			} else {
 				ev = append(ev, findings.Evidence{Kind: "log-tail", Detail: "logs no disponibles para este contenedor"})
@@ -82,7 +113,7 @@ func (r CrashLoopBackOff) Check(ctx context.Context, cluster engine.ClusterReade
 				sev = findings.SeverityMedium
 			}
 			out = append(out, newFinding(r.ID(), sev,
-				fmt.Sprintf("Pod %s en CrashLoopBackOff (%s %s)", podLabel(pod), kindLabel(cs.Init), cs.Name),
+				fmt.Sprintf("CrashLoopBackOff en el %s %s", kindLabel(cs.Init), cs.Name),
 				pod, ev, rootCause,
 				findings.SuggestedFix{
 					Summary: "Corregir la causa de la caída que muestran el código de salida y los logs.",

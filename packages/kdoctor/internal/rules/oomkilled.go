@@ -113,7 +113,7 @@ func (r OOMKilled) Check(ctx context.Context, cluster engine.ClusterReader) ([]f
 				sev = findings.SeverityHigh
 			}
 			out = append(out, newFinding(r.ID(), sev,
-				fmt.Sprintf("Pod %s terminado por OOMKilled (%s %s)", podLabel(pod), kindLabel(cs.Init), cs.Name),
+				fmt.Sprintf("OOMKilled en el %s %s", kindLabel(cs.Init), cs.Name),
 				pod, ev, rootCause, fix, findings.RiskLow,
 				[]string{"https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/"},
 				[]string{"kubernetes", "memory"},

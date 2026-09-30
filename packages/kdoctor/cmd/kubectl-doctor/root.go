@@ -89,6 +89,9 @@ está desactivada por defecto y solo envía el hallazgo con los secretos ya enma
 	return cmd
 }
 
+// warnf writes a warning to stderr; a failing stderr is not actionable, so the error is dropped on purpose.
+func warnf(w io.Writer, format string, a ...any) { _, _ = fmt.Fprintf(w, format, a...) }
+
 // buildExplainer returns nil (with a warning) whenever the AI step cannot run, so the diagnosis
 // always completes.
 func buildExplainer(ctx context.Context, o options, stderr io.Writer) explain.Explainer {
@@ -99,9 +102,9 @@ func buildExplainer(ctx context.Context, o options, stderr io.Writer) explain.Ex
 	b, err := explain.NewBedrock(ctx, model)
 	if err != nil {
 		if errors.Is(err, explain.ErrNoCredentials) {
-			fmt.Fprintln(stderr, "aviso: --explain requiere credenciales de AWS; se omite la explicación con IA.")
+			warnf(stderr, "aviso: --explain requiere credenciales de AWS; se omite la explicación con IA.\n")
 		} else {
-			fmt.Fprintf(stderr, "aviso: no se pudo activar --explain: %v\n", err)
+			warnf(stderr, "aviso: no se pudo activar --explain: %v\n", err)
 		}
 		return nil
 	}
@@ -125,14 +128,14 @@ func run(ctx context.Context, o options, reader engine.ClusterReader, explainer 
 
 	if explainer != nil {
 		for _, w := range explain.Apply(runCtx, explainer, report.Findings) {
-			fmt.Fprintln(stderr, "aviso:", w)
+			warnf(stderr, "aviso: %s\n", w)
 		}
 	}
 
 	switch format {
 	case output.FormatJSON:
 		for _, re := range report.Errors { // keep stdout pure JSON: rule errors go to stderr
-			fmt.Fprintf(stderr, "aviso: %v\n", re)
+			warnf(stderr, "aviso: %v\n", re)
 		}
 		return output.JSON(stdout, report.Findings)
 	default:

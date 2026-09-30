@@ -1,12 +1,14 @@
 package rules
 
 import (
+	"context"
 	"strings"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
 
 	findings "github.com/CloudVipers/VenomOps/packages/findings-schema/go"
+	"github.com/CloudVipers/VenomOps/packages/kdoctor/internal/engine"
 )
 
 // ---- CrashLoopBackOff ----
@@ -36,6 +38,65 @@ func TestCrashLoopBackOffDetects(t *testing.T) {
 	}
 	if !strings.Contains(f.RootCause, "código 1") {
 		t.Fatalf("root cause should explain the exit code: %s", f.RootCause)
+	}
+}
+
+func TestCrashLoopBackOffDetectsSnapshotBetweenRestarts(t *testing.T) {
+	// `kubectl get pods` shows "Error" (Terminated) between restarts: the Waiting state only appears
+	// during the back-off window, so a container with many restarts and a non-zero exit must count.
+	p := pod("ns", "flaky", func(p *corev1.Pod) {
+		p.Status.ContainerStatuses = []corev1.ContainerStatus{{
+			Name: "app", RestartCount: 4,
+			State: corev1.ContainerState{Terminated: &corev1.ContainerStateTerminated{ExitCode: 1, Reason: "Error"}},
+		}}
+	})
+	fs := check(t, CrashLoopBackOff{}, newCluster(p))
+	if len(fs) != 1 || !strings.Contains(evidenceKinds(fs[0])["exit-code"], "exitCode=1") {
+		t.Fatalf("crash between restarts should be detected with its exit code: %+v", fs)
+	}
+	p.Status.ContainerStatuses[0].RestartCount = 1 // just one crash so far: not a loop yet
+	if fs := check(t, CrashLoopBackOff{}, newCluster(p)); len(fs) != 0 {
+		t.Fatalf("a single crash is not a loop: %v", fs)
+	}
+	p.Status.ContainerStatuses[0].RestartCount = 9
+	p.Status.ContainerStatuses[0].State.Terminated.ExitCode = 0 // completed normally (e.g. a Job)
+	if fs := check(t, CrashLoopBackOff{}, newCluster(p)); len(fs) != 0 {
+		t.Fatalf("exit code 0 is not a crash: %v", fs)
+	}
+}
+
+// previousGone mimics a kubelet that already garbage-collected the previous container instance.
+type previousGone struct{ engine.ClusterReader }
+
+func (p previousGone) PodLogs(ctx context.Context, ns, pod, c string, previous bool, tail int64) (string, error) {
+	if previous {
+		return "unable to retrieve container logs for containerd://abc123", nil
+	}
+	return "fatal: missing required env DB_HOST\n", nil
+}
+
+func TestCrashLoopBackOffFallsBackWhenPreviousLogsAreGone(t *testing.T) {
+	fs := check(t, CrashLoopBackOff{}, previousGone{newCluster(crashingPod(6, 1))})
+	if len(fs) != 1 {
+		t.Fatalf("got %d findings", len(fs))
+	}
+	tail := evidenceKinds(fs[0])["log-tail"]
+	if !strings.Contains(tail, "missing required env DB_HOST") || strings.Contains(tail, "unable to retrieve") {
+		t.Fatalf("should show the current log, not the kubelet error: %q", tail)
+	}
+	if usableLogs("unable to retrieve container logs for containerd://x") || usableLogs("  ") || !usableLogs("real line") {
+		t.Fatal("usableLogs is off")
+	}
+}
+
+func TestCrashLoopBackOffLeavesOOMToItsOwnRule(t *testing.T) {
+	p := oomPod(256, 6)
+	p.Status.ContainerStatuses[0].State = corev1.ContainerState{Waiting: &corev1.ContainerStateWaiting{Reason: "CrashLoopBackOff"}}
+	if fs := check(t, CrashLoopBackOff{}, newCluster(p)); len(fs) != 0 {
+		t.Fatalf("OOMKilled containers must only be reported by KD-K8S-002: %v", fs)
+	}
+	if fs := check(t, OOMKilled{}, newCluster(p)); len(fs) != 1 {
+		t.Fatalf("OOM rule should still report it: %v", fs)
 	}
 }
 

@@ -132,7 +132,7 @@ func (r ImagePullBackOff) Check(ctx context.Context, cluster engine.ClusterReade
 				ev = append(ev, findings.Evidence{Kind: "event", Detail: redact.String(truncate(evMsgs[len(evMsgs)-1], 300))})
 			}
 			out = append(out, newFinding(r.ID(), findings.SeverityHigh,
-				fmt.Sprintf("Pod %s no puede descargar la imagen (%s)", podLabel(pod), cs.Name),
+				fmt.Sprintf("No se puede descargar la imagen del %s %s", kindLabel(cs.Init), cs.Name),
 				pod, ev, rootCause,
 				findings.SuggestedFix{Summary: "Resolver la causa del pull fallido y volver a desplegar.", Steps: steps},
 				findings.RiskLow,

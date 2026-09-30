@@ -120,7 +120,7 @@ func (r Pending) Check(ctx context.Context, cluster engine.ClusterReader) ([]fin
 			steps = []string{"Revisar el mensaje del scheduler con kubectl describe pod y los eventos del namespace."}
 		}
 		out = append(out, newFinding(r.ID(), findings.SeverityHigh,
-			fmt.Sprintf("Pod %s en Pending: no se puede programar", podLabel(pod)),
+			"Pod en Pending: el scheduler no puede programarlo",
 			pod, ev, rootCause,
 			findings.SuggestedFix{Summary: "Resolver lo que impide que el scheduler coloque el Pod.", Steps: steps},
 			findings.RiskLow,

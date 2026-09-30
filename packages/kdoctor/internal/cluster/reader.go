@@ -38,7 +38,7 @@ func (r *Reader) PodLogs(ctx context.Context, namespace, pod, container string, 
 	if err != nil {
 		return "", fmt.Errorf("get logs for %s/%s: %w", namespace, pod, err)
 	}
-	defer stream.Close()
+	defer func() { _ = stream.Close() }() // read-only stream: a close error carries no information we can act on
 	data, err := io.ReadAll(io.LimitReader(stream, 64*1024))
 	if err != nil {
 		return "", fmt.Errorf("read logs for %s/%s: %w", namespace, pod, err)
