@@ -238,22 +238,22 @@ type Rule interface {
 
 **Pasos:**
 
-- [ ] Entrada: JSON de `terraform show -json plan.out`. `plan_parser.py` lo convierte en un modelo interno (recursos, cambios, dependencias).
-- [ ] Cuatro agentes especialistas, cada uno con su system prompt versionado en un archivo aparte:
+- [x] Entrada: JSON de `terraform show -json plan.out`. `plan_parser.py` lo convierte en un modelo interno (recursos, cambios, dependencias).
+- [x] Cuatro agentes especialistas, cada uno con su system prompt versionado en un archivo aparte:
   - `security` (IAM, cifrado, exposición pública, redes).
   - `cost` (sobredimensionamiento, NAT Gateways, almacenamiento, sin lifecycle).
   - `reliability` (Multi-AZ, backups, SPOF, límites de servicio).
   - `operations` (observabilidad, tags, gobernanza, facilidad de operación).
-- [ ] Ronda 1: análisis en paralelo; cada agente devuelve findings estructurados.
-- [ ] Ronda 2 (réplica): cada agente puede cuestionar hallazgos de otro (p. ej. `cost` cuestiona Multi-AZ propuesto por `reliability`).
-- [ ] Moderador: consolida, resuelve o registra desacuerdos, prioriza y asigna severidad final.
-- [ ] Salida: `report.md` (decisiones, desacuerdos explícitos, riesgos aceptados) + `findings.json` válido contra `findings-schema`.
-- [ ] Límites de costo: tope de tokens por ejecución y número máximo de rondas configurable.
-- [ ] Redacción previa de secretos y valores sensibles del plan antes de enviarlo al modelo.
-- [ ] Tres planes de ejemplo con fallas deliberadas en `examples/plans/` (bucket público, RDS single-AZ, NAT por subred).
-- [ ] Tests: parser determinista; evaluación de agentes con respuestas del LLM mockeadas; test de que el JSON final valida.
-- [ ] README en español con ejemplo de informe completo.
-- [ ] CI: `ruff`, `mypy`, `pytest`.
+- [x] Ronda 1: análisis en paralelo; cada agente devuelve findings estructurados.
+- [x] Ronda 2 (réplica): cada agente puede cuestionar hallazgos de otro (p. ej. `cost` cuestiona Multi-AZ propuesto por `reliability`).
+- [x] Moderador: consolida, resuelve o registra desacuerdos, prioriza y asigna severidad final.
+- [x] Salida: `report.md` (decisiones, desacuerdos explícitos, riesgos aceptados) + `findings.json` válido contra `findings-schema`.
+- [x] Límites de costo: tope de tokens por ejecución y número máximo de rondas configurable.
+- [x] Redacción previa de secretos y valores sensibles del plan antes de enviarlo al modelo.
+- [x] Tres planes de ejemplo con fallas deliberadas en `examples/plans/` (bucket público, RDS single-AZ, NAT por subred).
+- [x] Tests: parser determinista; evaluación de agentes con respuestas del LLM mockeadas; test de que el JSON final valida.
+- [x] README en español con ejemplo de informe completo.
+- [x] CI: `ruff`, `mypy`, `pytest`.
 
 **DoD:** sobre los 3 planes de ejemplo, el comité detecta las fallas sembradas y el informe muestra al menos un desacuerdo entre agentes.
 
@@ -322,7 +322,7 @@ arch-committee review --plan ../../examples/plans/public-bucket.json --out ./out
 
 ## 11. Decisiones pendientes (registrar en `docs/decisiones/`)
 
-- Orquestación de `arch-committee`: Strands Agents vs. LangGraph.
+- Orquestación de `arch-committee`: Strands Agents vs. LangGraph. _(Propuesta en el [ADR 0003](docs/decisiones/0003-orquestacion-arch-committee.md): orquestador propio, pendiente de revisión.)_
 - Modelos de Bedrock por defecto para `--explain`, `pr-agent` y `arch-committee`.
 - Política de versionado del schema (semver y compatibilidad hacia atrás).
 - Gestión de dependencias Python (`uv` vs. `poetry`).

@@ -1,0 +1,41 @@
+[
+  {
+    "id": "AC-COST-001",
+    "schema_version": "1.0.0",
+    "source": "arch-committee",
+    "severity": "medium",
+    "title": "3 NAT Gateways en un entorno dev",
+    "resource": {
+      "type": "aws_nat_gateway",
+      "name": "per_subnet[0]"
+    },
+    "evidence": [
+      {
+        "kind": "topology",
+        "detail": "3 aws_nat_gateway, uno por subred privada"
+      },
+      {
+        "kind": "debate",
+        "detail": "reliability (disagree): Colapsar a un solo NAT crea un punto único de falla: si cae su AZ, las otras dos pierden salida."
+      },
+      {
+        "kind": "committee-decision",
+        "detail": "Se mantiene la severidad medium según el análisis de cost."
+      }
+    ],
+    "root_cause": "Cada NAT tiene costo fijo mensual y por GB procesado.",
+    "suggested_fix": {
+      "summary": "Aplicar la corrección propuesta.",
+      "steps": [
+        "Aplicar la corrección propuesta."
+      ]
+    },
+    "risk_of_fix": "low",
+    "references": [],
+    "tags": [
+      "arch-committee",
+      "cost"
+    ],
+    "detected_at": "2026-09-30T19:42:08Z"
+  }
+]
