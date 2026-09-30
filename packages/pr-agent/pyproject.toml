@@ -1,0 +1,52 @@
+[project]
+name = "venomops-pr-agent"
+version = "0.1.0"
+description = "Takes a VenomOps finding and opens a Pull Request with the minimal Terraform fix"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+dependencies = [
+  "venomops-findings-schema",  # ../findings-schema/python (se instala primero, ver Makefile)
+  "boto3>=1.35",
+  "PyGithub>=2.4",
+  "python-hcl2>=4.3",
+  "pydantic>=2.6,<3",
+  "typer>=0.12",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.10"]
+
+[project.scripts]
+pr-agent = "pr_agent.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pr_agent"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = ["terraform: needs the terraform binary and downloads the AWS provider"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S603", "S607", "S105", "S106"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+mypy_path = "src"
+
+[[tool.mypy.overrides]]
+module = ["hcl2", "hcl2.*", "boto3", "botocore.*", "github", "github.*"]
+ignore_missing_imports = true

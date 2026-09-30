@@ -1,0 +1,32 @@
+{
+  "id": "TF-EBS-001",
+  "schema_version": "1.0.0",
+  "source": "manual",
+  "detected_at": "2026-09-30T14:05:00Z",
+  "severity": "medium",
+  "title": "Volumen EBS gp2 que debería ser gp3",
+  "resource": {
+    "type": "aws_ebs_volume",
+    "name": "data",
+    "path": "main.tf"
+  },
+  "evidence": [
+    {
+      "kind": "terraform",
+      "detail": "aws_ebs_volume.data usa type = \"gp2\""
+    }
+  ],
+  "root_cause": "gp3 es más barato y da 3000 IOPS de base sin depender del tamaño.",
+  "suggested_fix": {
+    "summary": "Cambiar el tipo de volumen a gp3.",
+    "steps": [
+      "Cambiar type = \"gp2\" por type = \"gp3\"."
+    ]
+  },
+  "risk_of_fix": "low",
+  "tags": [
+    "terraform",
+    "cost",
+    "ebs"
+  ]
+}

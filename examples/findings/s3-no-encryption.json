@@ -1,0 +1,33 @@
+{
+  "id": "TF-S3-001",
+  "schema_version": "1.0.0",
+  "source": "manual",
+  "detected_at": "2026-09-30T14:05:00Z",
+  "severity": "high",
+  "title": "Bucket S3 sin cifrado en reposo",
+  "resource": {
+    "type": "aws_s3_bucket",
+    "name": "demo_logs",
+    "path": "main.tf"
+  },
+  "evidence": [
+    {
+      "kind": "terraform",
+      "detail": "No existe aws_s3_bucket_server_side_encryption_configuration para demo_logs"
+    }
+  ],
+  "root_cause": "El bucket se declaró sin configuración de cifrado del lado del servidor.",
+  "suggested_fix": {
+    "summary": "Agregar cifrado SSE-S3 al bucket.",
+    "steps": [
+      "Crear aws_s3_bucket_server_side_encryption_configuration.",
+      "Ejecutar terraform validate y terraform plan."
+    ]
+  },
+  "risk_of_fix": "low",
+  "tags": [
+    "terraform",
+    "security",
+    "s3"
+  ]
+}
