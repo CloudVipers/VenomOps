@@ -114,10 +114,11 @@ def _check_git(args: Sequence[str]) -> None:
         case ["switch", "-c", branch] | ["checkout", "-b", branch]:
             _check_branch(branch)
             return
-        case ["switch", branch] | ["checkout", branch]:
-            # Returning to a branch we were on; never a detached/forced checkout.
+        case ["switch", branch]:
+            # Returning to a branch we were on. Only `switch` (it cannot restore files, unlike
+            # `checkout <path>`, which would discard local changes) and never with options.
             if branch.startswith("-"):
-                raise CommandNotAllowedError(f"git {a[0]}: option not allowed: {branch}")
+                raise CommandNotAllowedError(f"git switch: option not allowed: {branch}")
             return
         case ["add", "--", *paths] if paths and all(_plain_path(p) for p in paths):
             return
@@ -145,7 +146,15 @@ def _diff_ok(rest: Sequence[str]) -> bool:
 
 def _plain_path(p: str) -> bool:
     """Explicit file paths only: no globs, no `.`/`-A` style wildcards, no options."""
-    return bool(p) and not p.startswith("-") and p not in {".", ".."} and not any(c in p for c in "*?[]")
+    parts = Path(p).parts
+    return (
+        bool(p)
+        and not p.startswith("-")
+        and not Path(p).is_absolute()
+        and ".." not in parts
+        and p != "."
+        and not any(c in p for c in "*?[]")
+    )
 
 
 _CHECKERS = {"terraform": _check_terraform, "git": _check_git}

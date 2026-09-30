@@ -30,6 +30,7 @@ from pr_agent.safety import (
         ["git", "switch", "-c", "fix/tf-s3-001-demo-logs"],
         ["git", "checkout", "-b", "fix/tf-s3-001-demo-logs"],
         ["git", "switch", "feature-x"],
+        ["git", "add", "--", "modules/s3/main.tf", "main.tf"],
         ["git", "add", "--", "s3.tf"],
         ["git", "commit", "-m", "fix(s3): enable encryption"],
         ["git", "push", "-u", "origin", "fix/tf-s3-001-demo-logs"],
@@ -96,6 +97,13 @@ def test_allowlisted_commands_pass(argv: list[str]) -> None:
         ["git", "branch", "-D", "main"],
         ["git", "branch", "-D", "feature"],
         ["git", "checkout", "--", "."],
+        ["git", "checkout", "main.tf"],  # would discard local changes to the file
+        ["git", "checkout", "main"],  # use `git switch` to change branch
+        ["git", "switch", "--discard-changes", "main"],
+        ["git", "add", "--", "../other.tf"],
+        ["git", "add", "--", "sub/../../other.tf"],
+        ["git", "add", "--", "/etc/passwd"],
+        ["git", "diff", "--", "../x.tf"],
         ["git", "checkout", "-f", "main"],
         ["git", "switch", "-c", "main"],
         ["git", "switch", "-c", "fix/../../etc"],

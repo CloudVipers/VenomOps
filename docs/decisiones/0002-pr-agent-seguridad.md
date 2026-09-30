@@ -40,3 +40,7 @@ sea **en código** y no dependa del prompt.
 - Añadir un comando nuevo exige tocar la lista blanca y sus tests, lo que lo hace visible en la revisión.
 - Agregar un fixer nuevo no puede ampliar permisos: solo dispone de las herramientas del `ToolBox`.
 - `init -backend=false` es la única excepción a la lista original y está documentada aquí.
+- **Terraform evalúa la configuración** al hacer `init`/`plan` (módulos remotos, `data "external"`, etc.), así que
+  `pr-agent` debe usarse solo sobre repositorios de confianza. La copia sandbox no incluye `*.tfvars`, `.env`, llaves
+  ni estado; por eso el `plan` de repos con variables obligatorias puede no estar disponible (el PR lo indica) y
+  `validate` sigue siendo el control obligatorio.

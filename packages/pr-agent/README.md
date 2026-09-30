@@ -121,4 +121,7 @@ omiten con `PR_AGENT_SKIP_TERRAFORM=1` o si `terraform` no está en el `PATH`. E
 - `terraform init -backend=false` es necesario para que `validate` cargue los providers; es el único comando fuera de
   la lista original de `CLAUDE.md` (ver ADR 0002) y nunca toca el estado remoto.
 - Tags: solo edita mapas `tags = { ... }` literales de varias líneas; si son una variable o `merge(...)` se detiene.
+- La copia de trabajo no incluye `*.tfvars` (pueden tener secretos): en repos con variables obligatorias el `plan` puede no
+  estar disponible y el PR lo dice; `validate` sí se ejecuta siempre.
+- Terraform evalúa la configuración al hacer `init`/`plan`: úsalo solo sobre repos de confianza (ver ADR 0002).
 - Para abrir el PR el árbol de trabajo debe estar limpio y el directorio dentro de un repo git con remoto GitHub.
