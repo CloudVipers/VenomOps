@@ -150,3 +150,26 @@ def test_tag_values_are_escaped() -> None:
     # quotes are escaped and "${" becomes "$${" so the value can never be interpolated or break the file
     assert 'Note = "say \\"hi\\" $${not_interpolated}"' in new
     assert hcl.resource_attrs(hcl.parse(new), "aws_ebs_volume", "data") is not None
+
+
+RDS = 'resource "aws_db_instance" "orders" {\n  backup_retention_period = 0\n  multi_az = false\n  label = "backup_retention_period = 0"\n}\n'
+
+
+def test_replace_attr_value_handles_bare_numbers_and_booleans() -> None:
+    block = hcl.find_resource(RDS, "aws_db_instance", "orders")
+    assert block is not None
+    new, count = hcl.replace_attr_value(RDS, block, "backup_retention_period", 0, 7)
+    assert count == 1 and "backup_retention_period = 7\n" in new
+    assert 'label = "backup_retention_period = 0"' in new  # strings are untouched
+    block = hcl.find_resource(new, "aws_db_instance", "orders")
+    assert block is not None
+    new, count = hcl.replace_attr_value(new, block, "multi_az", False, True)
+    assert count == 1 and "multi_az = true\n" in new
+    hcl.parse(new)
+
+
+def test_replace_attr_value_refuses_a_non_literal_replacement_for_a_bare_value() -> None:
+    block = hcl.find_resource(RDS, "aws_db_instance", "orders")
+    assert block is not None
+    with pytest.raises(hcl.EditError):
+        hcl.replace_attr_value(RDS, block, "backup_retention_period", 0, "seven")

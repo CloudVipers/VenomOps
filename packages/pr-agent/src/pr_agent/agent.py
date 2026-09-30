@@ -9,6 +9,7 @@ model asks for. After the run, the workflow still enforces "minimal diff" and ``
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Callable
 from typing import Any, Protocol
 
@@ -55,6 +56,16 @@ def _truncate(text: str) -> str:
     return text if len(text) <= MAX_TOOL_OUTPUT else text[:MAX_TOOL_OUTPUT] + "\n… (truncated)"
 
 
+_MARKDOWN_PREFIX = re.compile(r"^[\s#>*\-`_]+")
+MAX_IDENTICAL_FAILURES = 3
+
+
+def _flatten(text: str, limit: int = 500) -> str:
+    """The model's own words as one plain line (it often answers in Markdown, in English and at length)."""
+    line = " ".join(_MARKDOWN_PREFIX.sub("", ln).strip("*`_ ") for ln in text.splitlines() if ln.strip())
+    return line if len(line) <= limit else line[: limit - 1] + "…"
+
+
 def dispatch_tool(tools: ToolBox, name: str, args: dict[str, Any]) -> str:
     """Run one tool call. Raises ToolError/SecurityError for anything refused; never executes unknown tools."""
     if name == "read_file":
@@ -88,6 +99,7 @@ def build_agent(
         ]
         tool_config = {"tools": [{"toolSpec": spec} for spec in TOOL_SPECS]}
         final_text = ""
+        failures: dict[str, int] = {}
 
         for _ in range(max_turns):
             response = client.converse(
@@ -114,6 +126,17 @@ def build_agent(
                     output, status = _truncate(dispatch_tool(tools, call["name"], call.get("input") or {})), "success"
                 except (ToolError, SecurityError, ValueError) as exc:
                     output, status = f"refused: {exc}", "error"  # the model sees why and may adapt
+                    key = f"{call['name']}:{json.dumps(call.get('input') or {}, sort_keys=True, default=str)}"
+                    failures[key] = failures.get(key, 0) + 1
+                    if failures[key] >= MAX_IDENTICAL_FAILURES:
+                        # Seen in a real run: the model retried the same failing edit 8 times until the turn limit.
+                        raise FixAborted(
+                            f"the agent is stuck repeating the same failing {call['name']} call: {exc}"
+                        ) from exc
+                    if failures[key] == MAX_IDENTICAL_FAILURES - 1:
+                        output += (
+                            " | You already made this exact call and it failed the same way: change your approach."
+                        )
                 results.append(
                     {"toolResult": {"toolUseId": call["toolUseId"], "content": [{"text": output}], "status": status}}
                 )
@@ -124,14 +147,17 @@ def build_agent(
         if not tools.edits:
             raise FixAborted("the agent finished without changing any file")
         files = frozenset(e.path for e in tools.edits)
+        # The PR title comes from the finding (concise and in Spanish), never from the model's conversational answer.
         summary = (
-            final_text.splitlines()[0] if final_text else f"Corrección de {finding.id} propuesta por el agente"
-        ).strip()
+            finding.suggested_fix.summary.strip().rstrip(".") or f"Corrección de {finding.id} propuesta por el agente"
+        )
+        explanation = _flatten(final_text)
         return FixOutcome(
-            summary=summary.rstrip("."),
+            summary=summary,
             details=[
                 "Cambio generado por el agente LLM (opcional); revisar con especial atención.",
                 *[f"{e.path}: {e.detail}" for e in tools.edits],
+                *([f"Explicación del agente: {explanation}"] if explanation else []),
             ],
             risk=finding.risk_of_fix.value,
             files=files,

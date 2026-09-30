@@ -100,3 +100,42 @@ def test_tool_specs_expose_only_the_five_allowed_tools() -> None:
         "terraform_validate",
         "terraform_plan",
     ]
+
+
+RDS_TF = 'resource "aws_db_instance" "orders" {\n  backup_retention_period = 0\n  multi_az = false\n}\n'
+
+
+def test_replace_attr_supports_numbers_and_booleans(toolbox: ToolBox) -> None:
+    toolbox.root.joinpath("main.tf").write_text(RDS_TF)
+    toolbox.edit_hcl(
+        "main.tf",
+        {
+            "op": "replace_attr",
+            "resource": "aws_db_instance.orders",
+            "attr": "backup_retention_period",
+            "old": 0,
+            "new": 7,
+        },
+    )
+    toolbox.edit_hcl(
+        "main.tf",
+        {"op": "replace_attr", "resource": "aws_db_instance.orders", "attr": "multi_az", "old": False, "new": True},
+    )
+    text = toolbox.read_file("main.tf")
+    assert "backup_retention_period = 7" in text and "multi_az = true" in text
+
+
+def test_replace_attr_error_tells_the_model_the_current_value(toolbox: ToolBox) -> None:
+    toolbox.root.joinpath("main.tf").write_text(RDS_TF)
+    with pytest.raises(ToolError, match=r"aws_db_instance\.orders has no backup_retention_period = 5") as err:
+        toolbox.edit_hcl(
+            "main.tf",
+            {
+                "op": "replace_attr",
+                "resource": "aws_db_instance.orders",
+                "attr": "backup_retention_period",
+                "old": 5,
+                "new": 7,
+            },
+        )
+    assert "0" in str(err.value)  # the real value is shown so the model can retry with the right 'old'

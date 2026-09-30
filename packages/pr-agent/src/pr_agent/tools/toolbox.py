@@ -111,12 +111,21 @@ class ToolBox:
             block = hcl.find_resource(text, rtype, rname)
             if block is None:
                 raise hcl.EditError(f"resource {rtype}.{rname} not found in this file")
-            attr, old, new = (str(patch.get(k, "")) for k in ("attr", "old", "new"))
-            if not attr or not old or not new:
-                raise hcl.EditError("replace_attr requires attr, old and new")
+            attr, old, new = str(patch.get("attr", "")), patch.get("old"), patch.get("new")
+            scalar = (str, int, float, bool)
+            if not attr or not isinstance(old, scalar) or not isinstance(new, scalar) or old == "" or new == "":
+                raise hcl.EditError("replace_attr requires attr and scalar old/new values (string, number or boolean)")
             new_text, count = hcl.replace_attr_value(text, block, attr, old, new)
             if count == 0:
-                raise hcl.EditError(f'{rtype}.{rname} has no {attr} = "{old}"')
+                current = hcl.describe_attr(text, block, attr)
+                shown = (
+                    f"; its current value is {' | '.join(current)}"
+                    if current
+                    else "; the attribute is not set in this resource"
+                )
+                raise hcl.EditError(
+                    f"{rtype}.{rname} has no {attr} = {old!r}{shown} (use the exact current value as 'old')"
+                )
             return new_text, f"{rtype}.{rname}: {attr} {old} -> {new} ({count}x)"
         if op == "set_memory_limit":
             rtype, rname = self._split_address(patch)
@@ -185,7 +194,7 @@ TOOL_SPECS: list[dict[str, Any]] = [
         "name": "edit_hcl",
         "description": (
             "Apply ONE structured edit to a .tf file. op=append_block {content}; "
-            "op=replace_attr {resource:'type.name', attr, old, new}; "
+            "op=replace_attr {resource:'type.name', attr, old, new} (old/new may be string, number or boolean); "
             "op=ensure_tags {resource:'type.name', tags:{K:V}}; "
             "op=set_memory_limit {resource:'kubernetes_*.name', container, old:'32Mi', new:'64Mi'}."
         ),
