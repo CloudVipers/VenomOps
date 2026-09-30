@@ -35,3 +35,10 @@ VenomOps tiene tres herramientas con tres nombres (`kubectl doctor`, `pr-agent`,
 - Un cambio de opciones en `pr-agent`/`arch-committee` se refleja solo en `venom`; los tests de `venom` lo comprueban.
 - `venom` arrastra las dependencias de ambas herramientas (boto3, PyGithub, python-hcl2): es el precio de un único
   `pip install`. Quien solo necesite una puede seguir instalando su paquete.
+
+## Distribución (addendum)
+
+`venom` se distribuye como `.rpm` y `.deb` autocontenidos (PyInstaller + `nfpm`), construidos en Rocky Linux 9 para
+soportar glibc 2.34 en adelante; ver `packaging/`. Un `pip install` desde wheel también funciona porque el schema viaja
+dentro del wheel de `findings-schema` (antes se buscaba fuera del paquete y solo funcionaba en modo editable).
+Un repositorio yum/apt firmado queda como decisión aparte (exige gestionar una clave de firma).

@@ -15,8 +15,11 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
-# python/findings_schema/validator.py -> python/findings_schema -> python -> findings-schema
-SCHEMA_PATH = Path(__file__).resolve().parents[2] / "schema" / "finding.schema.json"
+# Installed wheel: the schema is copied next to this module (see [tool.hatch.build] in pyproject.toml).
+# Source checkout: python/findings_schema/validator.py -> python -> findings-schema/schema/.
+_PACKAGED_SCHEMA = Path(__file__).resolve().parent / "finding.schema.json"
+_SOURCE_SCHEMA = Path(__file__).resolve().parents[2] / "schema" / "finding.schema.json"
+SCHEMA_PATH = _PACKAGED_SCHEMA if _PACKAGED_SCHEMA.is_file() else _SOURCE_SCHEMA
 
 
 @dataclass(frozen=True, order=True)

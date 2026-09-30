@@ -39,3 +39,7 @@ dist/
 .idea/
 .vscode/
 .DS_Store
+
+# Artefactos de empaquetado
+packaging/stage-*/
+packaging/dist/

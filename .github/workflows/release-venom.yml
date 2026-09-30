@@ -1,0 +1,46 @@
+name: Release venom packages
+
+# Builds the .rpm and .deb for x86_64 and arm64 when a tag venom-vX.Y.Z is pushed, and attaches them to a draft release
+# (a human publishes it). Nothing is installed or published automatically.
+on:
+  push:
+    tags: ["venom-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  packages:
+    name: ${{ matrix.arch }}
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: packages/kdoctor/go.mod
+          cache-dependency-path: packages/kdoctor/go.sum
+
+      - name: Install nfpm
+        run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.43.0
+
+      - name: Build packages
+        run: |
+          export PATH="$PATH:$(go env GOPATH)/bin"
+          ./packaging/build.sh
+
+      - name: Checksums
+        run: cd packaging/dist && sha256sum * > checksums-${{ matrix.arch }}.txt
+
+      - name: Attach to a draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: packaging/dist/*
