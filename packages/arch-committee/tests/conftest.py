@@ -70,7 +70,8 @@ class FakeCommittee:
         if agent in self.invalid:
             return {"findings": [{"title": "", "severity": "catastrophic"}]}, usage
         if tool_name == "report_findings":
-            return {"findings": self._round1(agent, self._plan(user))}, usage
+            prior = self._section(user, "prior_findings") if "<prior_findings>" in user else []
+            return {"findings": self._round1(agent, self._plan(user), prior)}, usage
         if tool_name == "respond_to_findings":
             return {"challenges": self._round2(agent, self._section(user, "findings"))}, usage
         return self._moderate(user), usage
@@ -85,9 +86,21 @@ class FakeCommittee:
         return plan
 
     # ---- round 1: each specialist looks at the plan from its angle ---------------------------------------------
-    def _round1(self, agent: str, plan: dict[str, Any]) -> list[dict[str, Any]]:
+    def _round1(
+        self, agent: str, plan: dict[str, Any], prior: list[dict[str, Any]] | None = None
+    ) -> list[dict[str, Any]]:
         out: list[dict[str, Any]] = []
         res = plan["resources"]
+        # Prior findings observed on the running system: link them to the plan resource they concern.
+        for pf in prior or []:
+            name = pf["resource"].rsplit("/", 1)[-1]
+            target = next((r for r in res if r["address"].endswith(f".{name}")), None)
+            if agent == "reliability" and pf["id"] == "KD-K8S-002" and target:
+                limit = json.dumps(target["attributes"])
+                out.append(finding("OOMKilled observado en el clúster: el límite del plan es insuficiente", "high", target["address"],
+                    [("prior-finding", f"{pf['id']} ({pf['source']}): {pf['title']}"), ("plan", f"limits.memory del plan: {limit}")],
+                    "El contenedor ya fue terminado por falta de memoria con la configuración que este plan vuelve a declarar.",
+                    "Subir limits.memory en el plan antes de aplicarlo.", tags=["observed"]))  # fmt: skip
         env = next((r["attributes"]["tags"].get("Environment") for r in res if r["attributes"].get("tags")), "unknown")
         for r in res:
             a, addr, typ = r["attributes"], r["address"], r["type"]
@@ -175,10 +188,13 @@ class FakeCommittee:
         keep = raised[:-1] if self.moderator_mode == "omit_one" and raised else raised
         final = []
         for r in keep:
+            confirmed = any(e["kind"] == "prior-finding" for e in r["evidence"])
+            decision = f"Se mantiene la severidad {r['severity']} según el análisis de {r['agent']}."
+            if confirmed:
+                decision += " Confirmado por un finding previo observado en el sistema en ejecución."
             final.append({**{k: r[k] for k in ("title", "severity", "resource", "evidence", "root_cause")},
                 "suggested_fix": {"summary": "Aplicar la corrección propuesta.", "steps": ["Aplicar la corrección propuesta."]},
-                "risk_of_fix": "low", "merged_from": [r["id"]],
-                "decision": f"Se mantiene la severidad {r['severity']} según el análisis de {r['agent']}."})  # fmt: skip
+                "risk_of_fix": "low", "merged_from": [r["id"]], "decision": decision})  # fmt: skip
         if self.moderator_mode == "hallucinate":
             final.append({"title": "Invento", "severity": "high", "resource": "aws_fake.nothing",
                 "evidence": [{"kind": "x", "detail": "y"}], "root_cause": "z",

@@ -146,6 +146,18 @@ def render_report(
     add("- Los valores sensibles y los secretos se enmascararon **antes** de enviar el plan al modelo.")
     add("")
 
+    if result.context:
+        add("## Contexto previo")
+        add("")
+        add("Findings detectados antes en el sistema en ejecución y entregados a los agentes como contexto:")
+        add("")
+        rows = [
+            [f.id, f.source.value, f.severity.value, f"{f.resource.type} {f.resource.name}", f.title]
+            for f in result.context
+        ]
+        add(_table(["ID", "Fuente", "Severidad", "Recurso", "Hallazgo"], rows))
+        add("")
+
     add("## Decisiones")
     add("")
     if findings:
