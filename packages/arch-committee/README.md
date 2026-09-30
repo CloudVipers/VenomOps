@@ -40,8 +40,8 @@ export ARCH_COMMITTEE_BEDROCK_MODEL=<modelId>          # o --model-id
 arch-committee review --plan ../../examples/plans/nat-per-subnet.json --out ./out
 ```
 
-Opciones: `--max-tokens` (tope **total** de la ejecución, por defecto 200 000), `--max-rounds` (1 = solo análisis,
-2 = con réplica; por defecto 2), `--region`, `--dry-run`.
+Opciones: `--max-tokens` (tope **total** de la ejecución, por defecto 200 000), `--max-output-tokens` (tope de salida de cada llamada,
+8192), `--max-rounds` (1 = solo análisis, 2 = con réplica; por defecto 2), `--context-findings`, `--region`, `--dry-run`.
 
 Salida en `--out`: `report.md` y `findings.json`.
 
@@ -91,22 +91,27 @@ Cada llamada reserva tokens del presupuesto global antes de ejecutarse. Si se ag
   tienen herramientas con efectos**. El contenido del plan se trata como datos: los prompts ordenan ignorar instrucciones
   incrustadas en tags o descripciones (inyección de prompt) y reportarlas como hallazgo.
 
-## Ejemplo de informe
+## Ejemplo de informe (real)
 
-Un informe completo está en [`docs/ejemplo-nat-per-subnet/`](docs/ejemplo-nat-per-subnet). **Ojo:** se generó con el
-modelo **simulado** de las pruebas (no con Bedrock) para ilustrar el formato; no refleja la calidad de un modelo real.
+Un informe completo generado con **Claude Haiku 4.5 en Amazon Bedrock** sobre el plan `nat-per-subnet` está en
+[`docs/ejemplo-real-nat-per-subnet/`](docs/ejemplo-real-nat-per-subnet) (≈59 000 tokens, ~1 minuto). Incluye, entre otros,
+el desacuerdo sembrado entre **cost** (1 NAT basta en dev) y **reliability** (un NAT por AZ evita el punto único de falla),
+resuelto por el moderador como riesgo aceptado para un entorno dev. La calidad depende del modelo: revisa siempre el informe.
 
-```markdown
-## Desacuerdos explícitos
+## Probado con un modelo real
 
-### 1. 3 NAT Gateways en un entorno dev
+Además de las pruebas con un LLM simulado, el comité se ejecutó contra Bedrock (Haiku 4.5) sobre los cuatro planes de
+ejemplo. **Esa prueba destapó cuatro defectos que los dobles no podían mostrar**, ya corregidos:
 
-- **Hallazgos:** COST-1
-- **cost:** Cada NAT tiene costo fijo mensual y por GB procesado.
-- **reliability:** Colapsar a un solo NAT crea un punto único de falla: si cae su AZ, las otras dos pierden salida.
-- **Resolución:** Riesgo aceptado
-- **Razón:** En un entorno dev se acepta un único NAT; en producción se conservaría uno por AZ.
-```
+| Hallazgo de la prueba real | Causa | Corrección |
+|---|---|---|
+| El moderador «no trataba» ningún hallazgo | Re-emitía el cuerpo completo de cada hallazgo y la respuesta se cortaba en `max_tokens`; Bedrock devuelve el `toolUse` **truncado** y `findings` (con valor por defecto) llegaba vacío | Una respuesta cortada es ahora un **error** (`LLMError`); el moderador **decide por referencia** (título, severidad, `merged_from`, decisión) y la evidencia/arreglo se adjuntan desde lo que reportó cada agente (prompt del moderador v2); tope de salida por llamada configurable (`--max-output-tokens`, 8192 por defecto); un reintento si aun así devuelve algo inutilizable |
+| «Ruta privada sin NAT Gateway» (*critical*) **falsa** | `route { nat_gateway_id = … }` es desconocido hasta aplicar y el parser lo omitía dentro del bloque anidado, así que los agentes veían una ruta incompleta | Los valores configurados pero desconocidos se dejan **en su sitio** como `"(known after apply)"`, también dentro de bloques anidados; los prompts indican que eso no es «ausente» ni inseguro |
+| Muchos desacuerdos «no resueltos» que no lo eran | El moderador fijaba la severidad final pero no rellenaba la lista de desacuerdos | Si el moderador dictaminó sobre el hallazgo en disputa, se registra como **resuelto** con su decisión; solo queda «sin resolver» lo que realmente omitió |
+| Ids del moderador con formato imperfecto | p. ej. `"SEC-1, COST-1"` o `[sec-1]` | Extracción tolerante de ids |
+
+Con el modelo real, sobre el plan de Kubernetes y la salida real de `kdoctor` como contexto, el comité **enlazó el OOMKilled
+observado en el clúster con el `kubernetes_pod_v1.oom` del plan** (severidad crítica), que es la integración buscada.
 
 ## Desarrollo
 
@@ -123,6 +128,7 @@ moderador; cada uno con su prompt versionado en `agents/prompts/<agente>.v1.md`)
 - **Un plan solo permite revisar lo que ya es conocido:** los atributos que dependen de valores que Terraform no sabe
   hasta aplicar (por ejemplo una política que usa el ARN de un bucket nuevo) no aparecen. Esos atributos se marcan como
   `known_after_apply` para que los agentes no los den por ausentes, pero su contenido no se puede revisar.
-- **No se probó contra un modelo real de Bedrock** (las pruebas usan un LLM simulado que se guía por los datos del plan).
-  La calidad de los hallazgos depende del modelo elegido.
+- **La calidad depende del modelo.** Probado manualmente con Haiku 4.5 en Bedrock (no en CI, donde se usa un LLM simulado). Un
+  modelo real también exagera a veces (p. ej. severidades altas en un entorno dev) y repite hallazgos entre especialistas; el
+  moderador los consolida, pero el informe es una ayuda a la decisión, no un veredicto.
 - El texto de los informes está en español; el código y los identificadores, en inglés.

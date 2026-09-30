@@ -109,4 +109,5 @@ docs/decisiones/     ADRs
 - El mapeo Pod → recurso de Terraform exige `metadata.name`/`namespace` literales (deduce Deployments y StatefulSets por
   el nombre del Pod); si son variables, se detiene en lugar de adivinar.
 - Los findings de `arch-committee` (`AC-*`) no tienen arreglo automático todavía.
-- Ninguna llamada real a Bedrock se ha probado en CI: el comité y `--explain` se verifican con dobles.
+- El comité se probó a mano contra Bedrock (Haiku 4.5) y eso corrigió defectos reales (ver su README); en CI y para `--explain` y
+  `--agent` se usan dobles, así que esas dos rutas siguen sin probarse contra un modelo real.
