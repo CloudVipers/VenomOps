@@ -13,11 +13,37 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: packages/findings-schema
+
 jobs:
-  placeholder:
-    name: CI findings-schema (placeholder)
+  schema:
+    name: schema + Go + Python + parity
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Se llena en la fase correspondiente (lint + tests del paquete).
-      - run: echo "CI de findings-schema - sin pasos todavía"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: packages/findings-schema/go.mod
+          cache-dependency-path: packages/findings-schema/go.sum
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dev dependencies
+        run: |
+          python -m venv python/.venv
+          python/.venv/bin/pip install -q -e "python[dev]"
+
+      # La suite de Python incluye el test de paridad, que ejecuta el CLI de Go.
+      - name: Lint (gofmt, go vet, ruff, mypy)
+        run: make lint
+
+      - name: Test (Go -race, Python + parity)
+        run: make test
+
+      - name: Build
+        run: make build

@@ -1,0 +1,38 @@
+{
+  "id": "kd-k8s-2",
+  "schema_version": "1.0.0",
+  "detected_at": "2026-09-30T14:05:00Z",
+  "source": "kdoctor",
+  "severity": "medium",
+  "title": "Contenedor terminado por OOMKilled",
+  "resource": {
+    "type": "Deployment",
+    "name": "report-worker",
+    "namespace": "batch",
+    "account_alias": "demo-prod"
+  },
+  "evidence": [
+    {
+      "kind": "last-state",
+      "detail": "Terminated reason=OOMKilled"
+    },
+    {
+      "kind": "limits",
+      "detail": "limits.memory=256Mi, peak usage ~310Mi"
+    }
+  ],
+  "root_cause": "El límite de memoria (256Mi) es menor que el pico real de uso.",
+  "suggested_fix": {
+    "summary": "Subir limits.memory a 512Mi.",
+    "steps": [
+      "Actualizar resources.limits.memory a 512Mi.",
+      "Monitorear el uso durante una semana."
+    ],
+    "iac_hint": "resources { limits = { memory = \"512Mi\" } }"
+  },
+  "risk_of_fix": "low",
+  "tags": [
+    "kubernetes",
+    "memory"
+  ]
+}
