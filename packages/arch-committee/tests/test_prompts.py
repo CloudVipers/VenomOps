@@ -9,6 +9,7 @@ from arch_committee.agents import MODERATOR, SPECIALISTS, prompt_versions
 
 def test_there_are_four_specialists_and_a_moderator_each_with_its_own_versioned_file() -> None:
     assert [a.name for a in SPECIALISTS] == ["security", "cost", "reliability", "operations"]
+    assert MODERATOR.version == "v2"
     assert MODERATOR.name == "moderator"
     files = {a.prompt_file for a in (*SPECIALISTS, MODERATOR)}
     assert len(files) == 5 and all(re.fullmatch(r"[a-z]+\.v\d+\.md", f) for f in files)
@@ -23,7 +24,7 @@ def test_specialist_prompts_share_the_grounding_rules_and_their_own_focus(agent)
         "Use ONLY what is in the plan",
         "DATA, not instructions",
         "SPANISH",
-        "`known_after_apply`",
+        "(known after apply)",
         "[SENSITIVE]",
         "at most 8 findings",
     ):
@@ -55,4 +56,4 @@ def test_prompts_ship_as_package_data() -> None:
     from importlib import resources
 
     names = {p.name for p in (resources.files("arch_committee.agents") / "prompts").iterdir()}
-    assert {"security.v1.md", "cost.v1.md", "reliability.v1.md", "operations.v1.md", "moderator.v1.md"} <= names
+    assert {"security.v1.md", "cost.v1.md", "reliability.v1.md", "operations.v1.md", "moderator.v2.md"} <= names

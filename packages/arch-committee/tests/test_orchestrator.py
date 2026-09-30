@@ -193,24 +193,41 @@ def test_moderator_hallucinations_are_dropped_and_omissions_are_recovered() -> N
 
     plan = load_plan(plan_path("rds-single-az"))
     halluc = run_committee(plan, FakeCommittee(moderator_mode="hallucinate"))
-    assert all(f.resource != "aws_fake.nothing" for f in halluc.final)
+    assert all(f.resource != "aws_fake.nothing" for f in halluc.final)  # a made-up resource is replaced by the real one
+    assert all(f.title != "Invento" for f in halluc.final)  # an id that does not exist is dropped
     assert any("no referencia ningún hallazgo real" in n for n in halluc.notes)
-    assert any("recurso que no está en el plan" in n for n in halluc.notes)
 
     omitted = run_committee(plan, FakeCommittee(moderator_mode="omit_one"))
     assert {r.fid for r in omitted.raised} == {i for f in omitted.final for i in f.merged_from}  # nothing was lost
     assert any("no fue tratado por el moderador" in n for n in omitted.notes)
 
 
-def test_a_disagreement_the_moderator_ignores_is_still_recorded() -> None:
+def test_a_disagreement_the_moderator_rules_on_implicitly_is_recorded_as_resolved() -> None:
     from arch_committee.plan_parser import load_plan
 
     from .conftest import plan_path
 
-    result = run_committee(load_plan(plan_path("nat-per-subnet")), FakeCommittee(moderator_mode="omit_one"))
+    result = run_committee(load_plan(plan_path("nat-per-subnet")), FakeCommittee(moderator_mode="ignore_disagreements"))
+    d = result.disagreements[0]
+    assert (
+        d.resolution == "resolved" and "severidad final" in d.rationale
+    )  # the final severity + decision IS the resolution
+    assert not any("no resuelto por el moderador" in n for n in result.notes)
+    assert {"cost", "reliability"} <= {p.agent for p in d.positions}
+
+
+def test_a_disagreement_about_a_finding_the_moderator_skipped_stays_unresolved() -> None:
+    from arch_committee.plan_parser import load_plan
+
+    from .conftest import plan_path
+
+    result = run_committee(load_plan(plan_path("nat-per-subnet")), FakeCommittee(moderator_mode="omit_target"))
     assert result.disagreements, "a 'disagree' challenge must never disappear silently"
     assert result.disagreements[0].resolution == "unresolved"
     assert any("no resuelto por el moderador" in n for n in result.notes)
+    assert {r.fid for r in result.raised} == {
+        i for f in result.final for i in f.merged_from
+    }  # the finding itself survives
 
 
 def test_results_are_deterministic_despite_parallel_execution() -> None:
@@ -255,3 +272,105 @@ def test_usage_is_accounted_per_step(committee: FakeCommittee) -> None:
 
 def unused(_: Any) -> None:  # pragma: no cover
     return None
+
+
+def test_an_empty_moderator_answer_is_retried_once_and_then_used() -> None:
+    from arch_committee.orchestrator import RETRY_INSTRUCTIONS
+    from arch_committee.plan_parser import load_plan
+
+    from .conftest import plan_path
+
+    fake = FakeCommittee(moderator_mode="empty_then_ok")
+    result = run_committee(load_plan(plan_path("nat-per-subnet")), fake)
+    finals = [c for c in fake.calls if c["tool"] == "finalize"]
+    assert len(finals) == 2 and RETRY_INSTRUCTIONS in finals[1]["user"] and RETRY_INSTRUCTIONS not in finals[0]["user"]
+    assert any("un reintento" in n for n in result.notes) and not any("tampoco" in n for n in result.notes)
+    assert result.moderator_ran and result.disagreements and result.disagreements[0].resolution == "accepted_risk"
+    assert all("Sin consolidar" not in f.decision for f in result.final)  # the retry produced real decisions
+    assert sum(u.tokens for u in result.usage if u.step == "moderator") == 2 * 700  # both attempts are accounted
+
+
+def test_a_moderator_that_stays_empty_falls_back_to_keeping_every_finding() -> None:
+    from arch_committee.plan_parser import load_plan
+
+    from .conftest import plan_path
+
+    fake = FakeCommittee(moderator_mode="always_empty")
+    result = run_committee(load_plan(plan_path("rds-single-az")), fake)
+    assert [c["tool"] for c in fake.calls].count("finalize") == 2  # one retry, never more
+    assert any("tampoco fue utilizable" in n for n in result.notes)
+    assert {r.fid for r in result.raised} == {i for f in result.final for i in f.merged_from}  # nothing lost
+
+
+def test_no_retry_when_the_budget_cannot_pay_for_it() -> None:
+    from arch_committee.plan_parser import load_plan
+
+    from .conftest import plan_path
+
+    plan = load_plan(plan_path("rds-single-az"))
+    full = run_committee(plan, FakeCommittee(moderator_mode="always_empty"))
+    cfg = CommitteeConfig(max_total_tokens=full.tokens_used - 500, max_output_tokens=200)
+    result = run_committee(plan, FakeCommittee(moderator_mode="always_empty"), cfg)
+    assert result.tokens_used <= cfg.max_total_tokens
+
+
+def test_moderator_ids_are_parsed_leniently() -> None:
+    from arch_committee.plan_parser import load_plan
+
+    from .conftest import plan_path
+
+    result = run_committee(load_plan(plan_path("rds-single-az")), FakeCommittee(moderator_mode="lenient_ids"))
+    assert not any("no fue tratado" in n or "no referencia" in n for n in result.notes)
+    assert all(f.merged_from[0] in {r.fid for r in result.raised} for f in result.final)  # "[sec-1]" -> "SEC-1"
+
+
+def test_id_extraction() -> None:
+    from arch_committee.orchestrator import _ids
+
+    assert _ids(["SEC-1, cost-2", "[rel-3]", "OPS-10 y SEC-1", "ruido"]) == ["SEC-1", "COST-2", "REL-3", "OPS-10"]
+
+
+def test_the_moderator_cannot_alter_what_the_agents_reported() -> None:
+    """Evidence, root cause and fix are attached from the cited findings: the moderator only chooses title/severity/decision."""
+    from arch_committee.models import ModeratorOutput, tool_schema
+    from arch_committee.plan_parser import load_plan
+
+    from .conftest import plan_path
+
+    item = tool_schema(ModeratorOutput)["properties"]["findings"]["items"]["properties"]
+    assert set(item) == {
+        "title",
+        "severity",
+        "merged_from",
+        "decision",
+        "resource",
+    }  # no room to re-type evidence/fixes
+
+    result = run_committee(load_plan(plan_path("rds-single-az")), FakeCommittee())
+    by_id = {r.fid: r for r in result.raised}
+    for f in result.final:
+        base = by_id[f.merged_from[0]].finding
+        assert {(e.kind, e.detail) for e in base.evidence} <= {(e.kind, e.detail) for e in f.evidence}
+        assert f.root_cause == base.root_cause and f.suggested_fix == base.suggested_fix
+
+
+def test_consolidation_merges_evidence_and_keeps_the_most_severe_base() -> None:
+    from arch_committee.plan_parser import load_plan
+
+    from .conftest import plan_path
+
+    result = run_committee(load_plan(plan_path("rds-single-az")), FakeCommittee(moderator_mode="merge_duplicates"))
+    merged = [f for f in result.final if len(f.merged_from) > 1]
+    assert merged, "the RDS instance was flagged by several agents and must be consolidated"
+    by_id = {r.fid: r for r in result.raised}
+    f = merged[0]
+    kinds_detail = {(e.kind, e.detail) for e in f.evidence}
+    assert all(
+        (e.kind, e.detail) in kinds_detail or len(f.evidence) >= 8
+        for m in f.merged_from
+        for e in by_id[m].finding.evidence
+    )
+    ranks = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
+    base = min((by_id[m] for m in f.merged_from), key=lambda r: ranks[r.finding.severity])
+    assert f.root_cause == base.finding.root_cause
+    assert len(result.final) < len(result.raised)

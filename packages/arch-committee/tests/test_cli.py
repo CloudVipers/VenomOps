@@ -64,6 +64,14 @@ def test_the_model_can_come_from_the_environment(monkeypatch: pytest.MonkeyPatch
     assert result.exit_code == 0 and "committee finished" in result.output.lower()
 
 
+def test_the_output_cap_is_configurable(fake_llm: FakeCommittee, tmp_path: Path) -> None:
+    result = runner.invoke(
+        cli.app,
+        ["review", "--plan", PLAN, "--out", str(tmp_path / "o"), "--model-id", "m", "--max-output-tokens", "2048"],
+    )
+    assert result.exit_code == 0 and result.output.count("Committee finished") == 1
+
+
 def test_limits_are_passed_through(fake_llm: FakeCommittee, tmp_path: Path) -> None:
     result = runner.invoke(
         cli.app, ["review", "--plan", PLAN, "--out", str(tmp_path / "o"), "--model-id", "m", "--max-rounds", "1"]

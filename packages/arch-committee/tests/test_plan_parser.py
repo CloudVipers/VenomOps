@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-from arch_committee.plan_parser import PlanError, load_plan, parse_plan, render_for_llm
+from arch_committee.plan_parser import UNKNOWN, PlanError, load_plan, parse_plan, render_for_llm
 
 from .conftest import plan_path
 
@@ -145,7 +145,6 @@ def test_render_is_deterministic_and_compact() -> None:
     assert a == render_for_llm(model)[0] and not truncated
     doc = json.loads(a)
     assert doc["summary"]["actions"] == {"create": 6}
-    assert "known_after_apply" not in a
     assert len(a) < 4000
 
 
@@ -158,18 +157,63 @@ def test_large_plans_degrade_instead_of_failing() -> None:
     assert truncated and len(tiny) <= 500
 
 
-def test_configured_attributes_with_unknown_content_are_flagged_but_plumbing_is_not() -> None:
+def test_configured_but_unknown_values_stay_in_place_as_a_marker() -> None:
     configuration = {"root_module": {"resources": [{"address": "aws_s3_bucket_policy.p", "expressions": {
         "bucket": {"references": ["aws_s3_bucket.b.id", "aws_s3_bucket.b"]},
         "policy": {"references": ["aws_s3_bucket.b.arn", "aws_s3_bucket.b"]}}}]}}  # fmt: skip
     change = rc("aws_s3_bucket_policy.p", "aws_s3_bucket_policy", {})
     change["change"]["after_unknown"] = {"bucket": True, "policy": True, "id": True, "computed_only": True}
     res = parse_plan(plan_of(change, configuration=configuration)).resources[0]
-    assert res.review_unknown == ("policy",)  # `bucket`/`id` are wiring; `computed_only` was never configured
+    assert res.attributes == {"bucket": UNKNOWN, "policy": UNKNOWN}  # computed_only/id were never configured: noise
+    assert res.review_unknown == ("bucket", "policy")
     text, _ = render_for_llm(parse_plan(plan_of(change, configuration=configuration)))
-    assert json.loads(text)["resources"][0]["known_after_apply"] == ["policy"]
+    assert json.loads(text)["resources"][0]["attributes"]["policy"] == "(known after apply)"
+
+
+def test_unknown_values_inside_nested_blocks_are_not_mistaken_for_absent() -> None:
+    """Real case: `route { nat_gateway_id = aws_nat_gateway.x.id }` showed a route WITHOUT a NAT gateway, and a real model
+    reported a critical 'route without NAT' that did not exist."""
+    nat = load_plan(plan_path("nat-per-subnet"))
+    route = nat.find("aws_route_table")[0].attributes["route"]
+    assert route == [{"cidr_block": "0.0.0.0/0", "nat_gateway_id": UNKNOWN}]
+
+
+@pytest.mark.parametrize(
+    "expr",
+    [
+        {"route": {"references": ["aws_nat_gateway.x"]}},  # the block collapsed into one expression
+        {
+            "route": [
+                {
+                    "cidr_block": {"constant_value": "0.0.0.0/0"},
+                    "nat_gateway_id": {"references": ["aws_nat_gateway.x.id"]},
+                }
+            ]
+        },
+    ],
+)
+def test_both_shapes_of_block_expressions_are_understood(expr: dict[str, Any]) -> None:
+    change = rc("aws_route_table.r", "aws_route_table", {"route": [{"cidr_block": "0.0.0.0/0"}]})
+    change["change"]["after_unknown"] = {"route": [{"nat_gateway_id": True}]}
+    cfg = {"root_module": {"resources": [{"address": "aws_route_table.r", "expressions": expr}]}}
+    attrs = parse_plan(plan_of(change, configuration=cfg)).resources[0].attributes
+    assert attrs["route"] == [{"cidr_block": "0.0.0.0/0", "nat_gateway_id": UNKNOWN}]
+
+
+def test_unknown_values_the_user_never_wrote_are_not_reported() -> None:
+    change = rc("aws_route_table.r", "aws_route_table", {"route": [{"cidr_block": "0.0.0.0/0"}]})
+    change["change"]["after_unknown"] = {"route": [{"nat_gateway_id": True}], "vpc_id": True}
+    cfg = {
+        "root_module": {
+            "resources": [
+                {"address": "aws_route_table.r", "expressions": {"route": [{"cidr_block": {"constant_value": "x"}}]}}
+            ]
+        }
+    }
+    attrs = parse_plan(plan_of(change, configuration=cfg)).resources[0].attributes
+    assert attrs == {"route": [{"cidr_block": "0.0.0.0/0"}]}  # nat_gateway_id/vpc_id were computed by the provider
 
 
 def test_the_public_bucket_example_exposes_its_policy_to_the_reviewers() -> None:
     policy = load_plan(plan_path("public-bucket")).find("aws_s3_bucket_policy")[0]
-    assert '"Principal":"*"' in policy.attributes["policy"] and policy.review_unknown == ()
+    assert '"Principal":"*"' in policy.attributes["policy"] and "policy" not in policy.review_unknown

@@ -22,10 +22,10 @@ _SECRET_KEY = re.compile(r"(password|passwd|secret|token|api[_-]?key|access[_-]?
 # Attributes that add tokens but no architectural information.
 _NOISE_KEYS = frozenset({"tags_all", "timeouts", "id", "arn", "owner_id"})
 _REF_INDEX = re.compile(r"\[[^\]]*\]")
-# Configured attributes that are unknown until apply only because they wire resources together (ids, arns, names of
-# other resources): not interesting for a review. Anything else (e.g. a policy built from an unknown ARN) is.
-_PLUMBING = re.compile(r"(^|_)(id|ids|arn|arns)$")
-_PLUMBING_NAMES = frozenset({"bucket", "role", "name"})
+# Marker left IN PLACE for attributes the user configured but Terraform cannot know until apply (an id of a resource
+# that does not exist yet, a policy built from an unknown ARN...). Dropping them made agents read "absent" where the
+# truth is "unknown" (a real run reported a critical "route without NAT gateway": it was only `nat_gateway_id` unknown).
+UNKNOWN = "(known after apply)"
 
 
 class PlanError(ValueError):
@@ -44,7 +44,7 @@ class PlannedResource:
     attributes: dict[str, Any]
     unknown_attributes: tuple[str, ...]
     depends_on: tuple[str, ...]
-    # Configured by the user but not known until apply (so their content cannot be reviewed from the plan).
+    # Top-level attributes the user configured whose value is unknown until apply (shown as UNKNOWN in ``attributes``).
     review_unknown: tuple[str, ...] = ()
 
     @property
@@ -149,18 +149,66 @@ def _base_ref(ref: str) -> str | None:
     return ".".join(parts[:2]) if len(parts) >= 2 else None
 
 
-def _configured_attributes(configuration: dict[str, Any]) -> dict[str, frozenset[str]]:
-    """Attribute names the user wrote for each resource (from the plan's ``configuration`` block)."""
-    configured: dict[str, frozenset[str]] = {}
+def _config_expressions(configuration: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """The expressions the user wrote for each resource (from the plan's ``configuration`` block)."""
+    found: dict[str, dict[str, Any]] = {}
 
     def walk(module: dict[str, Any], prefix: str) -> None:
         for res in module.get("resources", []):
-            configured[f"{prefix}{res['address']}"] = frozenset(res.get("expressions", {}))
+            found[f"{prefix}{res['address']}"] = res.get("expressions", {}) or {}
         for name, call in module.get("module_calls", {}).items():
             walk(call.get("module", {}), f"{prefix}module.{name}.")
 
     walk(configuration.get("root_module", {}), "")
-    return configured
+    return found
+
+
+_CONFIGURED = object()  # "the user wrote this whole region": everything nested below counts as configured
+
+
+def _is_expression(expr: Any) -> bool:
+    """One expression (``{"references": [...]}`` / ``{"constant_value": ...}``), not a map of attribute expressions."""
+    return isinstance(expr, dict) and ("references" in expr or "constant_value" in expr)
+
+
+def _child_expr(expr: Any, key: str) -> Any:
+    if expr is _CONFIGURED or _is_expression(expr):
+        return _CONFIGURED  # a block collapsed into one expression (e.g. `route { nat_gateway_id = x.y.id }`)
+    return expr.get(key) if isinstance(expr, dict) else None
+
+
+def _annotate_unknown(value: Any, unknown: Any, expr: Any) -> Any:
+    """Replace configured-but-unknown values (``unknown`` is Terraform's ``after_unknown`` tree) with :data:`UNKNOWN`.
+
+    ``expr`` is the user's configuration for this value (``None`` = not configured). Attributes Terraform computes by
+    itself are left alone: they are noise, not something the user wrote.
+    """
+    if unknown is True:
+        return UNKNOWN if expr is not None else value
+    if isinstance(value, dict) and isinstance(unknown, dict):
+        out = dict(value)
+        for key, sub in unknown.items():
+            if sub is False or sub == {} or sub == []:
+                continue
+            sub_expr = _child_expr(expr, key)
+            if sub is True:
+                if sub_expr is not None:
+                    out[key] = UNKNOWN
+            elif key in value:
+                out[key] = _annotate_unknown(value[key], sub, sub_expr)
+        return out
+    if isinstance(value, list) and isinstance(unknown, list):
+        if isinstance(expr, list):
+            exprs: list[Any] = expr
+        elif expr is None:
+            exprs = []
+        else:
+            exprs = [_CONFIGURED] * len(value)  # one collapsed expression covers every element
+        return [
+            _annotate_unknown(v, unknown[i] if i < len(unknown) else False, exprs[i] if i < len(exprs) else None)
+            for i, v in enumerate(value)
+        ]
+    return value
 
 
 def _config_dependencies(configuration: dict[str, Any]) -> dict[str, tuple[str, ...]]:
@@ -194,7 +242,7 @@ def parse_plan(data: dict[str, Any]) -> PlanModel:
         raise PlanError("the plan is marked as errored; fix it before asking for a review")
 
     deps = _config_dependencies(data.get("configuration", {}))
-    configured = _configured_attributes(data.get("configuration", {}))
+    expressions = _config_expressions(data.get("configuration", {}))
     resources: list[PlannedResource] = []
     for rc in data["resource_changes"]:
         change = rc.get("change", {})
@@ -203,17 +251,16 @@ def parse_plan(data: dict[str, Any]) -> PlanModel:
             continue  # unchanged resources and data reads are not part of what is being reviewed
         after = change.get("after") if actions != ("delete",) else change.get("before")
         sensitive = change.get("after_sensitive") if actions != ("delete",) else change.get("before_sensitive")
-        attrs = _clean(_mask(after or {}, sensitive))
+        address = str(rc["address"])
+        base = _REF_INDEX.sub("", address)
+        masked = _mask(after or {}, sensitive)
+        if actions != ("delete",):
+            masked = _annotate_unknown(masked, change.get("after_unknown"), expressions.get(base, {}))
+        attrs = _clean(masked)
         unknown = tuple(
             sorted(k for k, v in (change.get("after_unknown") or {}).items() if v is True and k not in _NOISE_KEYS)
         )
-        address = str(rc["address"])
-        base = _REF_INDEX.sub("", address)
-        review_unknown = tuple(
-            k
-            for k in unknown
-            if k in configured.get(base, frozenset()) and not _PLUMBING.search(k) and k not in _PLUMBING_NAMES
-        )
+        review_unknown = tuple(sorted(k for k, v in attrs.items() if v == UNKNOWN))
         index = rc.get("index")
         module_addr = rc.get("module_address")
         resources.append(
@@ -264,9 +311,9 @@ def _shorten(value: Any, limit: int) -> Any:
 def render_for_llm(model: PlanModel, max_chars: int = 60_000) -> tuple[str, bool]:
     """Compact JSON of the plan for the agents. Returns ``(text, truncated)``.
 
-    Attributes that are only known after apply are left out as noise (the dependency edges already say how resources
-    connect), except the ones the user configured whose *content* is unknown (``known_after_apply``): the agents must
-    know they cannot be reviewed rather than assume they are missing. Degrades in steps to respect ``max_chars``:
+    Attributes Terraform computes by itself are left out as noise. Attributes the user CONFIGURED but whose value is
+    unknown until apply stay in place as ``"(known after apply)"`` (also inside nested blocks), so agents cannot mistake
+    "unknown" for "absent". Degrades in steps to respect ``max_chars``:
     shorter strings, then headers only (address/type/actions/deps).
     """
 
@@ -276,8 +323,6 @@ def render_for_llm(model: PlanModel, max_chars: int = 60_000) -> tuple[str, bool
             item: dict[str, Any] = {"address": r.address, "type": r.type, "actions": list(r.actions)}
             if attr_limit is not None:
                 item["attributes"] = _shorten(r.attributes, attr_limit)
-            if r.review_unknown and attr_limit is not None:
-                item["known_after_apply"] = list(r.review_unknown)
             if r.depends_on:
                 item["depends_on"] = list(r.depends_on)
             items.append(item)
