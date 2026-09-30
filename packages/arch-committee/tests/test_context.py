@@ -206,3 +206,17 @@ def test_the_cli_rejects_a_bad_context_file(tmp_path: Path) -> None:
         cli.app, ["review", "--plan", str(plan_path(K8S_PLAN)), "--dry-run", "--context-findings", str(bad)]
     )
     assert result.exit_code == 2 and "findings-schema" in result.output
+
+
+def test_the_real_kdoctor_output_works_as_committee_context(tmp_path: Path) -> None:
+    """End to end with findings captured from a real kind cluster: kdoctor's OOM finding about Pod `oom` is linked to the
+    Terraform resource that declares it (examples/plans/k8s-oom.json)."""
+    from .conftest import ROOT
+
+    ctx = load_context_findings([ROOT / "examples" / "findings" / "kdoctor-output.json"])
+    assert [f.id for f in ctx] == ["KD-K8S-001", "KD-K8S-002", "KD-K8S-003", "KD-K8S-004"]
+    result = run_committee(load_plan(plan_path(K8S_PLAN)), FakeCommittee(), context=ctx)
+    linked = [f for f in result.final if f.resource == "kubernetes_pod_v1.oom"]
+    assert linked and any("KD-K8S-002" in e.detail for e in linked[0].evidence if e.kind == "prior-finding")
+    _, findings_path, warnings = write_outputs(result, tmp_path, "m")
+    assert not warnings and all(validate(d) == [] for d in json.loads(findings_path.read_text()))

@@ -2,7 +2,7 @@
 
 Herramientas para arquitectos cloud, parte del ecosistema **Ecosistema Nexus by ITera** y desarrolladas por [CloudVipers](https://cloudvipers.com). VenomOps ayuda a **detectar**, **corregir** y **debatir** problemas de infraestructura antes de que lleguen a producción.
 
-> Estado: **Fase 4** en curso. `findings-schema`, el MVP de `kdoctor`, el de `pr-agent` y el de `arch-committee` están construidos; falta la integración de la Fase 5 (ver [`CLAUDE.md`](CLAUDE.md), sección 6).
+> Estado: **Fase 5 (integración)**. `findings-schema`, `kdoctor`, `pr-agent` y `arch-committee` están construidos y se conectan entre sí; ver la [arquitectura](docs/arquitectura.md) y la [demo reproducible](examples/demo) (ver [`CLAUDE.md`](CLAUDE.md), sección 6).
 
 ## Paquetes
 
@@ -28,6 +28,20 @@ kdoctor / otras fuentes ──produce──▶ findings ──▶ pr-agent ─�
 - `arch-committee` los **debate y prioriza** antes de llegar a producción.
 
 Orden de construcción: `findings-schema` → `kdoctor` → `pr-agent` → `arch-committee`.
+
+## De punta a punta
+
+```bash
+# Diagnostica un clúster y, del diagnóstico, arma el PR con el arreglo (solo --dry-run aquí)
+kubectl doctor -n kdoctor-demo -o json | pr-agent fix --finding - --supported --repo ./infra --dry-run
+
+# Revisa el plan de Terraform contrastándolo con lo que se observó en el clúster
+arch-committee review --plan plan.json --context-findings findings.json --out ./out
+```
+
+Todo el recorrido (kind → diagnóstico → PR → comité) está automatizado en [`examples/demo/run-demo.sh`](examples/demo/run-demo.sh).
+El flujo completo, con diagramas y dónde se hace cumplir cada regla de seguridad, está en
+[`docs/arquitectura.md`](docs/arquitectura.md).
 
 ## Seguridad
 

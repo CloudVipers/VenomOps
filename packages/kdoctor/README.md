@@ -70,6 +70,19 @@ Cómo arreglarlo (riesgo low): Subir limits.memory de 32Mi a 64Mi (punto de part
 si alguno incumpliera el contrato, el comando falla en vez de emitir un documento inválido. Los avisos
 (reglas que no pudieron ejecutarse) van a `stderr`, así que `stdout` es siempre JSON puro.
 
+## Integración con `pr-agent`
+
+Los findings de OOMKilled (`KD-K8S-002`) traen una evidencia **parseable** `memory-limit-change`
+(`container=app;from=32Mi;to=64Mi`) con la que [`pr-agent`](../pr-agent) puede subir `limits.memory` en el Terraform que
+declara el workload:
+
+```bash
+kubectl doctor -n payments -o json | pr-agent fix --finding - --supported --repo ./infra --dry-run
+```
+
+`--supported` elige, del array, el único finding que tiene arreglo automático. El formato de la evidencia es un contrato
+documentado en el [ADR 0004](../../docs/decisiones/0004-convenciones-evidence.md).
+
 ## Explicación con IA (`--explain`, opcional)
 
 Desactivada por defecto. Si la activas, cada finding se envía a **Amazon Bedrock** (API Converse) para añadir

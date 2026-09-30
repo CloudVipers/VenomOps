@@ -35,6 +35,11 @@ examples/expected-errors.json  violación esperada de cada ejemplo inválido: (r
 
 El contrato es cerrado: un campo desconocido es un error.
 
+## Convenciones de `evidence`
+
+Los datos accionables entre paquetes (p. ej. `memory-limit-change`, `required-tags`) viajan en `evidence` con un `kind` y un
+formato `clave=valor;...` convenidos, sin modificar el schema: ver el [ADR 0004](../../docs/decisiones/0004-convenciones-evidence.md).
+
 ## Uso
 
 Go:
