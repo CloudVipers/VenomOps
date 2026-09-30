@@ -10,6 +10,7 @@ import typer
 
 from . import __version__
 from .agents import MODERATOR, SPECIALISTS
+from .context import ContextError, load_context_findings, render_context
 from .llm import LLM, make_bedrock_llm
 from .orchestrator import CommitteeConfig, run_committee
 from .plan_parser import PlanError, PlanModel, load_plan, render_for_llm
@@ -68,6 +69,12 @@ def review(
     max_rounds: Annotated[
         int, typer.Option("--max-rounds", min=1, max=2, help="1 = analysis only, 2 = adds the rebuttal round.")
     ] = 2,
+    context_findings: Annotated[
+        list[Path] | None,
+        typer.Option(
+            "--context-findings", help="findings JSON (one or an array, e.g. kdoctor -o json) as prior context."
+        ),
+    ] = None,
     dry_run: Annotated[
         bool, typer.Option("--dry-run", help="Show what would be sent (already redacted); call no model.")
     ] = False,
@@ -78,8 +85,15 @@ def review(
     except (PlanError, OSError) as exc:
         raise _usage_error(str(exc)) from exc
 
+    try:
+        context = load_context_findings(context_findings or [])
+    except ContextError as exc:
+        raise _usage_error(str(exc)) from exc
+
     config = CommitteeConfig(max_total_tokens=max_tokens, max_rounds=max_rounds)
     _describe_plan(parsed)
+    if context:
+        typer.echo(f"Context: {len(context)} prior findings ({', '.join(sorted({f.source.value for f in context}))})")
 
     if dry_run:
         payload, truncated = render_for_llm(parsed, config.plan_max_chars)
@@ -91,6 +105,9 @@ def review(
         typer.echo(f"Budget: {max_tokens:,} tokens" + (" (plan values shortened to fit)" if truncated else ""))
         typer.secho("\n--- Redacted plan payload that agents would receive ---", bold=True)
         typer.echo(payload)
+        if context:
+            typer.secho("\n--- Redacted prior findings that agents would receive ---", bold=True)
+            typer.echo(render_context(context)[0])
         return
 
     model = (model_id or os.environ.get(MODEL_ENV, "")).strip()
@@ -102,7 +119,7 @@ def review(
         typer.secho(str(exc), fg="red", err=True)
         raise typer.Exit(1) from exc
 
-    result = run_committee(parsed, llm, config)
+    result = run_committee(parsed, llm, config, context)
     report_path, findings_path, warnings = write_outputs(result, out, model)
 
     typer.secho("\nCommittee finished.", bold=True)

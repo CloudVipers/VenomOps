@@ -1,0 +1,181 @@
+[
+  {
+    "id": "KD-K8S-001",
+    "schema_version": "1.0.0",
+    "source": "kdoctor",
+    "severity": "high",
+    "title": "CrashLoopBackOff en el container app",
+    "resource": {
+      "type": "Pod",
+      "name": "crashloop",
+      "namespace": "kdoctor-demo"
+    },
+    "evidence": [
+      {
+        "kind": "pod-status",
+        "detail": "container \"app\" crash-looping, restartCount=3"
+      },
+      {
+        "kind": "exit-code",
+        "detail": "Last state: Terminated, exitCode=1, reason=\"Error\""
+      },
+      {
+        "kind": "log-tail",
+        "detail": "fatal: missing required env DB_HOST"
+      }
+    ],
+    "root_cause": "La aplicación terminó con un error (código 1). Las últimas líneas del log suelen indicar el motivo.",
+    "suggested_fix": {
+      "summary": "Corregir la causa de la caída que muestran el código de salida y los logs.",
+      "steps": [
+        "kubectl logs kdoctor-demo/crashloop -c app --previous para ver el log de la última caída.",
+        "kubectl describe pod kdoctor-demo/crashloop para revisar eventos, probes y variables de entorno.",
+        "Corregir configuración, imagen o comando según la causa y volver a desplegar."
+      ]
+    },
+    "risk_of_fix": "low",
+    "references": [
+      "https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/"
+    ],
+    "tags": [
+      "kubernetes",
+      "availability"
+    ],
+    "detected_at": "2026-09-30T19:53:38.049013401Z"
+  },
+  {
+    "id": "KD-K8S-002",
+    "schema_version": "1.0.0",
+    "source": "kdoctor",
+    "severity": "high",
+    "title": "OOMKilled en el container app",
+    "resource": {
+      "type": "Pod",
+      "name": "oom",
+      "namespace": "kdoctor-demo"
+    },
+    "evidence": [
+      {
+        "kind": "last-state",
+        "detail": "container \"app\" Terminated reason=OOMKilled, exitCode=137, restartCount=3"
+      },
+      {
+        "kind": "limits",
+        "detail": "limits.memory=32Mi"
+      },
+      {
+        "kind": "memory-limit-change",
+        "detail": "container=app;from=32Mi;to=64Mi"
+      }
+    ],
+    "root_cause": "El contenedor superó su límite de memoria de 32Mi y el kernel lo terminó (OOMKilled).",
+    "suggested_fix": {
+      "summary": "Subir limits.memory de 32Mi a 64Mi (punto de partida).",
+      "steps": [
+        "Actualizar resources.limits.memory a 64Mi en el manifiesto del workload.",
+        "Verificar que no vuelva a ocurrir y ajustar con el consumo observado; si crece sin parar, buscar una fuga de memoria."
+      ],
+      "iac_hint": "resources { limits = { memory = \"64Mi\" } }"
+    },
+    "risk_of_fix": "low",
+    "references": [
+      "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/"
+    ],
+    "tags": [
+      "kubernetes",
+      "memory"
+    ],
+    "detected_at": "2026-09-30T19:53:38.046268017Z"
+  },
+  {
+    "id": "KD-K8S-003",
+    "schema_version": "1.0.0",
+    "source": "kdoctor",
+    "severity": "high",
+    "title": "No se puede descargar la imagen del container app",
+    "resource": {
+      "type": "Pod",
+      "name": "badimage",
+      "namespace": "kdoctor-demo"
+    },
+    "evidence": [
+      {
+        "kind": "pod-status",
+        "detail": "container \"app\" en ImagePullBackOff, image=busybox:this-tag-does-not-exist-kdoctor"
+      },
+      {
+        "kind": "waiting-message",
+        "detail": "Back-off pulling image \"busybox:this-tag-does-not-exist-kdoctor\": ErrImagePull: rpc error: code = NotFound desc = failed to pull and unpack image \"docker.io/library/busybox:this-tag-does-not-exist-kdoctor\": failed to resolve reference \"docker.io/library/busybox:this-tag-does-not-exist-kdoctor\": dock…"
+      },
+      {
+        "kind": "event",
+        "detail": "Error: ImagePullBackOff"
+      }
+    ],
+    "root_cause": "La imagen o el tag no existe en el registro (nombre o tag mal escrito, o la imagen nunca se publicó).",
+    "suggested_fix": {
+      "summary": "Resolver la causa del pull fallido y volver a desplegar.",
+      "steps": [
+        "Verificar el nombre completo y el tag de la imagen en el manifiesto.",
+        "Confirmar en el registro que ese tag existe (por ejemplo con docker manifest inspect o la consola del registro).",
+        "Corregir la referencia de la imagen y volver a desplegar."
+      ]
+    },
+    "risk_of_fix": "low",
+    "references": [
+      "https://kubernetes.io/docs/concepts/containers/images/",
+      "https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/"
+    ],
+    "tags": [
+      "kubernetes",
+      "image",
+      "image-not-found"
+    ],
+    "detected_at": "2026-09-30T19:53:38.047114224Z"
+  },
+  {
+    "id": "KD-K8S-004",
+    "schema_version": "1.0.0",
+    "source": "kdoctor",
+    "severity": "high",
+    "title": "Pod en Pending: el scheduler no puede programarlo",
+    "resource": {
+      "type": "Pod",
+      "name": "pending",
+      "namespace": "kdoctor-demo"
+    },
+    "evidence": [
+      {
+        "kind": "pod-condition",
+        "detail": "PodScheduled=False reason=Unschedulable"
+      },
+      {
+        "kind": "scheduler-message",
+        "detail": "0/1 nodes are available: persistentvolumeclaim \"missing-claim\" not found. not found"
+      },
+      {
+        "kind": "pvc",
+        "detail": "PVC \"missing-claim\" no se pudo leer (¿no existe?)"
+      }
+    ],
+    "root_cause": "El scheduler no pudo asignar el Pod: el PersistentVolumeClaim \"missing-claim\" no existe.",
+    "suggested_fix": {
+      "summary": "Resolver lo que impide que el scheduler coloque el Pod.",
+      "steps": [
+        "Crear el PVC \"missing-claim\" en el namespace kdoctor-demo o corregir el nombre en el Pod."
+      ]
+    },
+    "risk_of_fix": "low",
+    "references": [
+      "https://kubernetes.io/docs/concepts/scheduling-eviction/",
+      "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/",
+      "https://kubernetes.io/docs/concepts/storage/persistent-volumes/"
+    ],
+    "tags": [
+      "kubernetes",
+      "scheduling",
+      "pvc"
+    ],
+    "detected_at": "2026-09-30T19:53:38.047608893Z"
+  }
+]

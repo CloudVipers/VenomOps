@@ -45,6 +45,18 @@ Opciones: `--max-tokens` (tope **total** de la ejecución, por defecto 200 000),
 
 Salida en `--out`: `report.md` y `findings.json`.
 
+### Findings previos como contexto
+
+```bash
+arch-committee review --plan plan.json --context-findings findings.json --out ./out   # repetible
+```
+
+Acepta uno o varios archivos con un finding o un array (p. ej. `kdoctor -o json`). Se validan contra `findings-schema`, se
+redactan y se limitan (50 findings, 10 000 caracteres, los más severos primero) antes de enviarse a la ronda 1 y al moderador,
+siempre como **datos**. Sirve para contrastar el plan con lo observado en producción: por ejemplo, un OOMKilled que
+`kdoctor` vio en el Pod `oom` se enlaza con el recurso `kubernetes_pod_v1.oom` que el plan vuelve a declarar con un
+límite bajo. El informe incluye una sección **Contexto previo**; `--dry-run` muestra exactamente qué se enviaría.
+
 ### Planes de ejemplo (`examples/plans/`)
 
 Generados con `terraform plan` + `terraform show -json` a partir de [`examples/terraform/committee-*`](../../examples/terraform),
@@ -55,6 +67,7 @@ cada uno con fallas sembradas a propósito:
 | `public-bucket.json` | Bucket con política pública (`Principal: *`), bloqueo de acceso público desactivado y política IAM `*:*` |
 | `rds-single-az.json` | RDS de producción en una sola AZ, sin backups ni cifrado, expuesta a Internet y sobredimensionada |
 | `nat-per-subnet.json` | Un NAT Gateway por subred privada (3) en un entorno dev: tensión entre **costo** y **confiabilidad** |
+| `k8s-oom.json` | Un `kubernetes_pod_v1` con `limits.memory = 32Mi`: se usa con los findings de `kdoctor` como contexto (demo de la Fase 5) |
 
 ## Límites de costo y degradación
 

@@ -7,6 +7,7 @@ file writes) and verified by re-parsing the HCL, and terraform runs only through
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -69,8 +70,9 @@ class ToolBox:
     def edit_hcl(self, path: str, patch: dict[str, Any]) -> bool:
         """Apply one structured patch to a ``.tf`` file. Returns True if the file changed.
 
-        Supported ``op`` values: ``append_block`` (content), ``replace_attr`` (resource, attr, old, new)
-        and ``ensure_tags`` (resource, tags). The edited text must parse as valid HCL or nothing is written.
+        Supported ``op`` values: ``append_block`` (content), ``replace_attr`` (resource, attr, old, new),
+        ``ensure_tags`` (resource, tags) and ``set_memory_limit`` (resource, container, old, new).
+        The edited text must parse as valid HCL or nothing is written.
         """
         target = resolve_in_repo(self.root, path)
         if target.suffix != EDITABLE_SUFFIX or not target.is_file():
@@ -116,6 +118,21 @@ class ToolBox:
             if count == 0:
                 raise hcl.EditError(f'{rtype}.{rname} has no {attr} = "{old}"')
             return new_text, f"{rtype}.{rname}: {attr} {old} -> {new} ({count}x)"
+        if op == "set_memory_limit":
+            rtype, rname = self._split_address(patch)
+            if not rtype.startswith("kubernetes_"):
+                raise hcl.EditError("set_memory_limit only applies to kubernetes_* workload resources")
+            block = hcl.find_resource(text, rtype, rname)
+            if block is None:
+                raise hcl.EditError(f"resource {rtype}.{rname} not found in this file")
+            container, old, new = (str(patch.get(k, "")) for k in ("container", "old", "new"))
+            quantity = re.compile(r"^\d+(\.\d+)?(Ki|Mi|Gi)?$")
+            if not container or not quantity.match(old) or not quantity.match(new):
+                raise hcl.EditError(
+                    "set_memory_limit requires container and Kubernetes quantities for old/new (e.g. 32Mi)"
+                )
+            new_text, detail = hcl.set_memory_limit(text, block, container, old, new)
+            return new_text, f"{rtype}.{rname}: {detail}"
         if op == "ensure_tags":
             rtype, rname = self._split_address(patch)
             block = hcl.find_resource(text, rtype, rname)
@@ -168,7 +185,9 @@ TOOL_SPECS: list[dict[str, Any]] = [
         "name": "edit_hcl",
         "description": (
             "Apply ONE structured edit to a .tf file. op=append_block {content}; "
-            "op=replace_attr {resource:'type.name', attr, old, new}; op=ensure_tags {resource:'type.name', tags:{K:V}}."
+            "op=replace_attr {resource:'type.name', attr, old, new}; "
+            "op=ensure_tags {resource:'type.name', tags:{K:V}}; "
+            "op=set_memory_limit {resource:'kubernetes_*.name', container, old:'32Mi', new:'64Mi'}."
         ),
         "inputSchema": {
             "json": {

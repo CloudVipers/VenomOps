@@ -6,6 +6,7 @@ on:
       - "packages/arch-committee/**"
       - "packages/findings-schema/**"   # arch-committee depende del contrato (se instala en modo editable)
       - "examples/plans/**"
+      - "examples/findings/**"   # findings reales de kdoctor usados como contexto en las pruebas
       - ".github/workflows/ci-committee.yml"
   push:
     branches: [main]
@@ -13,6 +14,7 @@ on:
       - "packages/arch-committee/**"
       - "packages/findings-schema/**"
       - "examples/plans/**"
+      - "examples/findings/**"
 
 permissions:
   contents: read

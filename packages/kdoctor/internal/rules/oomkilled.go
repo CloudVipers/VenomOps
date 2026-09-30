@@ -97,6 +97,11 @@ func (r OOMKilled) Check(ctx context.Context, cluster engine.ClusterReader) ([]f
 					ev = append(ev, findings.Evidence{Kind: "usage", Detail: fmt.Sprintf("uso actual de memoria=%dMi (metrics-server)", u/mi)})
 				}
 				suggested := suggestLimit(limit, u, haveUsage)
+				// Machine-readable contract consumed by pr-agent (fixer for KD-K8S-002): see docs/decisiones/0004.
+				ev = append(ev, findings.Evidence{
+					Kind:   "memory-limit-change",
+					Detail: fmt.Sprintf("container=%s;from=%dMi;to=%dMi", cs.Name, limit/mi, suggested/mi),
+				})
 				rootCause = fmt.Sprintf("El contenedor superó su límite de memoria de %dMi y el kernel lo terminó (OOMKilled).", limit/mi)
 				fix = findings.SuggestedFix{
 					Summary: fmt.Sprintf("Subir limits.memory de %dMi a %dMi (punto de partida).", limit/mi, suggested/mi),

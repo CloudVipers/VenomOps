@@ -201,6 +201,87 @@ def replace_attr_value(text: str, block: Block, attr: str, old: str, new: str) -
     return "".join(pieces), count
 
 
+def _match_brace(clean: str, open_idx: int, limit: int) -> int:
+    depth = 0
+    for k in range(open_idx, limit):
+        if clean[k] == "{":
+            depth += 1
+        elif clean[k] == "}":
+            depth -= 1
+            if depth == 0:
+                return k
+    raise EditError("unbalanced braces")
+
+
+def find_nested(clean: str, start: int, end: int, name: str) -> list[tuple[int, int]]:
+    """``(open, close)`` of every ``name { ... }`` block or ``name = { ... }`` map inside ``clean[start:end]``."""
+    found: list[tuple[int, int]] = []
+    for m in re.finditer(rf"(?<![\w-]){re.escape(name)}\s*(?:=\s*)?\{{", clean[start:end]):
+        open_idx = start + m.end() - 1
+        found.append((open_idx, _match_brace(clean, open_idx, end)))
+    return found
+
+
+def _top_level_string(text: str, clean: str, start: int, end: int, attr: str) -> str | None:
+    """Literal value of ``attr = "value"`` written directly in ``text[start:end]`` (not in a nested block)."""
+    depth = 0
+    i = start
+    pattern = re.compile(rf'{re.escape(attr)}[ \t]*=[ \t]*"([^"\n]*)"')
+    while i < end:
+        if clean[i] == "{":
+            depth += 1
+        elif clean[i] == "}":
+            depth -= 1
+        elif (
+            depth == 0
+            and clean.startswith(attr, i)
+            and (i == start or not (clean[i - 1].isalnum() or clean[i - 1] in "_-"))
+        ):
+            m = pattern.match(text, i)
+            if m:
+                return m.group(1)
+        i += 1
+    return None
+
+
+def set_memory_limit(text: str, block: Block, container: str, old: str, new: str) -> tuple[str, str]:
+    """Change ``memory = "old"`` to ``"new"`` inside ``limits`` of the named ``container`` of a workload resource.
+
+    Works for ``limits { memory = ".." }`` blocks and ``limits = { memory = ".." }`` maps, at any depth (Pod,
+    Deployment, StatefulSet...). ``requests`` and other containers are never touched. Raises ``EditError`` when the
+    target is missing or ambiguous, and with "already" in the message when the limit already has the new value.
+    """
+    clean = sanitize(text)
+    containers = find_nested(clean, block.open + 1, block.close, "container")
+    named = [(o, c) for o, c in containers if _top_level_string(text, clean, o + 1, c, "name") == container]
+    if not named:
+        available = [_top_level_string(text, clean, o + 1, c, "name") for o, c in containers]
+        raise EditError(f"container {container!r} not found in the resource (available: {available})")
+    if len(named) > 1:
+        raise EditError(f"container {container!r} is defined more than once in the resource")
+    c_open, c_close = named[0]
+    limits = find_nested(clean, c_open + 1, c_close, "limits")
+    if len(limits) != 1:
+        raise EditError(f"container {container!r} has {len(limits)} 'limits' definitions (expected exactly one)")
+    l_open, l_close = limits[0]
+
+    def find(value: str) -> list[re.Match[str]]:
+        rx = re.compile(rf'(?<![\w-])memory([ \t]*=[ \t]*)"{re.escape(value)}"')
+        return [m for m in rx.finditer(text, l_open, l_close) if clean[m.start() : m.start() + 6] == "memory"]
+
+    hits = find(old)
+    if not hits:
+        if find(new):
+            raise EditError(f"limits.memory of {container!r} is already {new}")
+        raise EditError(f'limits of {container!r} has no memory = "{old}"')
+    if len(hits) > 1:
+        raise EditError(f"limits of {container!r} defines memory more than once")
+    m = hits[0]
+    return text[: m.start()] + f'memory{m.group(1)}"{new}"' + text[
+        m.end() :
+    ], f"{container}: limits.memory {old} -> {new}"
+
+
 _KEY_RE = re.compile(r'^[ \t]*("(?P<q>[^"]+)"|(?P<b>[A-Za-z_][\w-]*))[ \t]*[=:]', re.MULTILINE)
 
 

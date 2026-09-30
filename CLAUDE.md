@@ -259,10 +259,10 @@ type Rule interface {
 
 ### Fase 5 — Integración
 
-- [ ] `kdoctor --output json | pr-agent fix` funciona de extremo a extremo para un finding soportado.
-- [ ] `arch-committee` puede consumir findings previos como contexto.
-- [ ] `docs/arquitectura.md` con el diagrama del flujo completo.
-- [ ] Demo reproducible en `examples/` (script que levanta kind, rompe algo, diagnostica y genera el PR en `--dry-run`).
+- [x] `kdoctor --output json | pr-agent fix` funciona de extremo a extremo para un finding soportado.
+- [x] `arch-committee` puede consumir findings previos como contexto.
+- [x] `docs/arquitectura.md` con el diagrama del flujo completo.
+- [x] Demo reproducible en `examples/` (script que levanta kind, rompe algo, diagnostica y genera el PR en `--dry-run`).
 
 ---
 

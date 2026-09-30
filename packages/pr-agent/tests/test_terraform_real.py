@@ -8,6 +8,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
+from findings_schema import Finding
 
 from pr_agent.safety import SafeRunner
 from pr_agent.workflow import FixOptions, run_fix, snapshot
@@ -51,3 +52,19 @@ def test_dry_run_passes_real_terraform_validate_and_plan(
     assert report.plan is not None and report.plan.ok and "Plan:" in report.plan.output
     assert needle in report.diff
     assert snapshot(repo) == before  # dry-run leaves the real repo untouched (no .terraform, no lock file)
+
+
+def test_kdoctor_oom_finding_passes_real_terraform_validate_and_plan(tmp_path: Path) -> None:
+    import json
+
+    from pr_agent.workflow import FixOptions, run_fix
+
+    from .conftest import EXAMPLES
+
+    docs = json.loads((EXAMPLES / "findings" / "kdoctor-output.json").read_text(encoding="utf-8"))
+    finding = next(Finding.from_dict(d) for d in docs if d["id"] == "KD-K8S-002")
+    repo = copy_example("k8s-oom-demo", tmp_path)
+    before = snapshot(repo)
+    report = run_fix(finding, FixOptions(repo=repo, dry_run=True, require_plan=True), runner_factory=SafeRunner)
+    assert report.validate.ok and report.plan is not None and report.plan.ok
+    assert 'memory = "64Mi"' in report.diff and snapshot(repo) == before

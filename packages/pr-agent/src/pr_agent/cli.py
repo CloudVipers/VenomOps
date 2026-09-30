@@ -13,6 +13,7 @@ from findings_schema import Finding, FindingValidationError
 
 from . import __version__
 from .agent import build_agent, make_bedrock_client
+from .fixes import get_fixer
 from .github_client import PullRequestClient, PyGithubClient
 from .safety import SafeRunner, SecurityError
 from .workflow import Agent, FixAborted, FixOptions, FixReport, NothingToDo, RunnerFactory, run_fix
@@ -48,7 +49,46 @@ def _version(value: bool) -> None:
         raise typer.Exit()
 
 
-def _load_finding(source: str, index: int | None) -> Finding:
+def _resource_of(d: Any) -> dict[str, Any]:
+    res = d.get("resource") if isinstance(d, dict) else None
+    return res if isinstance(res, dict) else {}
+
+
+def _where(d: Any) -> str:
+    res = _resource_of(d)
+    return "/".join(str(x) for x in (res.get("namespace"), res.get("name")) if x)
+
+
+def _describe(i: int, d: Any) -> str:
+    return f"[{i}] {d.get('id', '?') if isinstance(d, dict) else '?'} {_where(d)}".rstrip()
+
+
+def _select(data: list[Any], index: int | None, finding_id: str | None, resource: str | None, supported: bool) -> Any:
+    """Pick ONE finding from an array (e.g. ``kdoctor -o json``): by position, or by filters matching exactly one."""
+    if index is not None:
+        if not 0 <= index < len(data):
+            raise _usage_error(f"--index {index} is out of range (0..{len(data) - 1})")
+        return data[index]
+
+    candidates = [(i, d) for i, d in enumerate(data) if isinstance(d, dict)]
+    if finding_id:
+        candidates = [(i, d) for i, d in candidates if d.get("id") == finding_id]
+    if resource:
+        candidates = [(i, d) for i, d in candidates if resource in (_resource_of(d).get("name"), _where(d))]
+    if supported:
+        candidates = [(i, d) for i, d in candidates if isinstance(d.get("id"), str) and get_fixer(d["id"]) is not None]
+
+    if len(candidates) == 1:
+        return candidates[0][1]
+    listing = ", ".join(_describe(i, d) for i, d in (candidates or list(enumerate(data))))
+    if not candidates:
+        raise _usage_error(f"no finding matches the filters; the input has: {listing}")
+    raise _usage_error(f"{len(candidates)} findings match; narrow it with --id/--resource/--index ({listing})")
+
+
+def _load_finding(
+    source: str, index: int | None, finding_id: str | None, resource: str | None, supported: bool
+) -> Finding:
     raw = sys.stdin.read() if source == "-" else Path(source).read_text(encoding="utf-8")
     try:
         data: Any = json.loads(raw)
@@ -56,14 +96,12 @@ def _load_finding(source: str, index: int | None) -> Finding:
         raise _usage_error(f"{source}: not valid JSON ({exc.msg}, line {exc.lineno})") from exc
 
     if isinstance(data, list):  # e.g. the output of `kdoctor -o json`
-        if index is None:
-            if len(data) != 1:
-                ids = ", ".join(f"[{i}] {d.get('id', '?')}" for i, d in enumerate(data) if isinstance(d, dict))
-                raise _usage_error(f"the input has {len(data)} findings; choose one with --index ({ids})")
-            index = 0
-        if not 0 <= index < len(data):
-            raise _usage_error(f"--index {index} is out of range (0..{len(data) - 1})")
-        data = data[index]
+        if not data:
+            raise _usage_error("the input is an empty array: there is no finding to fix")
+        if len(data) == 1 and index is None and not (finding_id or resource or supported):
+            data = data[0]
+        else:
+            data = _select(data, index, finding_id, resource, supported)
     try:
         return Finding.from_dict(data)
     except FindingValidationError as exc:
@@ -108,8 +146,13 @@ def fix(
         bool, typer.Option("--dry-run", help="Print the diff and the PR body without touching GitHub or the repo.")
     ] = False,
     index: Annotated[
-        int | None, typer.Option("--index", help="Which finding to use when the input is an array.")
+        int | None, typer.Option("--index", help="Position of the finding when the input is an array.")
     ] = None,
+    finding_id: Annotated[str | None, typer.Option("--id", help="Pick the finding with this id from an array.")] = None,
+    resource: Annotated[str | None, typer.Option("--resource", help="Pick by resource name or namespace/name.")] = None,
+    supported: Annotated[
+        bool, typer.Option("--supported", help="From an array, pick the one finding with a fixer.")
+    ] = False,
     skip_plan: Annotated[bool, typer.Option("--skip-plan", help="Do not run terraform plan.")] = False,
     require_plan: Annotated[bool, typer.Option("--require-plan", help="Abort if terraform plan fails.")] = False,
     github_repo: Annotated[
@@ -127,7 +170,7 @@ def fix(
     region: Annotated[str | None, typer.Option("--region", help="AWS region for Bedrock (--agent).")] = None,
 ) -> None:
     """Fix FINDING with the minimal Terraform change and open a PR (or print it with --dry-run)."""
-    parsed = _load_finding(finding, index)
+    parsed = _load_finding(finding, index, finding_id, resource, supported)
 
     llm_agent: Agent | None = None
     if agent:
