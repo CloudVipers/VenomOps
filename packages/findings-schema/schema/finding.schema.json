@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/venomops/schemas/finding/1.0.0/finding.schema.json",
+  "title": "VenomOps Finding",
+  "description": "Contrato común de hallazgos (findings) entre kdoctor, pr-agent y arch-committee.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "schema_version",
+    "source",
+    "severity",
+    "title",
+    "resource",
+    "evidence",
+    "root_cause",
+    "suggested_fix",
+    "risk_of_fix",
+    "detected_at"
+  ],
+  "properties": {
+    "id": {
+      "description": "Identificador estable de la regla, p. ej. KD-K8S-001.",
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]+(-[A-Z0-9]+)+$",
+      "maxLength": 64
+    },
+    "schema_version": {
+      "description": "Versión semántica del schema (serie 1.x).",
+      "type": "string",
+      "pattern": "^1\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "source": {
+      "description": "Módulo que produjo el finding.",
+      "enum": ["kdoctor", "pr-agent", "arch-committee", "manual"]
+    },
+    "severity": {
+      "enum": ["critical", "high", "medium", "low", "info"]
+    },
+    "title": {
+      "description": "Título corto.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "name"],
+      "properties": {
+        "type": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "namespace": { "type": "string", "minLength": 1 },
+        "region": { "type": "string", "minLength": 1 },
+        "account_alias": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 }
+      }
+    },
+    "evidence": {
+      "description": "Pruebas observables del problema (al menos una).",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "detail"],
+        "properties": {
+          "kind": { "type": "string", "minLength": 1 },
+          "detail": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "root_cause": {
+      "description": "Causa probable en lenguaje claro.",
+      "type": "string",
+      "minLength": 1
+    },
+    "suggested_fix": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "steps"],
+      "properties": {
+        "summary": { "type": "string", "minLength": 1 },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "iac_hint": { "type": "string", "minLength": 1 }
+      }
+    },
+    "risk_of_fix": {
+      "enum": ["low", "medium", "high"]
+    },
+    "references": {
+      "description": "URLs a documentación oficial.",
+      "type": "array",
+      "items": { "type": "string", "pattern": "^https?://[^\\s]+$" }
+    },
+    "tags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "detected_at": {
+      "description": "Fecha y hora ISO 8601 con zona horaria.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "id": "KD-K8S-001",
+  "schema_version": "1.0.0",
+  "detected_at": "2026-09-30T14:05:00Z",
+  "source": "kdoctor",
+  "severity": "high",
+  "title": "Pod en CrashLoopBackOff",
+  "resource": {
+    "type": "Pod",
+    "name": "payments-api-7d9f8b-x2k4p",
+    "namespace": "payments",
+    "region": "us-east-1"
+  },
+  "evidence": [
+    {
+      "kind": "pod-status",
+      "detail": "CrashLoopBackOff, restartCount=14"
+    },
+    {
+      "kind": "exit-code",
+      "detail": "Last state: Terminated, exitCode=1"
+    },
+    {
+      "kind": "log-tail",
+      "detail": "panic: missing required env DB_HOST"
+    }
+  ],
+  "root_cause": "El contenedor termina al arrancar porque falta la variable de entorno DB_HOST.",
+  "suggested_fix": {
+    "summary": "Definir DB_HOST en el Deployment.",
+    "steps": [
+      "Agregar DB_HOST al ConfigMap payments-config.",
+      "Referenciarlo en el Deployment con envFrom.",
+      "Reiniciar el rollout."
+    ]
+  },
+  "risk_of_fix": "low",
+  "references": [
+    "https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/"
+  ],
+  "tags": [
+    "kubernetes",
+    "availability"
+  ]
+}

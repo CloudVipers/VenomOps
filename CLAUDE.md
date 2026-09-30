@@ -128,12 +128,12 @@ Todo módulo produce o consume este formato. **Es lo primero que se construye** 
 
 ### Criterios de aceptación del schema
 
-- [ ] `finding.schema.json` válido en JSON Schema draft 2020-12.
-- [ ] Tipos Go (structs con tags `json`) y Python (pydantic v2) generados o escritos a mano, **equivalentes**.
-- [ ] Validador en ambos lenguajes con mensajes de error claros.
-- [ ] Mínimo 5 ejemplos válidos y 5 inválidos en `examples/`, con tests que los recorren.
-- [ ] Un test de paridad: el mismo JSON valida igual en Go y Python.
-- [ ] ADR `0001-findings-schema.md` explicando decisiones y política de versionado.
+- [x] `finding.schema.json` válido en JSON Schema draft 2020-12.
+- [x] Tipos Go (structs con tags `json`) y Python (pydantic v2) generados o escritos a mano, **equivalentes**.
+- [x] Validador en ambos lenguajes con mensajes de error claros.
+- [x] Mínimo 5 ejemplos válidos y 5 inválidos en `examples/`, con tests que los recorren.
+- [x] Un test de paridad: el mismo JSON valida igual en Go y Python.
+- [x] ADR `0001-findings-schema.md` explicando decisiones y política de versionado.
 
 ---
 
@@ -154,12 +154,12 @@ Cada fase es **una sesión de Claude Code en su propia rama**. No empieces la si
 
 ### Fase 1 — `findings-schema`
 
-- [ ] Escribir `finding.schema.json`.
-- [ ] Implementar tipos y validador en Go y Python.
-- [ ] Crear ejemplos válidos e inválidos y sus tests.
-- [ ] Test de paridad Go/Python.
-- [ ] ADR 0001.
-- [ ] CI `ci-schema.yml`: valida el schema y corre ambos suites de tests.
+- [x] Escribir `finding.schema.json`.
+- [x] Implementar tipos y validador en Go y Python.
+- [x] Crear ejemplos válidos e inválidos y sus tests.
+- [x] Test de paridad Go/Python.
+- [x] ADR 0001.
+- [x] CI `ci-schema.yml`: valida el schema y corre ambos suites de tests.
 
 **DoD:** todos los tests pasan; el paquete se puede importar desde `kdoctor` (Go) y `pr-agent` / `arch-committee` (Python).
 

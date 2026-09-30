@@ -1,0 +1,30 @@
+{
+  "bad-id-format.json": {
+    "path": "/id",
+    "keyword": "pattern"
+  },
+  "bad-severity.json": {
+    "path": "/severity",
+    "keyword": "enum"
+  },
+  "date-without-timezone.json": {
+    "path": "/detected_at",
+    "keyword": "pattern"
+  },
+  "empty-evidence.json": {
+    "path": "/evidence",
+    "keyword": "minItems"
+  },
+  "missing-root-cause.json": {
+    "path": "",
+    "keyword": "required"
+  },
+  "unknown-property.json": {
+    "path": "",
+    "keyword": "additionalProperties"
+  },
+  "unsupported-major-version.json": {
+    "path": "/schema_version",
+    "keyword": "pattern"
+  }
+}

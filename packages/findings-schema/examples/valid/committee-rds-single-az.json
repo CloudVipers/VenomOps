@@ -1,0 +1,37 @@
+{
+  "id": "AC-REL-003",
+  "schema_version": "1.0.0",
+  "detected_at": "2026-09-30T14:05:00Z",
+  "source": "arch-committee",
+  "severity": "critical",
+  "title": "Base de datos RDS en una sola zona de disponibilidad",
+  "resource": {
+    "type": "aws_db_instance",
+    "name": "orders-db",
+    "account_alias": "demo-prod",
+    "region": "us-east-1",
+    "path": "infra/rds.tf"
+  },
+  "evidence": [
+    {
+      "kind": "plan",
+      "detail": "multi_az = false en aws_db_instance.orders-db"
+    },
+    {
+      "kind": "debate",
+      "detail": "reliability propone Multi-AZ; cost acepta por ser producción"
+    }
+  ],
+  "root_cause": "La instancia de producción no tiene Multi-AZ, por lo que una falla de zona causa indisponibilidad.",
+  "suggested_fix": {
+    "summary": "Habilitar Multi-AZ.",
+    "steps": [
+      "Establecer multi_az = true.",
+      "Programar el cambio en la ventana de mantenimiento."
+    ]
+  },
+  "risk_of_fix": "medium",
+  "tags": [
+    "reliability"
+  ]
+}
