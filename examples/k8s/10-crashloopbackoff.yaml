@@ -1,0 +1,12 @@
+# KD-K8S-001: el contenedor escribe un error y termina con código 1 en bucle.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: crashloop
+  namespace: kdoctor-demo
+spec:
+  restartPolicy: Always
+  containers:
+    - name: app
+      image: busybox:1.36
+      command: ["sh", "-c", "echo 'fatal: missing required env DB_HOST' >&2; exit 1"]

@@ -183,19 +183,19 @@ type Rule interface {
 
 **Pasos:**
 
-- [ ] Scaffold: `cmd/kubectl-doctor`, comandos `kubectl doctor` y `kubectl doctor --namespace <ns>`.
-- [ ] Motor: registro de reglas, ejecución concurrente con `context`, agregación y orden por severidad.
-- [ ] Regla `CrashLoopBackOff` (incluye último exit code y últimas líneas de log).
-- [ ] Regla `OOMKilled` (compara `limits.memory` con uso y sugiere nuevo valor).
-- [ ] Regla `ImagePullBackOff` (distingue imagen inexistente, credenciales y rate limit).
-- [ ] Regla `Pending` (eventos del scheduler: recursos insuficientes, taints, PVC sin bind).
-- [ ] Salida: `--output table|json`; JSON valida contra `findings-schema`.
-- [ ] Flag `--explain` (opcional): envía el finding **ya redactado** a Bedrock y agrega una explicación ampliada. Sin credenciales o sin flag, no hace nada de IA.
-- [ ] Tests unitarios con `fake.Clientset` para cada regla (caso positivo y negativo).
-- [ ] Manifiestos rotos en `examples/k8s/` para probar cada regla en un clúster kind.
-- [ ] README en español con instalación, ejemplos y tabla de reglas.
-- [ ] `.goreleaser.yaml` y manifiesto de krew (`kdoctor.yaml`).
-- [ ] CI: `go vet`, `golangci-lint`, `go test -race ./...`.
+- [x] Scaffold: `cmd/kubectl-doctor`, comandos `kubectl doctor` y `kubectl doctor --namespace <ns>`.
+- [x] Motor: registro de reglas, ejecución concurrente con `context`, agregación y orden por severidad.
+- [x] Regla `CrashLoopBackOff` (incluye último exit code y últimas líneas de log).
+- [x] Regla `OOMKilled` (compara `limits.memory` con uso y sugiere nuevo valor).
+- [x] Regla `ImagePullBackOff` (distingue imagen inexistente, credenciales y rate limit).
+- [x] Regla `Pending` (eventos del scheduler: recursos insuficientes, taints, PVC sin bind).
+- [x] Salida: `--output table|json`; JSON valida contra `findings-schema`.
+- [x] Flag `--explain` (opcional): envía el finding **ya redactado** a Bedrock y agrega una explicación ampliada. Sin credenciales o sin flag, no hace nada de IA.
+- [x] Tests unitarios con `fake.Clientset` para cada regla (caso positivo y negativo).
+- [x] Manifiestos rotos en `examples/k8s/` para probar cada regla en un clúster kind.
+- [x] README en español con instalación, ejemplos y tabla de reglas.
+- [x] `.goreleaser.yaml` y manifiesto de krew (`kdoctor.yaml`).
+- [x] CI: `go vet`, `golangci-lint`, `go test -race ./...`.
 
 **Reglas fase 2 (segunda tanda, después del MVP):** probes fallando, IRSA / EKS Pod Identity mal configurado, nodos `NotReady`, PDB que bloquea drains, Karpenter sin capacidad.
 

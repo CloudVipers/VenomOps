@@ -1,0 +1,45 @@
+# Manifiesto de krew para kdoctor (plugin de kubectl: `kubectl doctor`).
+# PENDIENTE antes de publicar en el índice de krew:
+#   - los sha256 y la versión se rellenan con el resultado de un release real (checksums.txt);
+#   - el repositorio debe ser público (krew descarga los archivos sin autenticación);
+#   - el índice exige que el archivo se llame como el plugin (doctor.yaml); aquí se mantiene kdoctor.yaml
+#     como pide CLAUDE.md y se renombrará al enviarlo al índice.
+# Prueba local tras un release: kubectl krew install --manifest=kdoctor.yaml --archive=<archivo.tar.gz>
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: doctor
+spec:
+  version: v0.1.0
+  homepage: https://github.com/CloudVipers/VenomOps/tree/main/packages/kdoctor
+  shortDescription: Explica por qué algo está roto en tu clúster y cómo arreglarlo
+  description: |
+    kubectl doctor revisa los Pods de un namespace (o de todos) y explica en lenguaje claro por qué fallan
+    y cómo arreglarlo: CrashLoopBackOff, OOMKilled, ImagePullBackOff y Pending. Es de solo lectura.
+    La explicación con IA (--explain, Amazon Bedrock) es opcional y está desactivada por defecto.
+  platforms:
+    - selector:
+        matchLabels: {os: linux, arch: amd64}
+      uri: https://github.com/CloudVipers/VenomOps/releases/download/kdoctor-v0.1.0/kdoctor_v0.1.0_linux_amd64.tar.gz
+      sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+      bin: kubectl-doctor
+    - selector:
+        matchLabels: {os: linux, arch: arm64}
+      uri: https://github.com/CloudVipers/VenomOps/releases/download/kdoctor-v0.1.0/kdoctor_v0.1.0_linux_arm64.tar.gz
+      sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+      bin: kubectl-doctor
+    - selector:
+        matchLabels: {os: darwin, arch: amd64}
+      uri: https://github.com/CloudVipers/VenomOps/releases/download/kdoctor-v0.1.0/kdoctor_v0.1.0_darwin_amd64.tar.gz
+      sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+      bin: kubectl-doctor
+    - selector:
+        matchLabels: {os: darwin, arch: arm64}
+      uri: https://github.com/CloudVipers/VenomOps/releases/download/kdoctor-v0.1.0/kdoctor_v0.1.0_darwin_arm64.tar.gz
+      sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+      bin: kubectl-doctor
+    - selector:
+        matchLabels: {os: windows, arch: amd64}
+      uri: https://github.com/CloudVipers/VenomOps/releases/download/kdoctor-v0.1.0/kdoctor_v0.1.0_windows_amd64.zip
+      sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+      bin: kubectl-doctor.exe

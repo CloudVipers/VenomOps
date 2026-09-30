@@ -1,0 +1,5 @@
+# Namespace aislado para las pruebas de kdoctor. Solo usar en un clúster local (kind).
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kdoctor-demo

@@ -4,20 +4,49 @@ on:
   pull_request:
     paths:
       - "packages/kdoctor/**"
+      - "packages/findings-schema/**"   # kdoctor depende del contrato (replace ../findings-schema)
       - ".github/workflows/ci-kdoctor.yml"
   push:
     branches: [main]
     paths:
       - "packages/kdoctor/**"
+      - "packages/findings-schema/**"
 
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: packages/kdoctor
+
 jobs:
-  placeholder:
-    name: CI kdoctor (placeholder)
+  kdoctor:
+    name: lint + test + snapshot build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Se llena en la fase correspondiente (lint + tests del paquete).
-      - run: echo "CI de kdoctor - sin pasos todavía"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: packages/kdoctor/go.mod
+          cache-dependency-path: packages/kdoctor/go.sum
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.14.0
+          working-directory: packages/kdoctor
+
+      - name: Test (race + cover)
+        run: go test -race -cover ./...
+
+      # Compila los binarios de release de todas las plataformas sin publicar nada.
+      - name: GoReleaser (snapshot)
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: "~> v2"
+          args: release --snapshot --clean --config .goreleaser.yaml
+          workdir: packages/kdoctor
