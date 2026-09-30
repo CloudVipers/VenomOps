@@ -19,7 +19,7 @@ func TestStringRedactsSecrets(t *testing.T) {
 		{"jwt", "token eyJhbGciOiJI.eyJzdWIiOiIx.SflKxwRJSMeKKF2QT4 end", "eyJzdWIiOiIx", "end"},
 		{"url creds", "pull https://user:pa55@registry.example.com/img", "pa55", "registry.example.com"},
 		{"account id", "arn:aws:iam::123456789012:role/app", "123456789012", "role/app"},
-		{"private key", "-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJB\n-----END RSA PRIVATE KEY-----", "MIIBOgIBAAJB", ""},
+		{"private key", "-----BEGIN " + "RSA PRIVATE KEY-----\nMIIBOgIBAAJB\n-----END " + "RSA PRIVATE KEY-----", "MIIBOgIBAAJB", ""},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
