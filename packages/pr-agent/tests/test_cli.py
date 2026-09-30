@@ -10,9 +10,15 @@ from typer.testing import CliRunner
 from pr_agent import cli
 from pr_agent.safety import SafeRunner
 
-from .conftest import EXAMPLES, load_finding
+from .conftest import EXAMPLES, copy_example, load_finding
 
 runner = CliRunner()
+
+
+def copy_k8s_example(tmp_path: Path) -> Path:
+    return copy_example("k8s-oom-demo", tmp_path)
+
+
 S3 = str(EXAMPLES / "findings" / "s3-no-encryption.json")
 
 
@@ -116,3 +122,70 @@ def test_real_publish_path_through_the_cli(git_repo: tuple[Path, Path], monkeypa
     assert result.exit_code == 0, result.output
     assert "Pull request opened" in result.output and "never merged" in result.output
     assert gh.opened and gh.opened[0]["head"] == "fix/tf-s3-001-demo-logs"
+
+
+# ---- picking one finding from an array (e.g. `kdoctor -o json`) ------------------------------------
+
+
+def kdoctor_like(tmp_path: Path) -> Path:
+    def f(fid: str, name: str, ns: str = "kdoctor-demo", change: str | None = None) -> dict[str, object]:
+        ev = [{"kind": "pod-status", "detail": "x"}] + (
+            [{"kind": "memory-limit-change", "detail": change}] if change else []
+        )
+        return {
+            "id": fid, "schema_version": "1.0.0", "source": "kdoctor", "severity": "high", "title": f"{fid} on {name}",
+            "resource": {"type": "Pod", "name": name, "namespace": ns}, "evidence": ev, "root_cause": "c",
+            "suggested_fix": {"summary": "s", "steps": ["t"]}, "risk_of_fix": "low", "detected_at": "2026-09-30T12:00:00Z",
+        }  # fmt: skip
+
+    arr = [
+        f("KD-K8S-001", "crashloop"),
+        f("KD-K8S-002", "oom", change="container=app;from=32Mi;to=64Mi"),
+        f("KD-K8S-003", "badimage"),
+        f("KD-K8S-004", "pending"),
+    ]
+    path = tmp_path / "kdoctor.json"
+    path.write_text(json.dumps(arr))
+    return path
+
+
+def test_the_supported_finding_is_picked_from_a_kdoctor_array(tmp_path: Path) -> None:
+    repo = copy_k8s_example(tmp_path)
+    src = kdoctor_like(tmp_path)
+    for flags in (
+        ["--supported"],
+        ["--id", "KD-K8S-002"],
+        ["--resource", "oom"],
+        ["--resource", "kdoctor-demo/oom"],
+        ["--index", "1"],
+    ):
+        result = runner.invoke(cli.app, ["fix", "--finding", str(src), "--repo", str(repo), "--dry-run", *flags])
+        assert result.exit_code == 0, (flags, result.output)
+        assert "KD-K8S-002" in result.output and '+          memory = "64Mi"' in result.output
+
+
+def test_ambiguous_or_empty_selections_are_explained(tmp_path: Path) -> None:
+    repo = copy_k8s_example(tmp_path)
+    src = str(kdoctor_like(tmp_path))
+    many = runner.invoke(cli.app, ["fix", "--finding", src, "--repo", str(repo), "--dry-run"])
+    assert (
+        many.exit_code == 2 and "4 findings match" in many.output and "[1] KD-K8S-002 kdoctor-demo/oom" in many.output
+    )
+    none = runner.invoke(cli.app, ["fix", "--finding", src, "--repo", str(repo), "--dry-run", "--id", "KD-NOPE"])
+    assert none.exit_code == 2 and "no finding matches" in none.output and "KD-K8S-003" in none.output
+    nofixer = runner.invoke(
+        cli.app, ["fix", "--finding", src, "--repo", str(repo), "--dry-run", "--resource", "pending", "--supported"]
+    )
+    assert nofixer.exit_code == 2 and "no finding matches" in nofixer.output
+    empty = tmp_path / "empty.json"
+    empty.write_text("[]")
+    assert "empty array" in runner.invoke(cli.app, ["fix", "--finding", str(empty), "--dry-run"]).output
+
+
+def test_the_pipe_from_stdin_works(tmp_path: Path) -> None:
+    repo = copy_k8s_example(tmp_path)
+    data = kdoctor_like(tmp_path).read_text()
+    result = runner.invoke(
+        cli.app, ["fix", "--finding", "-", "--repo", str(repo), "--dry-run", "--supported"], input=data
+    )
+    assert result.exit_code == 0 and "KD-K8S-002" in result.output

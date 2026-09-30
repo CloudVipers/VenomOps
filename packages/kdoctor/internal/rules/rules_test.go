@@ -158,6 +158,10 @@ func TestOOMKilledSuggestsDoubleWithoutMetrics(t *testing.T) {
 	if _, has := evidenceKinds(fs[0])["usage"]; has {
 		t.Fatal("no metrics: usage evidence must be absent")
 	}
+	// Contract with pr-agent: a parseable description of the limit change (container, from, to).
+	if got := evidenceKinds(fs[0])["memory-limit-change"]; got != "container=app;from=256Mi;to=512Mi" {
+		t.Fatalf("memory-limit-change evidence = %q", got)
+	}
 }
 
 func TestOOMKilledUsesObservedUsage(t *testing.T) {
@@ -173,6 +177,9 @@ func TestOOMKilledUsesObservedUsage(t *testing.T) {
 
 func TestOOMKilledWithoutLimit(t *testing.T) {
 	fs := check(t, OOMKilled{}, newCluster(oomPod(0, 1)))
+	if _, has := evidenceKinds(fs[0])["memory-limit-change"]; has {
+		t.Fatal("without a current limit there is nothing to change: no memory-limit-change evidence")
+	}
 	if len(fs) != 1 || !strings.Contains(fs[0].RootCause, "no define limits.memory") {
 		t.Fatalf("missing limit should be called out: %+v", fs)
 	}
