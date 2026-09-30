@@ -2,7 +2,7 @@
 
 Herramientas para arquitectos cloud, parte del ecosistema **Ecosistema Nexus by ITera** y desarrolladas por [CloudVipers](https://cloudvipers.com). VenomOps ayuda a **detectar**, **corregir** y **debatir** problemas de infraestructura antes de que lleguen a producción.
 
-> Estado: **Fase 3** en curso. `findings-schema`, el MVP de `kdoctor` y el MVP de `pr-agent` están construidos; `arch-committee` sigue (ver [`CLAUDE.md`](CLAUDE.md), sección 6).
+> Estado: **Fase 4** en curso. `findings-schema`, el MVP de `kdoctor`, el de `pr-agent` y el de `arch-committee` están construidos; falta la integración de la Fase 5 (ver [`CLAUDE.md`](CLAUDE.md), sección 6).
 
 ## Paquetes
 

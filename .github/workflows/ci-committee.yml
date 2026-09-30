@@ -4,20 +4,41 @@ on:
   pull_request:
     paths:
       - "packages/arch-committee/**"
+      - "packages/findings-schema/**"   # arch-committee depende del contrato (se instala en modo editable)
+      - "examples/plans/**"
       - ".github/workflows/ci-committee.yml"
   push:
     branches: [main]
     paths:
       - "packages/arch-committee/**"
+      - "packages/findings-schema/**"
+      - "examples/plans/**"
 
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: packages/arch-committee
+
 jobs:
-  placeholder:
-    name: CI arch-committee (placeholder)
+  arch-committee:
+    name: ruff + mypy + pytest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Se llena en la fase correspondiente (lint + tests del paquete).
-      - run: echo "CI de arch-committee - sin pasos todavía"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install (findings-schema first, then arch-committee)
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -q -e ../findings-schema/python -e ".[dev]"
+
+      - name: Lint (ruff, ruff format, mypy --strict)
+        run: make lint
+
+      - name: Test (simulated LLM; no Bedrock calls)
+        run: make test
