@@ -1,0 +1,23 @@
+name: CI pr-agent
+
+on:
+  pull_request:
+    paths:
+      - "packages/pr-agent/**"
+      - ".github/workflows/ci-pr-agent.yml"
+  push:
+    branches: [main]
+    paths:
+      - "packages/pr-agent/**"
+
+permissions:
+  contents: read
+
+jobs:
+  placeholder:
+    name: CI pr-agent (placeholder)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Se llena en la fase correspondiente (lint + tests del paquete).
+      - run: echo "CI de pr-agent - sin pasos todavía"

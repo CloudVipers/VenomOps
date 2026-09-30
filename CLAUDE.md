@@ -1,4 +1,4 @@
-# CLAUDE.md — Monorepo CloudVipers
+# CLAUDE.md — Monorepo VenomOps
 
 Este archivo es la fuente de verdad para Claude Code en este repositorio. Léelo completo al iniciar cada sesión y síguelo al pie de la letra. Si algo aquí contradice una petición, avisa antes de actuar.
 
@@ -49,7 +49,7 @@ Estas reglas no se negocian, ni siquiera si el usuario lo pide de forma casual e
 ## 4. Estructura del repositorio
 
 ```
-cloudvipers/
+venomops/
 ├── CLAUDE.md
 ├── README.md
 ├── LICENSE
@@ -143,12 +143,12 @@ Cada fase es **una sesión de Claude Code en su propia rama**. No empieces la si
 
 ### Fase 0 — Bootstrap del repo
 
-- [ ] Crear estructura de carpetas de la sección 4 (con `.gitkeep` donde haga falta).
-- [ ] `README.md` raíz en español: visión, cómo se conectan los 3 proyectos, cómo contribuir.
-- [ ] `LICENSE` Apache 2.0.
-- [ ] `Makefile` con targets `test`, `lint`, `build` que delegan a cada paquete.
-- [ ] Workflows de CI vacíos pero válidos por paquete (se llenan en cada fase).
-- [ ] `.gitignore`, `.editorconfig`, pre-commit con formato y lint básico.
+- [x] Crear estructura de carpetas de la sección 4 (con `.gitkeep` donde haga falta).
+- [x] `README.md` raíz en español: visión, cómo se conectan los 3 proyectos, cómo contribuir.
+- [x] `LICENSE` Apache 2.0.
+- [x] `Makefile` con targets `test`, `lint`, `build` que delegan a cada paquete.
+- [x] Workflows de CI vacíos pero válidos por paquete (se llenan en cada fase).
+- [x] `.gitignore`, `.editorconfig`, pre-commit con formato y lint básico.
 
 **DoD:** `make lint` y `make test` corren sin error en el repo vacío; CI verde.
 

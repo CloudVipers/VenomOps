@@ -1,0 +1,23 @@
+name: CI findings-schema
+
+on:
+  pull_request:
+    paths:
+      - "packages/findings-schema/**"
+      - ".github/workflows/ci-schema.yml"
+  push:
+    branches: [main]
+    paths:
+      - "packages/findings-schema/**"
+
+permissions:
+  contents: read
+
+jobs:
+  placeholder:
+    name: CI findings-schema (placeholder)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Se llena en la fase correspondiente (lint + tests del paquete).
+      - run: echo "CI de findings-schema - sin pasos todavía"
