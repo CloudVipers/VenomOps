@@ -18,6 +18,7 @@ plan.out
 # Go
 /packages/kdoctor/bin/
 /packages/kdoctor/dist/
+/packages/kdoctor/LICENSE
 *.test
 *.out
 coverage.*

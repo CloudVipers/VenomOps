@@ -1,0 +1,11 @@
+# KD-K8S-003: referencia una imagen/tag que no existe en el registro.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: badimage
+  namespace: kdoctor-demo
+spec:
+  containers:
+    - name: app
+      image: busybox:this-tag-does-not-exist-kdoctor
+      command: ["sleep", "3600"]

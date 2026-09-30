@@ -1,0 +1,17 @@
+# KD-K8S-002: intenta reservar más memoria (~150 MB) que su límite (32Mi).
+apiVersion: v1
+kind: Pod
+metadata:
+  name: oom
+  namespace: kdoctor-demo
+spec:
+  restartPolicy: Always
+  containers:
+    - name: app
+      image: python:3.12-alpine
+      command: ["python", "-c", "x = bytearray(150 * 1024 * 1024); import time; time.sleep(60)"]
+      resources:
+        requests:
+          memory: 16Mi
+        limits:
+          memory: 32Mi
