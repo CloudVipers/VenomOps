@@ -11,6 +11,7 @@ Herramientas para arquitectos cloud, parte del ecosistema **Ecosistema Nexus by 
 | [`findings-schema`](packages/findings-schema) | Contrato común de hallazgos (*findings*): JSON Schema + tipos | JSON Schema, Go, Python |
 | [`kdoctor`](packages/kdoctor) | Plugin de `kubectl` (open source) que diagnostica EKS/Kubernetes y explica cómo arreglarlo | Go |
 | [`pr-agent`](packages/pr-agent) | Agente que toma un finding y abre un Pull Request con el arreglo en Terraform | Python |
+| [`venom`](packages/venom) | Comando único: `venom doctor`, `venom fix`, `venom review` (capa sobre las tres herramientas) | Python |
 | [`arch-committee`](packages/arch-committee) | Comité virtual de agentes que revisa un plan de Terraform y debate | Python |
 
 ## Cómo se conectan

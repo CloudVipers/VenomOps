@@ -1,0 +1,45 @@
+[project]
+name = "venomops"
+version = "0.1.0"
+description = "One command for VenomOps: venom review, venom fix and venom doctor"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+dependencies = [
+  "venomops-findings-schema",  # ../findings-schema/python (se instalan primero, ver Makefile)
+  "venomops-pr-agent",         # ../pr-agent
+  "venomops-arch-committee",   # ../arch-committee
+  "typer>=0.12",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.10"]
+
+[project.scripts]
+venom = "venom.cli:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/venom"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S603", "S607", "E501"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+mypy_path = "src"

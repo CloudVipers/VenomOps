@@ -1,0 +1,48 @@
+name: CI venom
+
+on:
+  pull_request:
+    paths:
+      - "packages/venom/**"
+      - "packages/pr-agent/**"
+      - "packages/arch-committee/**"
+      - "packages/findings-schema/**"
+      - "examples/findings/**"
+      - "examples/terraform/**"
+      - ".github/workflows/ci-venom.yml"
+  push:
+    branches: [main]
+    paths:
+      - "packages/venom/**"
+      - "packages/pr-agent/**"
+      - "packages/arch-committee/**"
+      - "packages/findings-schema/**"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: packages/venom
+
+jobs:
+  venom:
+    name: ruff + mypy + pytest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install (findings-schema, pr-agent, arch-committee, then venom)
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -q -e ../findings-schema/python -e ../pr-agent -e ../arch-committee -e ".[dev]"
+
+      - name: Lint (ruff, ruff format, mypy --strict)
+        run: make lint
+
+      - name: Test
+        run: make test

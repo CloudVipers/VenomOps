@@ -84,7 +84,8 @@ Las reglas inviolables de [`CLAUDE.md`](../CLAUDE.md) (sección 2) se aplican **
 
 Decisiones: [ADR 0002](decisiones/0002-pr-agent-seguridad.md) (seguridad de pr-agent) y
 [ADR 0003](decisiones/0003-orquestacion-arch-committee.md) (orquestación del comité) y
-[ADR 0005](decisiones/0005-modelos-bedrock.md) (modelos de Bedrock).
+[ADR 0005](decisiones/0005-modelos-bedrock.md) (modelos de Bedrock) y
+[ADR 0006](decisiones/0006-comando-venom.md) (comando paraguas `venom`).
 
 ## Mapa del repositorio
 

@@ -14,6 +14,7 @@ CloudVipers construye herramientas para arquitectos cloud, parte del ecosistema 
 | `kdoctor` | CLI open source (plugin de kubectl) que diagnostica EKS/Kubernetes y explica cómo arreglarlo | Go |
 | `pr-agent` | Agente que toma un finding y abre un Pull Request con el arreglo en Terraform | Python |
 | `arch-committee` | Comité virtual de agentes que revisa un plan de Terraform y debate | Python |
+| `venom` | Comando paraguas: `venom doctor`, `venom fix`, `venom review` (ver [ADR 0006](docs/decisiones/0006-comando-venom.md)) | Python |
 
 **Flujo de valor:** `kdoctor` y otras fuentes **producen** findings → `pr-agent` los **corrige** → `arch-committee` los **debate y prioriza** antes de llegar a producción.
 
@@ -38,7 +39,7 @@ Estas reglas no se negocian, ni siquiera si el usuario lo pide de forma casual e
 ## 3. Convenciones generales
 
 - **Idioma:** código, nombres, comentarios, mensajes de commit y errores en **inglés**. Documentación (`README`, `docs/`) en **español**, con los términos técnicos en inglés cuando sea lo habitual.
-- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) — `feat(kdoctor): add OOMKilled rule`. Scopes válidos: `schema`, `kdoctor`, `pr-agent`, `committee`, `repo`, `docs`.
+- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) — `feat(kdoctor): add OOMKilled rule`. Scopes válidos: `schema`, `kdoctor`, `pr-agent`, `committee`, `venom`, `repo`, `docs`.
 - **Ramas:** `feat/<scope>-<descripcion-corta>`, `fix/...`, `docs/...`. Una rama por feature; PRs pequeños y revisables.
 - **Licencia:** Apache 2.0 en todo el repo.
 - **Dependencias:** preferir la biblioteca estándar y dependencias ampliamente mantenidas. No añadir una dependencia nueva sin justificarla en el PR.
