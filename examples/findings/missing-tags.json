@@ -1,0 +1,31 @@
+{
+  "id": "TF-TAG-001",
+  "schema_version": "1.0.0",
+  "source": "manual",
+  "detected_at": "2026-09-30T14:05:00Z",
+  "severity": "low",
+  "title": "Tags obligatorios faltantes en el bucket reports",
+  "resource": {
+    "type": "aws_s3_bucket",
+    "name": "reports",
+    "path": "main.tf"
+  },
+  "evidence": [
+    {
+      "kind": "required-tags",
+      "detail": "Environment=dev;Owner=platform-team"
+    }
+  ],
+  "root_cause": "El recurso no define los tags de gobernanza Environment y Owner.",
+  "suggested_fix": {
+    "summary": "Agregar los tags obligatorios.",
+    "steps": [
+      "Agregar Environment y Owner al bloque tags."
+    ]
+  },
+  "risk_of_fix": "low",
+  "tags": [
+    "terraform",
+    "governance"
+  ]
+}
