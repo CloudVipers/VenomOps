@@ -180,25 +180,65 @@ def append_block(text: str, snippet: str) -> str:
     return f"{base}{sep}{snippet.strip(chr(10))}\n"
 
 
-def replace_attr_value(text: str, block: Block, attr: str, old: str, new: str) -> tuple[str, int]:
-    """Replace ``attr = "old"`` with ``attr = "new"`` anywhere inside ``block`` (nested blocks too).
+Scalar = str | int | float | bool
+_NUMERIC = re.compile(r"^-?\d+(\.\d+)?$")
 
-    Only real code is touched. Returns the new text and how many replacements were made.
+
+def _is_bare(value: Scalar) -> bool:
+    """Can the value be written as an unquoted HCL literal (number or boolean)?"""
+    return isinstance(value, bool | int | float) or (
+        isinstance(value, str) and (bool(_NUMERIC.match(value)) or value in ("true", "false"))
+    )
+
+
+def _bare(value: Scalar) -> str:
+    return ("true" if value else "false") if isinstance(value, bool) else str(value)
+
+
+def describe_attr(text: str, block: Block, attr: str) -> list[str]:
+    """Current right-hand sides of ``attr = ...`` inside ``block`` (up to 3), to explain a failed match."""
+    clean = sanitize(text)
+    found: list[str] = []
+    for m in re.finditer(rf"(?<![\w-]){re.escape(attr)}[ \t]*=[ \t]*([^\n#]*)", text[block.open : block.close]):
+        pos = block.open + m.start()
+        if clean[pos : pos + len(attr)] == attr and m.group(1).strip():
+            found.append(m.group(1).strip())
+    return found[:3]
+
+
+def replace_attr_value(text: str, block: Block, attr: str, old: Scalar, new: Scalar) -> tuple[str, int]:
+    """Replace the literal value of ``attr`` inside ``block`` (nested blocks too): ``"old"`` -> ``"new"`` for strings,
+    ``0`` -> ``7`` for numbers, ``true`` -> ``false`` for booleans.
+
+    ``old`` is matched as a quoted string first and, if it looks like a number or boolean, as a bare literal (models
+    pass ``"0"`` or ``0`` indistinctly). The replacement keeps the style of what was matched. Only real code is touched
+    and expressions (``var.x``, function calls) are never matched. Returns the new text and the number of replacements.
     """
     clean = sanitize(text)
-    pattern = re.compile(rf'(?<![\w-]){re.escape(attr)}([ \t]*=[ \t]*)"{re.escape(old)}"')
-    pieces: list[str] = []
-    last = 0
-    count = 0
-    for m in pattern.finditer(text, block.open, block.close):
-        if clean[m.start() : m.start() + len(attr)] != attr:
-            continue  # inside a comment/string
-        pieces.append(text[last : m.start()])
-        pieces.append(f'{attr}{m.group(1)}"{new}"')
-        last = m.end()
-        count += 1
-    pieces.append(text[last:])
-    return "".join(pieces), count
+    styles: list[tuple[str, bool]] = []  # (regex for the old literal, quoted?)
+    if isinstance(old, str):
+        styles.append((rf'"{re.escape(old)}"', True))
+    if _is_bare(old):
+        styles.append((rf"{re.escape(_bare(old))}(?![\w.])", False))
+
+    for literal, quoted in styles:
+        pattern = re.compile(rf"(?<![\w-]){re.escape(attr)}([ \t]*=[ \t]*){literal}")
+        if not quoted and not _is_bare(new):
+            raise EditError(f"{attr} is an unquoted literal: the new value must be a number or boolean, got {new!r}")
+        pieces: list[str] = []
+        last = 0
+        count = 0
+        for m in pattern.finditer(text, block.open, block.close):
+            if clean[m.start() : m.start() + len(attr)] != attr:
+                continue  # inside a comment/string
+            pieces.append(text[last : m.start()])
+            pieces.append(f"{attr}{m.group(1)}{_hcl_string(str(new)) if quoted else _bare(new)}")
+            last = m.end()
+            count += 1
+        if count:
+            pieces.append(text[last:])
+            return "".join(pieces), count
+    return text, 0
 
 
 def _match_brace(clean: str, open_idx: int, limit: int) -> int:

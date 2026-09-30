@@ -28,6 +28,9 @@ Agent = Callable[[Finding, ToolBox], FixOutcome]
 _IGNORED_DIRS = {".git", ".terraform", "__pycache__", "node_modules", ".venv"}
 _IGNORED_SUFFIXES = (".tfstate", ".backup", ".tfvars", ".pem", ".key", ".tfplan")
 _IGNORED_NAMES = {".env", "terraform.tfstate"}
+# Written by `terraform init` (which the agent can trigger through terraform_validate before the diff is measured).
+# They are not part of the fix and are never copied back to the real repository.
+_TERRAFORM_ARTIFACTS = frozenset({".terraform.lock.hcl"})
 
 
 class FixAborted(Exception):
@@ -92,7 +95,7 @@ def snapshot(root: Path) -> dict[str, bytes]:
     for p in sorted(root.rglob("*")):
         if p.is_file() and not p.is_symlink():
             rel = p.relative_to(root)
-            if not any(part in _IGNORED_DIRS for part in rel.parts):
+            if not any(part in _IGNORED_DIRS for part in rel.parts) and rel.name not in _TERRAFORM_ARTIFACTS:
                 files[rel.as_posix()] = p.read_bytes()
     return files
 
