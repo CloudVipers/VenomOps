@@ -1,15 +1,29 @@
 from __future__ import annotations
 
 import stat
+from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
+from pr_agent import cli as pr_agent_cli
+from pr_agent.safety import CommandResult, SafeRunner, check_command
 from typer.testing import CliRunner
 
 from venom import __version__
 from venom.cli import app
 
 runner = CliRunner()
+WIDE = {"COLUMNS": "200"}  # rich truncates option names in narrow terminals (CI)
+
+
+class NoTerraformRunner(SafeRunner):
+    """Keeps the real allowlist but never spawns terraform (CI has none and would need the AWS provider)."""
+
+    def run(self, argv: Sequence[str]) -> CommandResult:
+        check_command(argv)
+        if argv[0] == "terraform":
+            return CommandResult(tuple(argv), 0, "Success!\n", "")
+        return super().run(argv)
 
 
 def test_help_lists_the_three_commands() -> None:
@@ -25,8 +39,8 @@ def test_version() -> None:
 
 
 def test_review_and_fix_expose_the_same_options_as_the_original_tools() -> None:
-    review = runner.invoke(app, ["review", "--help"])
-    fix = runner.invoke(app, ["fix", "--help"])
+    review = runner.invoke(app, ["review", "--help"], env=WIDE)
+    fix = runner.invoke(app, ["fix", "--help"], env=WIDE)
     assert all(opt in review.output for opt in ("--plan", "--model-id", "--max-tokens", "--max-rounds"))
     assert all(opt in fix.output for opt in ("--finding", "--dry-run", "--agent", "--supported"))
 
@@ -38,7 +52,8 @@ def test_review_keeps_the_no_default_model_rule(tmp_path: Path) -> None:
     assert result.exit_code == 2  # a model is required; nothing is called
 
 
-def test_fix_dry_run_works_end_to_end_on_the_bundled_example() -> None:
+def test_fix_dry_run_works_end_to_end_on_the_bundled_example(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(pr_agent_cli, "RUNNER_FACTORY", NoTerraformRunner)
     root = Path(__file__).resolve().parents[3]
     result = runner.invoke(
         app,
