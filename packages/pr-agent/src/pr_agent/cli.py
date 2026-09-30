@@ -36,6 +36,12 @@ def _github() -> PullRequestClient:
 GITHUB_FACTORY = _github
 
 
+def _usage_error(message: str) -> typer.Exit:
+    """Plain-text usage error (exit 2). Avoids rich's boxed output, which wraps and colours long messages."""
+    typer.secho(f"Error: {message}", fg="red", err=True)
+    return typer.Exit(2)
+
+
 def _version(value: bool) -> None:
     if value:
         typer.echo(f"pr-agent {__version__}")
@@ -47,16 +53,16 @@ def _load_finding(source: str, index: int | None) -> Finding:
     try:
         data: Any = json.loads(raw)
     except json.JSONDecodeError as exc:
-        raise typer.BadParameter(f"{source}: not valid JSON ({exc.msg}, line {exc.lineno})") from exc
+        raise _usage_error(f"{source}: not valid JSON ({exc.msg}, line {exc.lineno})") from exc
 
     if isinstance(data, list):  # e.g. the output of `kdoctor -o json`
         if index is None:
             if len(data) != 1:
                 ids = ", ".join(f"[{i}] {d.get('id', '?')}" for i, d in enumerate(data) if isinstance(d, dict))
-                raise typer.BadParameter(f"the input has {len(data)} findings; choose one with --index ({ids})")
+                raise _usage_error(f"the input has {len(data)} findings; choose one with --index ({ids})")
             index = 0
         if not 0 <= index < len(data):
-            raise typer.BadParameter(f"--index {index} is out of range (0..{len(data) - 1})")
+            raise _usage_error(f"--index {index} is out of range (0..{len(data) - 1})")
         data = data[index]
     try:
         return Finding.from_dict(data)
@@ -127,9 +133,7 @@ def fix(
     if agent:
         model = model_id or os.environ.get(MODEL_ENV, "")
         if not model.strip():
-            raise typer.BadParameter(
-                f"--agent needs an explicit model (--model-id or ${MODEL_ENV}); there is no default"
-            )
+            raise _usage_error(f"--agent needs an explicit model (--model-id or ${MODEL_ENV}); there is no default")
         try:
             llm_agent = build_agent(make_bedrock_client(region), model)
         except RuntimeError as exc:
