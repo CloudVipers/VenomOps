@@ -1,6 +1,6 @@
 # ADR 0003 — Orquestación de `arch-committee`: orquestador propio sobre Bedrock Converse
 
-- **Estado:** propuesto (pendiente de revisión humana; resuelve la decisión abierta de la sección 11 de `CLAUDE.md`)
+- **Estado:** aceptado (confirmado 2026-09-30; resuelve la decisión abierta de la sección 11 de `CLAUDE.md`)
 - **Fecha:** 2026-09-30
 - **Alcance:** `packages/arch-committee`.
 

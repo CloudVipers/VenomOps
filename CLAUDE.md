@@ -322,7 +322,7 @@ arch-committee review --plan ../../examples/plans/public-bucket.json --out ./out
 
 ## 11. Decisiones pendientes (registrar en `docs/decisiones/`)
 
-- Orquestación de `arch-committee`: Strands Agents vs. LangGraph. _(Propuesta en el [ADR 0003](docs/decisiones/0003-orquestacion-arch-committee.md): orquestador propio, pendiente de revisión.)_
-- Modelos de Bedrock por defecto para `--explain`, `pr-agent` y `arch-committee`.
+- Orquestación de `arch-committee`: Strands Agents vs. LangGraph. _(Resuelto en el [ADR 0003](docs/decisiones/0003-orquestacion-arch-committee.md): orquestador propio.)_
+- Modelos de Bedrock por defecto para `--explain`, `pr-agent` y `arch-committee`. _(Resuelto en el [ADR 0005](docs/decisiones/0005-modelos-bedrock.md): sin modelo por defecto en el código; se recomienda Haiku 4.5.)_
 - Política de versionado del schema (semver y compatibilidad hacia atrás).
 - Gestión de dependencias Python (`uv` vs. `poetry`).

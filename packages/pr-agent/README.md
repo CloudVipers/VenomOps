@@ -116,7 +116,7 @@ Ver [ADR 0002](../../docs/decisiones/0002-pr-agent-seguridad.md).
 ### Agente LLM (opcional)
 
 Desactivado por defecto. Para findings sin fixer determinista: `--agent --model-id <modelId>` (o la variable
-`PR_AGENT_BEDROCK_MODEL`; **no hay modelo por defecto**, es la decisión pendiente de `CLAUDE.md`). Usa Amazon Bedrock
+`PR_AGENT_BEDROCK_MODEL`; **no hay modelo por defecto**, ver [ADR 0005](../../docs/decisiones/0005-modelos-bedrock.md); probado con `us.anthropic.claude-haiku-4-5-20251001-v1:0`). Usa Amazon Bedrock
 (Converse con *tool use*) y solo puede actuar mediante las cinco herramientas (`read_file`, `list_files`,
 `edit_hcl`, `terraform_validate`, `terraform_plan`), de modo que los límites anteriores aplican igual aunque el
 modelo pida otra cosa; después se exige `terraform validate` y el diff mínimo como a cualquier fixer.
