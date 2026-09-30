@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 import pytest
+import typer
 from pr_agent import cli as pr_agent_cli
 from pr_agent.safety import CommandResult, SafeRunner, check_command
 from typer.testing import CliRunner
@@ -13,7 +14,6 @@ from venom import __version__
 from venom.cli import app
 
 runner = CliRunner()
-WIDE = {"COLUMNS": "200"}  # rich truncates option names in narrow terminals (CI)
 
 
 class NoTerraformRunner(SafeRunner):
@@ -38,11 +38,15 @@ def test_version() -> None:
     assert result.exit_code == 0 and result.output.strip() == f"venom {__version__}"
 
 
+def _options(command: str) -> set[str]:
+    """Option names of a registered command, read from the click model (not from rendered, colorized help)."""
+    cmd = typer.main.get_command(app).commands[command]  # type: ignore[attr-defined]
+    return {opt for param in cmd.params for opt in param.opts}
+
+
 def test_review_and_fix_expose_the_same_options_as_the_original_tools() -> None:
-    review = runner.invoke(app, ["review", "--help"], env=WIDE)
-    fix = runner.invoke(app, ["fix", "--help"], env=WIDE)
-    assert all(opt in review.output for opt in ("--plan", "--model-id", "--max-tokens", "--max-rounds"))
-    assert all(opt in fix.output for opt in ("--finding", "--dry-run", "--agent", "--supported"))
+    assert {"--plan", "--model-id", "--max-tokens", "--max-rounds"} <= _options("review")
+    assert {"--finding", "--dry-run", "--agent", "--supported"} <= _options("fix")
 
 
 def test_review_keeps_the_no_default_model_rule(tmp_path: Path) -> None:
