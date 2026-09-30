@@ -109,5 +109,8 @@ docs/decisiones/     ADRs
 - El mapeo Pod → recurso de Terraform exige `metadata.name`/`namespace` literales (deduce Deployments y StatefulSets por
   el nombre del Pod); si son variables, se detiene en lugar de adivinar.
 - Los findings de `arch-committee` (`AC-*`) no tienen arreglo automático todavía.
-- El comité se probó a mano contra Bedrock (Haiku 4.5) y eso corrigió defectos reales (ver su README); en CI y para `--explain` y
-  `--agent` se usan dobles, así que esas dos rutas siguen sin probarse contra un modelo real.
+- Las tres rutas con LLM (comité, `kdoctor --explain` y `pr-agent --agent`) se probaron a mano contra Bedrock (Haiku 4.5);
+  en CI se usan dobles. La prueba real del comité y del agente corrigió defectos que los dobles no veían (truncación en
+  `max_tokens`, `.terraform.lock.hcl` creado por `terraform init`, herramienta de edición sin soporte para números y bucles
+  de llamadas fallidas). `--explain` se probó sobre un kind aislado con los cuatro escenarios de `examples/k8s/`: las
+  explicaciones salieron correctas, un secreto sembrado en el log llegó como `[REDACTED]` y el JSON validó contra el schema.
