@@ -43,10 +43,11 @@ jobs:
       - name: Test (race + cover)
         run: go test -race -cover ./...
 
-      # Compila los binarios de release de todas las plataformas sin publicar nada.
-      - name: GoReleaser (snapshot)
+      # Valida la config de GoReleaser compilando solo la plataforma del runner (compilar las 5
+      # plataformas en frío tardaba ~15 min). El snapshot completo se prueba con `make snapshot`.
+      - name: GoReleaser (snapshot, single target)
         uses: goreleaser/goreleaser-action@v6
         with:
           version: "~> v2"
-          args: release --snapshot --clean --config .goreleaser.yaml
+          args: build --snapshot --clean --single-target --config .goreleaser.yaml
           workdir: packages/kdoctor
