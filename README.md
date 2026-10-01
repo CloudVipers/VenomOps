@@ -34,7 +34,7 @@ Orden de construcción: `findings-schema` → `kdoctor` → `pr-agent` → `arch
 
 ```bash
 # Diagnostica un clúster y, del diagnóstico, arma el PR con el arreglo (solo --dry-run aquí)
-kubectl doctor -n kdoctor-demo -o json | pr-agent fix --finding - --supported --repo ./infra --dry-run
+kubectl venom -n kdoctor-demo -o json | pr-agent fix --finding - --supported --repo ./infra --dry-run
 
 # Revisa el plan de Terraform contrastándolo con lo que se observó en el clúster
 arch-committee review --plan plan.json --context-findings findings.json --out ./out

@@ -71,7 +71,7 @@ venomops/
 │   │   ├── python/               # tipos Python (pydantic) + validador
 │   │   └── examples/             # findings válidos e inválidos
 │   ├── kdoctor/
-│   │   ├── cmd/kubectl-doctor/main.go
+│   │   ├── cmd/kubectl-venom/main.go
 │   │   ├── internal/
 │   │   │   ├── engine/           # motor de reglas
 │   │   │   ├── rules/            # una regla por archivo
@@ -184,7 +184,7 @@ type Rule interface {
 
 **Pasos:**
 
-- [x] Scaffold: `cmd/kubectl-doctor`, comandos `kubectl doctor` y `kubectl doctor --namespace <ns>`.
+- [x] Scaffold: `cmd/kubectl-venom`, comandos `kubectl venom` y `kubectl venom --namespace <ns>`.
 - [x] Motor: registro de reglas, ejecución concurrente con `context`, agregación y orden por severidad.
 - [x] Regla `CrashLoopBackOff` (incluye último exit code y últimas líneas de log).
 - [x] Regla `OOMKilled` (compara `limits.memory` con uso y sugiere nuevo valor).
@@ -200,7 +200,7 @@ type Rule interface {
 
 **Reglas fase 2 (segunda tanda, después del MVP):** probes fallando, IRSA / EKS Pod Identity mal configurado, nodos `NotReady`, PDB que bloquea drains, Karpenter sin capacidad.
 
-**DoD:** `kubectl doctor` detecta correctamente los 4 escenarios sobre los manifiestos de ejemplo en kind; cobertura de reglas >80%; binario compilado por GoReleaser en modo snapshot.
+**DoD:** `kubectl venom` detecta correctamente los 4 escenarios sobre los manifiestos de ejemplo en kind; cobertura de reglas >80%; binario compilado por GoReleaser en modo snapshot.
 
 ### Fase 3 — `pr-agent`
 
@@ -301,7 +301,7 @@ make lint && make test
 cd packages/findings-schema && go test ./go/... && pytest python/
 
 # kdoctor
-cd packages/kdoctor && go vet ./... && go test -race ./... && go build ./cmd/kubectl-doctor
+cd packages/kdoctor && go vet ./... && go test -race ./... && go build ./cmd/kubectl-venom
 kind create cluster --name kdoctor-test && kubectl apply -f ../../examples/k8s/
 
 # pr-agent

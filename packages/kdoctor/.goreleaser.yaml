@@ -9,9 +9,9 @@ before:
     - cp ../../LICENSE LICENSE
 
 builds:
-  - id: kubectl-doctor
-    main: ./cmd/kubectl-doctor
-    binary: kubectl-doctor
+  - id: kubectl-venom
+    main: ./cmd/kubectl-venom
+    binary: kubectl-venom
     env:
       - CGO_ENABLED=0
     goos: [linux, darwin, windows]

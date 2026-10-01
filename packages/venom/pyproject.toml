@@ -1,6 +1,6 @@
 [project]
 name = "venomops"
-version = "0.1.0"
+version = "0.1.1"
 description = "One command for VenomOps: venom review, venom fix and venom doctor"
 readme = "README.md"
 requires-python = ">=3.12"

@@ -1,4 +1,4 @@
-// Command kubectl-doctor is a kubectl plugin (`kubectl doctor`) that explains in plain language why
+// Command kubectl-venom is a kubectl plugin (`kubectl venom`) that explains in plain language why
 // something is broken in a cluster and how to fix it. It is strictly read-only.
 package main
 

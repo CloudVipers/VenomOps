@@ -14,7 +14,7 @@ flowchart LR
         H[Personas / otras fuentes]
     end
 
-    C -->|get / list, solo lectura| K[kdoctor<br/>kubectl doctor]
+    C -->|get / list, solo lectura| K[kdoctor<br/>kubectl venom]
     K -->|findings JSON<br/>array, KD-K8S-00x| F{{findings-schema<br/>contrato común}}
     H -->|findings manuales| F
 

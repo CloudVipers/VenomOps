@@ -41,5 +41,5 @@ Tarda ~3-4 minutos. Requiere `docker`, `kind`, `kubectl`, `go`, `terraform` y `u
 | `TF_PLUGIN_CACHE_DIR=ruta` | Reutiliza los providers de Terraform entre ejecuciones |
 | `ARCH_COMMITTEE_BEDROCK_MODEL=<modelId>` | Ejecuta el comité de verdad en el paso 6 |
 
-La misma tubería, a mano: `kubectl doctor -n kdoctor-demo -o json | pr-agent fix --finding - --supported --repo
+La misma tubería, a mano: `kubectl venom -n kdoctor-demo -o json | pr-agent fix --finding - --supported --repo
 examples/terraform/k8s-oom-demo --dry-run`.

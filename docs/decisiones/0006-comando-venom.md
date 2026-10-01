@@ -6,14 +6,14 @@
 
 ## Contexto
 
-VenomOps tiene tres herramientas con tres nombres (`kubectl doctor`, `pr-agent`, `arch-committee`) y dos lenguajes
+VenomOps tiene tres herramientas con tres nombres (`kubectl venom`, `pr-agent`, `arch-committee`) y dos lenguajes
 (kdoctor en Go, las demás en Python). Para el usuario es más natural un único comando con verbos: `venom doctor`,
 `venom fix`, `venom review`.
 
 ## Opciones
 
 1. **Paraguas en Python (elegida).** Un paquete `venomops` con un CLI de `typer` que depende de `pr-agent` y
-   `arch-committee` y que ejecuta el binario `kubectl-doctor`.
+   `arch-committee` y que ejecuta el binario `kubectl-venom`.
 2. **Dispatcher en Go** al estilo de `git`/`kubectl` (busca `venom-<verbo>` en el `PATH`). Da un binario único, pero
    obliga a empaquetar y distribuir aparte las herramientas Python, que serían igualmente ejecutables externos.
 3. **Reescribir todo en un solo lenguaje.** Descartada: rehace código probado sin aportar al usuario.
@@ -22,9 +22,9 @@ VenomOps tiene tres herramientas con tres nombres (`kubectl doctor`, `pr-agent`,
 
 - `venom review` y `venom fix` **registran** las funciones de comando de `arch-committee` y `pr-agent`: mismas opciones,
   mismas reglas de seguridad y mismos tests, sin copiar código.
-- `venom doctor` pasa los argumentos tal cual a `kubectl-doctor` (ejecutable fijo, sin shell) y devuelve su código de
+- `venom doctor` pasa los argumentos tal cual a `kubectl-venom` (ejecutable fijo, sin shell) y devuelve su código de
   salida. Si no está en el `PATH`, explica cómo instalarlo.
-- `kdoctor` **sigue llamándose `kubectl-doctor`**: krew exige ese nombre y es lo que habilita `kubectl doctor`.
+- `kdoctor` **sigue llamándose `kubectl-venom`**: krew exige ese nombre y es lo que habilita `kubectl venom`.
 - Los comandos originales (`pr-agent`, `arch-committee`) se conservan; `venom` es una capa, no un reemplazo.
 - Sin cambios en las reglas de la sección 2 de `CLAUDE.md`: Bedrock solo con `--explain`/`--agent`/`--model-id`
   explícitos y sin modelo por defecto ([ADR 0005](0005-modelos-bedrock.md)); el PR siempre requiere aprobación humana.
@@ -42,3 +42,12 @@ VenomOps tiene tres herramientas con tres nombres (`kubectl doctor`, `pr-agent`,
 soportar glibc 2.34 en adelante; ver `packaging/`. Un `pip install` desde wheel también funciona porque el schema viaja
 dentro del wheel de `findings-schema` (antes se buscaba fuera del paquete y solo funcionaba en modo editable).
 Un repositorio yum/apt firmado queda como decisión aparte (exige gestionar una clave de firma).
+
+## Renombrado del plugin de kubectl (addendum, 2026-10-01)
+
+El primer diseño llamaba al plugin `kubectl-doctor`. Al prepararlo para krew se comprobó que el índice ya tiene un plugin
+`doctor` de otro proyecto (`emirozer/kubectl-doctor`), con el mismo nombre de binario: no se podía publicar, y quien
+instalara ambos habría sufrido un choque de binarios (además, `kubectl krew install doctor` habría instalado el plugin
+ajeno). Se renombra a **`kubectl-venom`** (`kubectl venom`, plugin `venom` en krew; nombre libre en el índice). El paquete
+Go sigue llamándose `kdoctor` y `venom doctor` ejecuta `kubectl-venom`. Los archivos de la versión 0.1.0 contienen el
+binario con el nombre antiguo; el cambio sale en la 0.1.1.
