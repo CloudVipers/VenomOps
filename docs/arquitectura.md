@@ -85,7 +85,8 @@ Las reglas inviolables de [`CLAUDE.md`](../CLAUDE.md) (sección 2) se aplican **
 Decisiones: [ADR 0002](decisiones/0002-pr-agent-seguridad.md) (seguridad de pr-agent) y
 [ADR 0003](decisiones/0003-orquestacion-arch-committee.md) (orquestación del comité) y
 [ADR 0005](decisiones/0005-modelos-bedrock.md) (modelos de Bedrock) y
-[ADR 0006](decisiones/0006-comando-venom.md) (comando paraguas `venom`).
+[ADR 0006](decisiones/0006-comando-venom.md) (comando paraguas `venom`) y
+[ADR 0007](decisiones/0007-dependencias-python.md) (dependencias Python).
 
 ## Mapa del repositorio
 
