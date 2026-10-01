@@ -14,8 +14,9 @@ spec:
   shortDescription: Explica por qué algo está roto en tu clúster y cómo arreglarlo
   description: |
     kubectl venom-doctor revisa los Pods de un namespace (o de todos) y explica en lenguaje claro por qué fallan
-    y cómo arreglarlo: CrashLoopBackOff, OOMKilled, ImagePullBackOff, Pending, probes fallando y PDB que
-    bloquean drains. Con -A revisa además nodos NotReady y Karpenter (NodePools y NodeClaims). Es de solo lectura.
+    y cómo arreglarlo: CrashLoopBackOff, OOMKilled, ImagePullBackOff, Pending, probes fallando, PDB que
+    bloquean drains e IRSA mal cableado. Con -A revisa además nodos NotReady y Karpenter (NodePools y NodeClaims).
+    Es de solo lectura.
     La explicación con IA (--explain, Amazon Bedrock) es opcional y está desactivada por defecto.
   platforms:
     - selector:
