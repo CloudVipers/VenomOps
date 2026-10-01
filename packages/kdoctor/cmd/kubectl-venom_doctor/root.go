@@ -35,17 +35,17 @@ func newRootCmd(stdout, stderr io.Writer) *cobra.Command {
 	var o options
 
 	cmd := &cobra.Command{
-		Use:   "kubectl-venom",
+		Use:   "kubectl-venom_doctor",
 		Short: "Explica por qué algo está roto en tu clúster y cómo arreglarlo (solo lectura)",
-		Long: `kubectl venom revisa los Pods de un namespace (o de todos) y explica en lenguaje claro
+		Long: `kubectl venom-doctor revisa los Pods de un namespace (o de todos) y explica en lenguaje claro
 por qué están fallando y cómo arreglarlo: CrashLoopBackOff, OOMKilled, ImagePullBackOff y Pending.
 
 Es de solo lectura: nunca modifica el clúster. La explicación con IA (--explain) es opcional,
 está desactivada por defecto y solo envía el hallazgo con los secretos ya enmascarados.`,
-		Example: `  kubectl venom                       # namespace actual
-  kubectl venom -n payments           # un namespace
-  kubectl venom -A -o json            # todos los namespaces, salida JSON (findings-schema)
-  kubectl venom --explain --explain-model <modelId>`,
+		Example: `  kubectl venom-doctor                       # namespace actual
+  kubectl venom-doctor -n payments           # un namespace
+  kubectl venom-doctor -A -o json            # todos los namespaces, salida JSON (findings-schema)
+  kubectl venom-doctor --explain --explain-model <modelId>`,
 		Version:       version,
 		SilenceUsage:  true,
 		SilenceErrors: true,
@@ -58,7 +58,7 @@ está desactivada por defecto y solo envía el hallazgo con los secretos ya enma
 			if err != nil {
 				return fmt.Errorf("load kubeconfig: %w", err)
 			}
-			restConfig.UserAgent = "kubectl-venom/" + version
+			restConfig.UserAgent = "kubectl-venom_doctor/" + version
 			cs, err := kubernetes.NewForConfig(restConfig)
 			if err != nil {
 				return fmt.Errorf("create kubernetes client: %w", err)

@@ -7,7 +7,7 @@ Cada manifiesto provoca a propósito uno de los escenarios del MVP. **Aplícalos
 export KUBECONFIG=/tmp/kdoctor-kind.kubeconfig
 kind create cluster --name kdoctor-test --kubeconfig "$KUBECONFIG"
 kubectl apply -f examples/k8s/
-kubectl venom -n kdoctor-demo          # o: go run ./cmd/kubectl-venom -n kdoctor-demo
+kubectl venom-doctor -n kdoctor-demo          # o: go run ./cmd/kubectl-venom_doctor -n kdoctor-demo
 kind delete cluster --name kdoctor-test --kubeconfig "$KUBECONFIG"
 ```
 

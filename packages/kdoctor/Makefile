@@ -1,5 +1,5 @@
 # kdoctor — lint / test / build.
-BIN := bin/kubectl-venom
+BIN := bin/kubectl-venom_doctor
 VERSION ?= dev
 
 .PHONY: lint test build snapshot
@@ -13,7 +13,7 @@ test:
 	go test -race -cover ./...
 
 build:
-	go build -ldflags "-X main.version=$(VERSION)" -o $(BIN) ./cmd/kubectl-venom
+	go build -ldflags "-X main.version=$(VERSION)" -o $(BIN) ./cmd/kubectl-venom_doctor
 
 # Compila los binarios de release sin publicar nada (requiere goreleaser).
 snapshot:

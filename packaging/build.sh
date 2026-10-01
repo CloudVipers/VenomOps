@@ -18,9 +18,9 @@ echo "==> venom (PyInstaller, Rocky Linux 9 container (glibc 2.34))"
 docker run --rm --platform "$DOCKER_PLATFORM" -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" -v "$ROOT":/src:ro -v "$STAGE":/out \
   rockylinux:9 bash /src/packaging/build-in-container.sh
 
-echo "==> kubectl-venom (static Go binary)"
+echo "==> kubectl-venom_doctor (static Go binary)"
 (cd "$ROOT/packages/kdoctor" && CGO_ENABLED=0 GOOS=linux GOARCH=$GOARCH go build -trimpath \
-  -ldflags "-s -w -X main.version=$VERSION" -o "$STAGE/kubectl-venom" ./cmd/kubectl-venom)
+  -ldflags "-s -w -X main.version=$VERSION" -o "$STAGE/kubectl-venom_doctor" ./cmd/kubectl-venom_doctor)
 
 echo "==> rpm + deb (nfpm)"
 # nfpm does not expand variables in `src`, so resolve the template first.
