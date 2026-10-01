@@ -1,6 +1,6 @@
 # kdoctor
 
-Plugin de `kubectl` (`kubectl doctor`) que explica **en lenguaje claro por qué algo está roto** en un clúster
+Plugin de `kubectl` (`kubectl venom`) que explica **en lenguaje claro por qué algo está roto** en un clúster
 de Kubernetes/EKS y **cómo arreglarlo**. Es de **solo lectura**: nunca modifica el clúster.
 
 Produce *findings* en el formato común de [`findings-schema`](../findings-schema), que luego puede corregir
@@ -23,8 +23,8 @@ Todavía no hay release público. Por ahora, desde el monorepo (Go 1.26+):
 
 ```bash
 cd packages/kdoctor
-make build                      # deja el binario en bin/kubectl-doctor
-sudo install bin/kubectl-doctor /usr/local/bin/   # kubectl lo detecta como `kubectl doctor`
+make build                      # deja el binario en bin/kubectl-venom
+sudo install bin/kubectl-venom /usr/local/bin/   # kubectl lo detecta como `kubectl venom`
 ```
 
 La distribución por [krew](https://krew.sigs.k8s.io/) está preparada en [`kdoctor.yaml`](kdoctor.yaml) y se
@@ -34,10 +34,10 @@ generan con GoReleaser (`make snapshot` los construye sin publicar nada).
 ## Uso
 
 ```bash
-kubectl doctor                     # namespace del contexto actual
-kubectl doctor -n payments         # un namespace
-kubectl doctor -A                  # todos los namespaces
-kubectl doctor -A -o json          # salida JSON (array de findings válido contra findings-schema)
+kubectl venom                     # namespace del contexto actual
+kubectl venom -n payments         # un namespace
+kubectl venom -A                  # todos los namespaces
+kubectl venom -A -o json          # salida JSON (array de findings válido contra findings-schema)
 ```
 
 Acepta los flags habituales de kubectl (`--kubeconfig`, `--context`, `-n`, ...).
@@ -77,7 +77,7 @@ Los findings de OOMKilled (`KD-K8S-002`) traen una evidencia **parseable** `memo
 declara el workload:
 
 ```bash
-kubectl doctor -n payments -o json | pr-agent fix --finding - --supported --repo ./infra --dry-run
+kubectl venom -n payments -o json | pr-agent fix --finding - --supported --repo ./infra --dry-run
 ```
 
 `--supported` elige, del array, el único finding que tiene arreglo automático. El formato de la evidencia es un contrato
@@ -90,7 +90,7 @@ una explicación ampliada, que aparece como evidencia de tipo `ai-explanation`:
 
 ```bash
 export KDOCTOR_BEDROCK_MODEL=<modelId>      # o: --explain-model <modelId>
-kubectl doctor -n payments --explain
+kubectl venom -n payments --explain
 ```
 
 - **Sin flag no se hace ninguna llamada de IA.** Con el flag pero sin modelo o sin credenciales de AWS, se
@@ -119,7 +119,7 @@ make build
 make snapshot # GoReleaser en modo snapshot (requiere goreleaser)
 ```
 
-Estructura: `cmd/kubectl-doctor` (CLI), `internal/engine` (motor de reglas concurrente),
+Estructura: `cmd/kubectl-venom` (CLI), `internal/engine` (motor de reglas concurrente),
 `internal/cluster` (lector de solo lectura sobre `client-go`), `internal/rules` (una regla por archivo),
 `internal/output` (tabla y JSON), `internal/explain` (Bedrock opcional) e `internal/redact` (enmascarado de
 secretos). Las reglas se prueban con `fake.Clientset`.
@@ -133,7 +133,7 @@ ejemplo en un clúster real.**
 export KUBECONFIG=/tmp/kdoctor-kind.kubeconfig
 kind create cluster --name kdoctor-test --kubeconfig "$KUBECONFIG"
 kubectl apply -f ../../examples/k8s/
-sleep 90 && ./bin/kubectl-doctor -n kdoctor-demo
+sleep 90 && ./bin/kubectl-venom -n kdoctor-demo
 kind delete cluster --name kdoctor-test --kubeconfig "$KUBECONFIG"
 ```
 

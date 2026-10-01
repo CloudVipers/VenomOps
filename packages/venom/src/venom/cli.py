@@ -2,7 +2,7 @@
 
 ``review`` and ``fix`` are the very same commands as ``arch-committee review`` and ``pr-agent fix`` (registered, not
 copied), so options, safety rules and tests are not duplicated. ``doctor`` hands the arguments untouched to the
-``kubectl-doctor`` binary (Go), which stays the krew plugin ``kubectl doctor``.
+``kubectl-venom`` binary (Go), which stays the krew plugin ``kubectl venom``.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from pr_agent.cli import fix as _fix
 
 from . import __version__
 
-DOCTOR_BINARY = "kubectl-doctor"
+DOCTOR_BINARY = "kubectl-venom"
 
 app = typer.Typer(
     add_completion=False,
@@ -49,13 +49,13 @@ app.command("fix", help="Turn a finding into a PR with the minimal Terraform fix
 @app.command(
     "doctor",
     context_settings={"allow_extra_args": True, "ignore_unknown_options": True, "help_option_names": []},
-    help="Explain why something is broken in a cluster (runs `kubectl-doctor`; pass its flags, e.g. -n NS -o json).",
+    help="Explain why something is broken in a cluster (runs `kubectl-venom`; pass its flags, e.g. -n NS -o json).",
 )
 def doctor(ctx: typer.Context) -> None:
     binary = shutil.which(DOCTOR_BINARY)
     if binary is None:
         typer.secho(
-            f"Error: `{DOCTOR_BINARY}` is not on PATH (install kdoctor, e.g. `kubectl krew install doctor`).",
+            f"Error: `{DOCTOR_BINARY}` is not on PATH (install kdoctor, e.g. `kubectl krew install venom`).",
             fg="red",
             err=True,
         )

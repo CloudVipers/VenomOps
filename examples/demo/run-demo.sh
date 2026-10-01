@@ -47,7 +47,7 @@ PR_AGENT="$ROOT/packages/pr-agent/.venv/bin/pr-agent"
 COMMITTEE="$ROOT/packages/arch-committee/.venv/bin/arch-committee"
 
 say "2/6 Compilando kdoctor"
-(cd "$ROOT/packages/kdoctor" && go build -o "$WORKDIR/kubectl-doctor" ./cmd/kubectl-doctor)
+(cd "$ROOT/packages/kdoctor" && go build -o "$WORKDIR/kubectl-venom" ./cmd/kubectl-venom)
 
 say "3/6 Levantando un clúster kind local ($CLUSTER) y rompiendo 4 cosas a propósito"
 kind create cluster --name "$CLUSTER" --kubeconfig "$KUBECONFIG" --wait 120s >/dev/null
@@ -67,12 +67,12 @@ ready || die "los Pods no llegaron al estado esperado a tiempo"
 kubectl get pods -n kdoctor-demo
 
 say "4/6 kdoctor: diagnóstico (solo lectura)"
-"$WORKDIR/kubectl-doctor" -n kdoctor-demo
-"$WORKDIR/kubectl-doctor" -n kdoctor-demo -o json > "$WORKDIR/kdoctor.json"
+"$WORKDIR/kubectl-venom" -n kdoctor-demo
+"$WORKDIR/kubectl-venom" -n kdoctor-demo -o json > "$WORKDIR/kdoctor.json"
 [ -z "${DEMO_SAVE_FINDINGS:-}" ] || { cp "$WORKDIR/kdoctor.json" "$DEMO_SAVE_FINDINGS"; echo "Guardado en $DEMO_SAVE_FINDINGS"; }
 
 say "5/6 pr-agent: kdoctor -o json | pr-agent fix --dry-run  (elige el único finding con arreglo)"
-# Con `kubectl doctor -n ... -o json | pr-agent fix --finding - ...` el resultado es el mismo; aquí se usa el archivo.
+# Con `kubectl venom -n ... -o json | pr-agent fix --finding - ...` el resultado es el mismo; aquí se usa el archivo.
 "$PR_AGENT" fix --finding "$WORKDIR/kdoctor.json" --supported \
   --repo "$ROOT/examples/terraform/k8s-oom-demo" --dry-run
 

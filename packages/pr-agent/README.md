@@ -54,7 +54,7 @@ El finding puede ser un archivo, un **array** (la salida de `kdoctor -o json`; e
 `--index` o `--supported` (el único con arreglo automático):
 
 ```bash
-kubectl doctor -n kdoctor-demo -o json | pr-agent fix --finding - --supported \
+kubectl venom -n kdoctor-demo -o json | pr-agent fix --finding - --supported \
     --repo ../../examples/terraform/k8s-oom-demo --dry-run
 ```
 
