@@ -25,6 +25,7 @@ func Default(namespace string) []engine.Rule {
 		OOMKilled{Namespace: namespace},
 		ImagePullBackOff{Namespace: namespace},
 		Pending{Namespace: namespace},
+		ProbeFailures{Namespace: namespace},
 	}
 }
 
