@@ -9,6 +9,7 @@ import (
 	"reflect"
 
 	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -27,6 +28,15 @@ func (r *Reader) ListPods(ctx context.Context, namespace string) ([]corev1.Pod, 
 	list, err := r.cs.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("list pods: %w", err)
+	}
+	return list.Items, nil
+}
+
+// ListPDBs implements engine.ClusterReader.
+func (r *Reader) ListPDBs(ctx context.Context, namespace string) ([]policyv1.PodDisruptionBudget, error) {
+	list, err := r.cs.PolicyV1().PodDisruptionBudgets(namespace).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("list poddisruptionbudgets: %w", err)
 	}
 	return list.Items, nil
 }

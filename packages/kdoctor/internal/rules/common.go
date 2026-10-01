@@ -27,6 +27,7 @@ func Default(namespace string) []engine.Rule {
 		ImagePullBackOff{Namespace: namespace},
 		Pending{Namespace: namespace},
 		ProbeFailures{Namespace: namespace},
+		PDBBlocksDrain{Namespace: namespace},
 	}
 	if namespace == "" {
 		rs = append(rs, NodeNotReady{})
