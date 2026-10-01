@@ -1,10 +1,13 @@
 name: Release venom packages
 
-# Builds the .rpm and .deb for x86_64 and arm64 when a tag venom-vX.Y.Z is pushed, and attaches them to a draft release
-# (a human publishes it). Nothing is installed or published automatically.
+# Builds the .rpm and .deb for x86_64 and arm64, installs them in clean containers to prove they work, and:
+#  - on a tag venom-vX.Y.Z: attaches them to a DRAFT release (a human publishes it);
+#  - on a manual run (workflow_dispatch): only uploads them as workflow artifacts, so arm64 can be tested without a release.
+# Nothing is installed or published automatically.
 on:
   push:
     tags: ["venom-v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -13,6 +16,7 @@ jobs:
   packages:
     name: ${{ matrix.arch }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - arch: amd64
@@ -29,17 +33,41 @@ jobs:
           cache-dependency-path: packages/kdoctor/go.sum
 
       - name: Install nfpm
-        run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.43.0
+        run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.47.0
 
       - name: Build packages
         run: |
           export PATH="$PATH:$(go env GOPATH)/bin"
           ./packaging/build.sh
 
+      # The same check done by hand on six distributions: install with the real package manager in a clean container.
+      - name: Install the rpm in clean containers (RHEL family)
+        run: |
+          for image in rockylinux:9 amazonlinux:2023; do
+            echo "== $image"
+            docker run --rm -v "$PWD/packaging/dist":/pk:ro "$image" bash -c \
+              'dnf install -y -q /pk/*.rpm >/dev/null && venom --version && kubectl-venom_doctor --version'
+          done
+
+      - name: Install the deb in clean containers (Debian family)
+        run: |
+          for image in debian:12 ubuntu:24.04; do
+            echo "== $image"
+            docker run --rm -v "$PWD/packaging/dist":/pk:ro "$image" bash -c \
+              'apt-get update -qq >/dev/null && apt-get install -y -qq /pk/*.deb >/dev/null && venom --version && kubectl-venom_doctor --version'
+          done
+
       - name: Checksums
-        run: cd packaging/dist && sha256sum * > checksums-${{ matrix.arch }}.txt
+        run: cd packaging/dist && sha256sum ./*.rpm ./*.deb > checksums-${{ matrix.arch }}.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: venom-packages-${{ matrix.arch }}
+          path: packaging/dist/*
+          retention-days: 7
 
       - name: Attach to a draft release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           draft: true
