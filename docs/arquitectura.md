@@ -86,7 +86,8 @@ Decisiones: [ADR 0002](decisiones/0002-pr-agent-seguridad.md) (seguridad de pr-a
 [ADR 0003](decisiones/0003-orquestacion-arch-committee.md) (orquestación del comité) y
 [ADR 0005](decisiones/0005-modelos-bedrock.md) (modelos de Bedrock) y
 [ADR 0006](decisiones/0006-comando-venom.md) (comando paraguas `venom`) y
-[ADR 0007](decisiones/0007-dependencias-python.md) (dependencias Python).
+[ADR 0007](decisiones/0007-dependencias-python.md) (dependencias Python) y
+[ADR 0008](decisiones/0008-regla-irsa-kdoctor.md) (regla de IRSA de kdoctor, propuesto).
 
 ## Mapa del repositorio
 
