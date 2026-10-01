@@ -49,7 +49,7 @@ app.command("fix", help="Turn a finding into a PR with the minimal Terraform fix
 @app.command(
     "doctor",
     context_settings={"allow_extra_args": True, "ignore_unknown_options": True, "help_option_names": []},
-    help="Explain why something is broken in a cluster (runs `kubectl-venom_doctor`; pass its flags, e.g. -n NS -o json).",
+    help="Explain why something is broken in a cluster (runs `kubectl-venom_doctor`; pass its flags, e.g. -n NS).",
 )
 def doctor(ctx: typer.Context) -> None:
     binary = shutil.which(DOCTOR_BINARY)
