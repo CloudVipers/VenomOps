@@ -331,7 +331,7 @@ func TestDefaultRulesHaveUniqueIDs(t *testing.T) {
 		}
 		seen[r.ID()] = true
 	}
-	if len(seen) != 7 {
-		t.Fatalf("want 7 default rules, got %d", len(seen))
+	if len(seen) != 8 {
+		t.Fatalf("want 8 default rules, got %d", len(seen))
 	}
 }

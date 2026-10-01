@@ -10,14 +10,20 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 )
 
 // Reader is a read-only cluster view. It only issues get/list requests (and log reads).
 type Reader struct {
-	cs kubernetes.Interface
+	cs  kubernetes.Interface
+	dyn dynamic.Interface // optional: only needed to read custom resources (e.g. Karpenter)
 }
 
 // New wraps a clientset (a fake one in tests).
@@ -30,6 +36,27 @@ func (r *Reader) ListPods(ctx context.Context, namespace string) ([]corev1.Pod, 
 		return nil, fmt.Errorf("list pods: %w", err)
 	}
 	return list.Items, nil
+}
+
+// WithDynamic enables reading custom resources. It returns the reader so it can be chained after New.
+func (r *Reader) WithDynamic(d dynamic.Interface) *Reader {
+	r.dyn = d
+	return r
+}
+
+// ListCustomResources implements engine.ClusterReader. A missing CRD (404 / no REST mapping) means "not installed".
+func (r *Reader) ListCustomResources(ctx context.Context, gvr schema.GroupVersionResource) ([]unstructured.Unstructured, bool, error) {
+	if r.dyn == nil {
+		return nil, false, nil
+	}
+	list, err := r.dyn.Resource(gvr).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		if apierrors.IsNotFound(err) || meta.IsNoMatchError(err) {
+			return nil, false, nil
+		}
+		return nil, false, fmt.Errorf("list %s: %w", gvr.Resource, err)
+	}
+	return list.Items, true, nil
 }
 
 // ListPDBs implements engine.ClusterReader.

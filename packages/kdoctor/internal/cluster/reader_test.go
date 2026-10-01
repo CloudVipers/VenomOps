@@ -2,13 +2,20 @@ package cluster_test
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	dynamicfake "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 
 	"github.com/CloudVipers/VenomOps/packages/kdoctor/internal/cluster"
 	"github.com/CloudVipers/VenomOps/packages/kdoctor/internal/engine"
@@ -80,5 +87,49 @@ func TestReaderIsReadOnly(t *testing.T) {
 		if v := a.GetVerb(); v != "get" && v != "list" {
 			t.Fatalf("forbidden verb %q on %s", v, a.GetResource().Resource)
 		}
+	}
+}
+
+func TestReaderCustomResources(t *testing.T) {
+	gvr := schema.GroupVersionResource{Group: "karpenter.sh", Version: "v1", Resource: "nodepools"}
+	pool := &unstructured.Unstructured{Object: map[string]any{
+		"apiVersion": "karpenter.sh/v1", "kind": "NodePool", "metadata": map[string]any{"name": "default"},
+	}}
+	scheme := runtime.NewScheme()
+	dyn := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{gvr: "NodePoolList"}, pool)
+	r := cluster.New(fake.NewSimpleClientset()).WithDynamic(dyn)
+	ctx := context.Background()
+
+	items, installed, err := r.ListCustomResources(ctx, gvr)
+	if err != nil || !installed || len(items) != 1 {
+		t.Fatalf("installed CRD: %v %v %v", items, installed, err)
+	}
+	for _, a := range dyn.Actions() {
+		if v := a.GetVerb(); v != "get" && v != "list" {
+			t.Fatalf("forbidden verb %q reading custom resources", v)
+		}
+	}
+
+	// A CRD the API server does not know (404) means "not installed", not an error.
+	missing := dynamicfake.NewSimpleDynamicClient(scheme)
+	missing.PrependReactor("list", "*", func(k8stesting.Action) (bool, runtime.Object, error) {
+		return true, nil, apierrors.NewNotFound(gvr.GroupResource(), "")
+	})
+	if _, installed, err := cluster.New(fake.NewSimpleClientset()).WithDynamic(missing).ListCustomResources(ctx, gvr); err != nil || installed {
+		t.Fatalf("missing CRD: installed=%v err=%v", installed, err)
+	}
+
+	// Any other failure (for example RBAC) must not be hidden as "not installed".
+	forbidden := dynamicfake.NewSimpleDynamicClient(scheme)
+	forbidden.PrependReactor("list", "*", func(k8stesting.Action) (bool, runtime.Object, error) {
+		return true, nil, apierrors.NewForbidden(gvr.GroupResource(), "", errors.New("no access"))
+	})
+	if _, _, err := cluster.New(fake.NewSimpleClientset()).WithDynamic(forbidden).ListCustomResources(ctx, gvr); err == nil {
+		t.Fatal("a forbidden list must be an error")
+	}
+
+	// Without a dynamic client the reader cannot know: treated as not installed.
+	if _, installed, err := cluster.New(fake.NewSimpleClientset()).ListCustomResources(ctx, gvr); err != nil || installed {
+		t.Fatalf("no dynamic client: installed=%v err=%v", installed, err)
 	}
 }
