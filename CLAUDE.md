@@ -198,7 +198,7 @@ type Rule interface {
 - [x] `.goreleaser.yaml` y manifiesto de krew (`kdoctor.yaml`).
 - [x] CI: `go vet`, `golangci-lint`, `go test -race ./...`.
 
-**Reglas fase 2 (segunda tanda, después del MVP):** ~~probes fallando~~ _(hecho: `KD-K8S-005`)_, IRSA / EKS Pod Identity mal configurado, ~~nodos `NotReady`~~ _(hecho: `KD-K8S-006`)_, ~~PDB que bloquea drains~~ _(hecho: `KD-K8S-007`)_, ~~Karpenter sin capacidad~~ _(hecho: `KD-K8S-008`)_.
+**Reglas fase 2 (segunda tanda, después del MVP):** ~~probes fallando~~ _(hecho: `KD-K8S-005`)_, ~~IRSA / EKS Pod Identity mal configurado~~ _(hecho para IRSA: `KD-K8S-009`; Pod Identity queda fuera, ver [ADR 0008](docs/decisiones/0008-regla-irsa-kdoctor.md))_, ~~nodos `NotReady`~~ _(hecho: `KD-K8S-006`)_, ~~PDB que bloquea drains~~ _(hecho: `KD-K8S-007`)_, ~~Karpenter sin capacidad~~ _(hecho: `KD-K8S-008`)_.
 
 **DoD:** `kubectl venom-doctor` detecta correctamente los 4 escenarios sobre los manifiestos de ejemplo en kind; cobertura de reglas >80%; binario compilado por GoReleaser en modo snapshot.
 

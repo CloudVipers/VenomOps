@@ -165,7 +165,7 @@ func (r NodeNotReady) Check(ctx context.Context, cluster engine.ClusterReader) (
 				ev = append(ev, findings.Evidence{Kind: "kubelet-message", Detail: redact.String(truncate(ready.Message, 300))})
 			}
 			if counts != nil {
-				ev = append(ev, findings.Evidence{Kind: "pods-on-node", Detail: fmt.Sprintf("%d Pods programados en este nodo", counts[node.Name])})
+				ev = append(ev, findings.Evidence{Kind: "pods-on-node", Detail: podCount(counts[node.Name]) + " programado(s) en este nodo"})
 			}
 			tags := []string{"node", "not-ready", tag}
 			for _, pc := range pressureConditions {

@@ -28,6 +28,7 @@ func Default(namespace string) []engine.Rule {
 		Pending{Namespace: namespace},
 		ProbeFailures{Namespace: namespace},
 		PDBBlocksDrain{Namespace: namespace},
+		IRSAConsistency{Namespace: namespace},
 	}
 	if namespace == "" {
 		rs = append(rs, NodeNotReady{}, KarpenterCapacity{})
@@ -132,3 +133,11 @@ func uniq(in []string) []string {
 }
 
 func podLabel(pod *corev1.Pod) string { return fmt.Sprintf("%s/%s", pod.Namespace, pod.Name) }
+
+// podCount renders "1 Pod" / "N Pods".
+func podCount(n int) string {
+	if n == 1 {
+		return "1 Pod"
+	}
+	return fmt.Sprintf("%d Pods", n)
+}
