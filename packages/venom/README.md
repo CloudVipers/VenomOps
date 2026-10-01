@@ -25,7 +25,7 @@ y nunca se ejecuta `terraform apply` ni nada que modifique infraestructura. Deci
 Ubuntu 22.04+; instalan `venom` y `kubectl-venom_doctor`. Ver [`packaging/`](../../packaging/README.md).
 
 ```bash
-sudo dnf install https://github.com/CloudVipers/VenomOps/releases/download/venom-v0.1.2/venom-0.1.2-1.x86_64.rpm
+sudo dnf install https://github.com/CloudVipers/VenomOps/releases/download/venom-v0.1.3/venom-0.1.3-1.x86_64.rpm
 ```
 
 **Desde el monorepo (desarrollo):**

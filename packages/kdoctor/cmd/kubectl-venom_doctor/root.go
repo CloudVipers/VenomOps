@@ -39,7 +39,9 @@ func newRootCmd(stdout, stderr io.Writer) *cobra.Command {
 		Use:   "kubectl-venom_doctor",
 		Short: "Explica por qué algo está roto en tu clúster y cómo arreglarlo (solo lectura)",
 		Long: `kubectl venom-doctor revisa los Pods de un namespace (o de todos) y explica en lenguaje claro
-por qué están fallando y cómo arreglarlo: CrashLoopBackOff, OOMKilled, ImagePullBackOff y Pending.
+por qué están fallando y cómo arreglarlo: CrashLoopBackOff, OOMKilled, ImagePullBackOff, Pending,
+probes fallando y PDB que bloquean drains. Con -A revisa además los nodos NotReady y, si está
+instalado, Karpenter (NodePools y NodeClaims).
 
 Es de solo lectura: nunca modifica el clúster. La explicación con IA (--explain) es opcional,
 está desactivada por defecto y solo envía el hallazgo con los secretos ya enmascarados.`,
