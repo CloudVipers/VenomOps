@@ -18,3 +18,13 @@ kind delete cluster --name kdoctor-test --kubeconfig "$KUBECONFIG"
 | `30-imagepullbackoff.yaml` | KD-K8S-003 | Imagen o tag inexistente |
 | `40-pending.yaml` | KD-K8S-004 | Sin CPU suficiente y PVC inexistente |
 | `50-probes.yaml` | KD-K8S-005 | Readiness con `connection refused` y liveness con 404 que reinicia el contenedor |
+
+## Nodo NotReady (KD-K8S-006)
+
+No hay manifiesto: un nodo no se rompe con YAML. Con un clúster kind de dos nodos (`role: worker`) se provoca parando
+el contenedor del worker y esperando ~40 s a que el control plane lo marque:
+
+```bash
+docker stop <cluster>-worker
+kubectl venom-doctor -A    # la regla de nodos solo corre con -A
+```

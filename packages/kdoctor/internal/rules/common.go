@@ -18,15 +18,20 @@ const schemaVersion = "1.0.0"
 // now is replaceable in tests.
 var now = func() time.Time { return time.Now().UTC() }
 
-// Default returns the MVP rule set scoped to a namespace ("" = all namespaces).
+// Default returns the rule set scoped to a namespace ("" = all namespaces). Nodes are cluster-scoped, so the node rule
+// only runs for a cluster-wide diagnosis: asking about one namespace should not need permission to list nodes.
 func Default(namespace string) []engine.Rule {
-	return []engine.Rule{
+	rs := []engine.Rule{
 		CrashLoopBackOff{Namespace: namespace},
 		OOMKilled{Namespace: namespace},
 		ImagePullBackOff{Namespace: namespace},
 		Pending{Namespace: namespace},
 		ProbeFailures{Namespace: namespace},
 	}
+	if namespace == "" {
+		rs = append(rs, NodeNotReady{})
+	}
+	return rs
 }
 
 // containerStatusEntry pairs a status with its kind so init containers are reported correctly.
@@ -90,13 +95,19 @@ func logTail(logs string, n int) string {
 
 func newFinding(id string, sev findings.Severity, title string, pod *corev1.Pod, ev []findings.Evidence,
 	rootCause string, fix findings.SuggestedFix, risk findings.Risk, refs, tags []string) findings.Finding {
+	res := findings.Resource{Type: "Pod", Name: pod.Name, Namespace: pod.Namespace}
+	return newFindingFor(id, sev, title, res, ev, rootCause, fix, risk, refs, tags)
+}
+
+func newFindingFor(id string, sev findings.Severity, title string, res findings.Resource, ev []findings.Evidence,
+	rootCause string, fix findings.SuggestedFix, risk findings.Risk, refs, tags []string) findings.Finding {
 	return findings.Finding{
 		ID:            id,
 		SchemaVersion: schemaVersion,
 		Source:        findings.SourceKDoctor,
 		Severity:      sev,
 		Title:         title,
-		Resource:      findings.Resource{Type: "Pod", Name: pod.Name, Namespace: pod.Namespace},
+		Resource:      res,
 		Evidence:      ev,
 		RootCause:     rootCause,
 		SuggestedFix:  fix,

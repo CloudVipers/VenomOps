@@ -55,9 +55,13 @@ func TestReaderIsReadOnly(t *testing.T) {
 	cs := fake.NewSimpleClientset(
 		&corev1.Pod{ObjectMeta: metav1.ObjectMeta{Namespace: "a", Name: "p1"}},
 		&corev1.PersistentVolumeClaim{ObjectMeta: metav1.ObjectMeta{Namespace: "a", Name: "data"}},
+		&corev1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n1"}},
 	)
 	r := cluster.New(cs)
 	ctx := context.Background()
+	if nodes, err := r.ListNodes(ctx); err != nil || len(nodes) != 1 {
+		t.Fatalf("nodes: %v %v", nodes, err)
+	}
 	_, _ = r.ListPods(ctx, "a")
 	_, _ = r.PodLogs(ctx, "a", "p1", "app", false, 5)
 	_, _ = r.PodEvents(ctx, "a", "p1")

@@ -31,6 +31,15 @@ func (r *Reader) ListPods(ctx context.Context, namespace string) ([]corev1.Pod, 
 	return list.Items, nil
 }
 
+// ListNodes implements engine.ClusterReader.
+func (r *Reader) ListNodes(ctx context.Context) ([]corev1.Node, error) {
+	list, err := r.cs.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("list nodes: %w", err)
+	}
+	return list.Items, nil
+}
+
 // PodLogs implements engine.ClusterReader.
 func (r *Reader) PodLogs(ctx context.Context, namespace, pod, container string, previous bool, tailLines int64) (string, error) {
 	opts := &corev1.PodLogOptions{Container: container, Previous: previous, TailLines: &tailLines}
