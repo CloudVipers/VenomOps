@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/CloudVipers/VenomOps/packages/kdoctor/internal/cluster"
@@ -63,6 +64,10 @@ está desactivada por defecto y solo envía el hallazgo con los secretos ya enma
 			if err != nil {
 				return fmt.Errorf("create kubernetes client: %w", err)
 			}
+			dyn, err := dynamic.NewForConfig(restConfig)
+			if err != nil {
+				return fmt.Errorf("create dynamic client: %w", err)
+			}
 
 			ns := ""
 			if !o.allNamespaces {
@@ -77,7 +82,7 @@ está desactivada por defecto y solo envía el hallazgo con los secretos ya enma
 			if o.explain {
 				explainer = buildExplainer(cmd.Context(), o, stderr)
 			}
-			return run(cmd.Context(), o, cluster.New(cs), explainer, stdout, stderr)
+			return run(cmd.Context(), o, cluster.New(cs).WithDynamic(dyn), explainer, stdout, stderr)
 		},
 	}
 

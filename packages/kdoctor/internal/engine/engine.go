@@ -9,6 +9,8 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	findings "github.com/CloudVipers/VenomOps/packages/findings-schema/go"
 )
@@ -26,6 +28,9 @@ type ClusterReader interface {
 	GetPVC(ctx context.Context, namespace, name string) (*corev1.PersistentVolumeClaim, error)
 	// ListPDBs lists PodDisruptionBudgets in a namespace; an empty namespace means all namespaces.
 	ListPDBs(ctx context.Context, namespace string) ([]policyv1.PodDisruptionBudget, error)
+	// ListCustomResources lists a cluster-scoped custom resource. installed is false when the CRD does not exist
+	// (or no dynamic client is configured), which is not an error: the product simply is not in this cluster.
+	ListCustomResources(ctx context.Context, gvr schema.GroupVersionResource) (items []unstructured.Unstructured, installed bool, err error)
 	// ListNodes lists the cluster's nodes (cluster-scoped).
 	ListNodes(ctx context.Context) ([]corev1.Node, error)
 	// PodMemoryUsage returns the current memory usage in bytes per container from the metrics API.

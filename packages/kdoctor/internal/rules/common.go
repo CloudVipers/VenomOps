@@ -18,8 +18,8 @@ const schemaVersion = "1.0.0"
 // now is replaceable in tests.
 var now = func() time.Time { return time.Now().UTC() }
 
-// Default returns the rule set scoped to a namespace ("" = all namespaces). Nodes are cluster-scoped, so the node rule
-// only runs for a cluster-wide diagnosis: asking about one namespace should not need permission to list nodes.
+// Default returns the rule set scoped to a namespace ("" = all namespaces). Nodes and Karpenter objects are cluster-scoped, so those rules
+// only run for a cluster-wide diagnosis: asking about one namespace should not need permission to list nodes.
 func Default(namespace string) []engine.Rule {
 	rs := []engine.Rule{
 		CrashLoopBackOff{Namespace: namespace},
@@ -30,7 +30,7 @@ func Default(namespace string) []engine.Rule {
 		PDBBlocksDrain{Namespace: namespace},
 	}
 	if namespace == "" {
-		rs = append(rs, NodeNotReady{})
+		rs = append(rs, NodeNotReady{}, KarpenterCapacity{})
 	}
 	return rs
 }
