@@ -18,6 +18,7 @@ kind delete cluster --name kdoctor-test --kubeconfig "$KUBECONFIG"
 | `30-imagepullbackoff.yaml` | KD-K8S-003 | Imagen o tag inexistente |
 | `40-pending.yaml` | KD-K8S-004 | Sin CPU suficiente y PVC inexistente |
 | `50-probes.yaml` | KD-K8S-005 | Readiness con `connection refused` y liveness con 404 que reinicia el contenedor |
+| `60-pdb.yaml` | KD-K8S-007 | Cuatro PDB que estorban a un drain: réplica única, Pods no sanos, `minAvailable` mayor que las réplicas y selector huérfano |
 
 ## Nodo NotReady (KD-K8S-006)
 

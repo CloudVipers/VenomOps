@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 
 	findings "github.com/CloudVipers/VenomOps/packages/findings-schema/go"
 )
@@ -23,6 +24,8 @@ type ClusterReader interface {
 	PodEvents(ctx context.Context, namespace, pod string) ([]corev1.Event, error)
 	// GetPVC returns a PersistentVolumeClaim.
 	GetPVC(ctx context.Context, namespace, name string) (*corev1.PersistentVolumeClaim, error)
+	// ListPDBs lists PodDisruptionBudgets in a namespace; an empty namespace means all namespaces.
+	ListPDBs(ctx context.Context, namespace string) ([]policyv1.PodDisruptionBudget, error)
 	// ListNodes lists the cluster's nodes (cluster-scoped).
 	ListNodes(ctx context.Context) ([]corev1.Node, error)
 	// PodMemoryUsage returns the current memory usage in bytes per container from the metrics API.

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 
@@ -56,11 +57,15 @@ func TestReaderIsReadOnly(t *testing.T) {
 		&corev1.Pod{ObjectMeta: metav1.ObjectMeta{Namespace: "a", Name: "p1"}},
 		&corev1.PersistentVolumeClaim{ObjectMeta: metav1.ObjectMeta{Namespace: "a", Name: "data"}},
 		&corev1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n1"}},
+		&policyv1.PodDisruptionBudget{ObjectMeta: metav1.ObjectMeta{Namespace: "a", Name: "pdb"}},
 	)
 	r := cluster.New(cs)
 	ctx := context.Background()
 	if nodes, err := r.ListNodes(ctx); err != nil || len(nodes) != 1 {
 		t.Fatalf("nodes: %v %v", nodes, err)
+	}
+	if pdbs, err := r.ListPDBs(ctx, "a"); err != nil || len(pdbs) != 1 {
+		t.Fatalf("pdbs: %v %v", pdbs, err)
 	}
 	_, _ = r.ListPods(ctx, "a")
 	_, _ = r.PodLogs(ctx, "a", "p1", "app", false, 5)

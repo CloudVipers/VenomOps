@@ -16,6 +16,7 @@ Produce *findings* en el formato común de [`findings-schema`](../findings-schem
 | `KD-K8S-004` | Pending | Eventos del scheduler: recursos insuficientes, taints, selectores y PVC sin bind o inexistentes |
 | `KD-K8S-005` | Probes fallando | Liveness/readiness/startup con eventos `Unhealthy` confirmados por el estado actual del contenedor; distingue puerto/ruta incorrectos, timeouts, 5xx y comandos fallidos, e incluye la configuración de la probe |
 | `KD-K8S-006` | Nodos `NotReady` | Nodos que no están Ready (kubelet detenido, CNI, PLEG, runtime) y nodos Ready con presión de memoria, disco o PIDs; indica cuántos Pods se ven afectados. **Solo se ejecuta con `-A`** (los nodos son de todo el clúster y un namespace no debería requerir permiso para listarlos) |
+| `KD-K8S-007` | PDB que bloquea drains | PodDisruptionBudgets sin disrupciones permitidas (workload sano pero sin margen, Pods no sanos o `minAvailable` mayor que las réplicas) y selectores que no coinciden con nada; ignora los PDB que el controlador aún no procesó |
 
 Un contenedor terminado por OOM se reporta solo con `KD-K8S-002` (que trae la corrección), no dos veces.
 
