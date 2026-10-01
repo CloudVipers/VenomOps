@@ -1,0 +1,33 @@
+# KD-K8S-005: dos Pods con probes que fallan por distintas causas.
+# - probe-readiness: la app escucha en el 8080 pero la readiness mira el 9999 (connection refused): Running pero sin Ready.
+# - probe-liveness: la liveness pide una ruta que no existe (404): el kubelet reinicia el contenedor una y otra vez.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: probe-readiness
+  namespace: kdoctor-demo
+spec:
+  containers:
+    - name: app
+      image: busybox:1.36
+      command: ["sh", "-c", "httpd -f -p 8080 -h /tmp"]
+      readinessProbe:
+        httpGet: {path: /, port: 9999}
+        periodSeconds: 3
+        failureThreshold: 1
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: probe-liveness
+  namespace: kdoctor-demo
+spec:
+  containers:
+    - name: app
+      image: busybox:1.36
+      command: ["sh", "-c", "httpd -f -p 8080 -h /tmp"]
+      livenessProbe:
+        httpGet: {path: /no-existe, port: 8080}
+        initialDelaySeconds: 2
+        periodSeconds: 3
+        failureThreshold: 1

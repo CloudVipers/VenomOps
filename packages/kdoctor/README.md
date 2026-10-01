@@ -14,6 +14,7 @@ Produce *findings* en el formato común de [`findings-schema`](../findings-schem
 | `KD-K8S-002` | OOMKilled | Compara `limits.memory` con el uso (si hay metrics-server) y sugiere un nuevo valor |
 | `KD-K8S-003` | ImagePullBackOff | Distingue imagen/tag inexistente, credenciales, *rate limit* y problemas de red |
 | `KD-K8S-004` | Pending | Eventos del scheduler: recursos insuficientes, taints, selectores y PVC sin bind o inexistentes |
+| `KD-K8S-005` | Probes fallando | Liveness/readiness/startup con eventos `Unhealthy` confirmados por el estado actual del contenedor; distingue puerto/ruta incorrectos, timeouts, 5xx y comandos fallidos, e incluye la configuración de la probe |
 
 Un contenedor terminado por OOM se reporta solo con `KD-K8S-002` (que trae la corrección), no dos veces.
 

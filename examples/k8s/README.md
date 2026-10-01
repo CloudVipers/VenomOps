@@ -17,3 +17,4 @@ kind delete cluster --name kdoctor-test --kubeconfig "$KUBECONFIG"
 | `20-oomkilled.yaml` | KD-K8S-002 | OOMKilled con `limits.memory=32Mi` y un nuevo valor sugerido |
 | `30-imagepullbackoff.yaml` | KD-K8S-003 | Imagen o tag inexistente |
 | `40-pending.yaml` | KD-K8S-004 | Sin CPU suficiente y PVC inexistente |
+| `50-probes.yaml` | KD-K8S-005 | Readiness con `connection refused` y liveness con 404 que reinicia el contenedor |

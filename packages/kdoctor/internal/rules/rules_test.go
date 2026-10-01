@@ -331,7 +331,7 @@ func TestDefaultRulesHaveUniqueIDs(t *testing.T) {
 		}
 		seen[r.ID()] = true
 	}
-	if len(seen) != 4 {
-		t.Fatalf("want 4 MVP rules, got %d", len(seen))
+	if len(seen) != 5 {
+		t.Fatalf("want 5 default rules, got %d", len(seen))
 	}
 }
