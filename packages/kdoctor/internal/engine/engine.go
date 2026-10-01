@@ -23,6 +23,8 @@ type ClusterReader interface {
 	PodEvents(ctx context.Context, namespace, pod string) ([]corev1.Event, error)
 	// GetPVC returns a PersistentVolumeClaim.
 	GetPVC(ctx context.Context, namespace, name string) (*corev1.PersistentVolumeClaim, error)
+	// ListNodes lists the cluster's nodes (cluster-scoped).
+	ListNodes(ctx context.Context) ([]corev1.Node, error)
 	// PodMemoryUsage returns the current memory usage in bytes per container from the metrics API.
 	// ok is false when metrics-server is not available (not an error).
 	PodMemoryUsage(ctx context.Context, namespace, pod string) (usage map[string]int64, ok bool, err error)
