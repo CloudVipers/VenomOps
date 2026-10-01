@@ -65,11 +65,15 @@ func TestReaderIsReadOnly(t *testing.T) {
 		&corev1.PersistentVolumeClaim{ObjectMeta: metav1.ObjectMeta{Namespace: "a", Name: "data"}},
 		&corev1.Node{ObjectMeta: metav1.ObjectMeta{Name: "n1"}},
 		&policyv1.PodDisruptionBudget{ObjectMeta: metav1.ObjectMeta{Namespace: "a", Name: "pdb"}},
+		&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Namespace: "a", Name: "sa"}},
 	)
 	r := cluster.New(cs)
 	ctx := context.Background()
 	if nodes, err := r.ListNodes(ctx); err != nil || len(nodes) != 1 {
 		t.Fatalf("nodes: %v %v", nodes, err)
+	}
+	if sas, err := r.ListServiceAccounts(ctx, "a"); err != nil || len(sas) != 1 {
+		t.Fatalf("serviceaccounts: %v %v", sas, err)
 	}
 	if pdbs, err := r.ListPDBs(ctx, "a"); err != nil || len(pdbs) != 1 {
 		t.Fatalf("pdbs: %v %v", pdbs, err)

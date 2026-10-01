@@ -59,6 +59,15 @@ func (r *Reader) ListCustomResources(ctx context.Context, gvr schema.GroupVersio
 	return list.Items, true, nil
 }
 
+// ListServiceAccounts implements engine.ClusterReader.
+func (r *Reader) ListServiceAccounts(ctx context.Context, namespace string) ([]corev1.ServiceAccount, error) {
+	list, err := r.cs.CoreV1().ServiceAccounts(namespace).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("list serviceaccounts: %w", err)
+	}
+	return list.Items, nil
+}
+
 // ListPDBs implements engine.ClusterReader.
 func (r *Reader) ListPDBs(ctx context.Context, namespace string) ([]policyv1.PodDisruptionBudget, error) {
 	list, err := r.cs.PolicyV1().PodDisruptionBudgets(namespace).List(ctx, metav1.ListOptions{})

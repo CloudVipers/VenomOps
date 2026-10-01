@@ -1,6 +1,6 @@
 # ADR 0008 — Regla de kdoctor para IRSA: qué se puede diagnosticar desde el clúster
 
-- **Estado:** propuesto (pendiente de revisión humana)
+- **Estado:** aceptado (alcance confirmado el 2026-10-01)
 - **Fecha:** 2026-10-01
 - **Alcance:** `packages/kdoctor`, regla `KD-K8S-009`. Cierra la última regla de la segunda tanda de `CLAUDE.md`
   («IRSA / EKS Pod Identity mal configurado»).
@@ -57,3 +57,9 @@ política de confianza correcta. Los pasos sugeridos incluyen comprobar esa part
 - No promete detectar `AccessDenied` por una política de confianza o permisos incorrectos: eso queda para el usuario.
 - Validación: en kind se puede reproducir «ServiceAccount anotado y Pods sin inyectar» (kind no tiene el webhook), así
   que esa comprobación sí se probará contra un API server real; la parte con el webhook activo no se puede probar sin EKS.
+
+## Resultado de la validación (2026-10-01)
+
+Probado en kind (sin el webhook de EKS) con un ServiceAccount anotado y tres réplicas sin inyectar, un ServiceAccount con
+ARN `demo-app` y un Pod con un `AWS_ROLE_ARN` de otro rol: las tres comprobaciones salieron como se esperaba, un único
+finding por ServiceAccount y sin ningún ID de cuenta en la salida. **No** se ha probado con el webhook activo en un EKS real.

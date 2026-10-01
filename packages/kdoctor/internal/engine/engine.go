@@ -26,6 +26,8 @@ type ClusterReader interface {
 	PodEvents(ctx context.Context, namespace, pod string) ([]corev1.Event, error)
 	// GetPVC returns a PersistentVolumeClaim.
 	GetPVC(ctx context.Context, namespace, name string) (*corev1.PersistentVolumeClaim, error)
+	// ListServiceAccounts lists ServiceAccounts in a namespace; an empty namespace means all namespaces.
+	ListServiceAccounts(ctx context.Context, namespace string) ([]corev1.ServiceAccount, error)
 	// ListPDBs lists PodDisruptionBudgets in a namespace; an empty namespace means all namespaces.
 	ListPDBs(ctx context.Context, namespace string) ([]policyv1.PodDisruptionBudget, error)
 	// ListCustomResources lists a cluster-scoped custom resource. installed is false when the CRD does not exist
