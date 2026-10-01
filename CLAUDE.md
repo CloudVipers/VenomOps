@@ -325,5 +325,5 @@ arch-committee review --plan ../../examples/plans/public-bucket.json --out ./out
 
 - Orquestación de `arch-committee`: Strands Agents vs. LangGraph. _(Resuelto en el [ADR 0003](docs/decisiones/0003-orquestacion-arch-committee.md): orquestador propio.)_
 - Modelos de Bedrock por defecto para `--explain`, `pr-agent` y `arch-committee`. _(Resuelto en el [ADR 0005](docs/decisiones/0005-modelos-bedrock.md): sin modelo por defecto en el código; se recomienda Haiku 4.5.)_
-- Política de versionado del schema (semver y compatibilidad hacia atrás).
-- Gestión de dependencias Python (`uv` vs. `poetry`).
+- Política de versionado del schema (semver y compatibilidad hacia atrás). _(Resuelto en el [ADR 0001](docs/decisiones/0001-findings-schema.md), sección «Política de versionado».)_
+- Gestión de dependencias Python (`uv` vs. `poetry`). _(Resuelto en el [ADR 0007](docs/decisiones/0007-dependencias-python.md): `pyproject.toml` estándar, `pip` por defecto y `uv` opcional.)_
