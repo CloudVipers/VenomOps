@@ -20,25 +20,25 @@ spec:
     - selector:
         matchLabels: {os: linux, arch: amd64}
       uri: https://github.com/CloudVipers/VenomOps/releases/download/kdoctor-v0.1.2/kdoctor_v0.1.2_linux_amd64.tar.gz
-      sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+      sha256: "17f9a4bb8c9ed118558ec823e56beb558e828e631157ae8b8f75e37ab4494984"
       bin: kubectl-venom_doctor
     - selector:
         matchLabels: {os: linux, arch: arm64}
       uri: https://github.com/CloudVipers/VenomOps/releases/download/kdoctor-v0.1.2/kdoctor_v0.1.2_linux_arm64.tar.gz
-      sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+      sha256: "1ce49ead129de498d0290c273fdd53b98519f14c07676abf2002c1b8af6de2b9"
       bin: kubectl-venom_doctor
     - selector:
         matchLabels: {os: darwin, arch: amd64}
       uri: https://github.com/CloudVipers/VenomOps/releases/download/kdoctor-v0.1.2/kdoctor_v0.1.2_darwin_amd64.tar.gz
-      sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+      sha256: "7f27bb25305089c3b634ad4795844d97a338f7c436d3b40236322b61f8ca21da"
       bin: kubectl-venom_doctor
     - selector:
         matchLabels: {os: darwin, arch: arm64}
       uri: https://github.com/CloudVipers/VenomOps/releases/download/kdoctor-v0.1.2/kdoctor_v0.1.2_darwin_arm64.tar.gz
-      sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+      sha256: "544f1e7992785332663ae8b618da7bab362ce7e2b127a2091a24e80c58937817"
       bin: kubectl-venom_doctor
     - selector:
         matchLabels: {os: windows, arch: amd64}
       uri: https://github.com/CloudVipers/VenomOps/releases/download/kdoctor-v0.1.2/kdoctor_v0.1.2_windows_amd64.zip
-      sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+      sha256: "90d984832899e51a7a844cfc5278d24c31c15040a3b186c610accea775dd1193"
       bin: kubectl-venom_doctor.exe
