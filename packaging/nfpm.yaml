@@ -8,7 +8,7 @@ priority: optional
 maintainer: CloudVipers <noreply@example.com>
 description: |
   VenomOps: diagnose Kubernetes (venom doctor), fix a finding with a Pull Request (venom fix)
-  and review a Terraform plan with a virtual committee (venom review). Also installs kubectl-venom.
+  and review a Terraform plan with a virtual committee (venom review). Also installs kubectl-venom_doctor.
 vendor: CloudVipers
 homepage: https://github.com/CloudVipers/VenomOps
 license: Apache-2.0
@@ -20,8 +20,8 @@ contents:
   - src: /usr/lib/venom/venom
     dst: /usr/bin/venom
     type: symlink
-  - src: ${STAGE}/kubectl-venom
-    dst: /usr/bin/kubectl-venom
+  - src: ${STAGE}/kubectl-venom_doctor
+    dst: /usr/bin/kubectl-venom_doctor
     file_info:
       mode: 0755
   - src: ${ROOT}/LICENSE

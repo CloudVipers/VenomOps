@@ -78,11 +78,11 @@ def test_fix_dry_run_works_end_to_end_on_the_bundled_example(monkeypatch: pytest
 def test_doctor_without_the_binary_explains_how_to_install(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("PATH", "")
     result = runner.invoke(app, ["doctor", "-n", "x"])
-    assert result.exit_code == 2 and "kubectl-venom" in result.output and "krew" in result.output
+    assert result.exit_code == 2 and "kubectl-venom_doctor" in result.output and "krew" in result.output
 
 
 def test_doctor_passes_arguments_and_exit_code_through(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    fake = tmp_path / "kubectl-venom"
+    fake = tmp_path / "kubectl-venom_doctor"
     fake.write_text('#!/bin/sh\necho "args: $*"\nexit 3\n')
     fake.chmod(fake.stat().st_mode | stat.S_IXUSR)
     monkeypatch.setenv("PATH", str(tmp_path))
