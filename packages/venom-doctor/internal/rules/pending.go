@@ -17,7 +17,7 @@ import (
 type Pending struct{ Namespace string }
 
 // ID implements engine.Rule.
-func (Pending) ID() string { return "KD-K8S-004" }
+func (Pending) ID() string { return "VD-K8S-004" }
 
 // Description implements engine.Rule.
 func (Pending) Description() string {

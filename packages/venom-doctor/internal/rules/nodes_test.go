@@ -135,7 +135,7 @@ func TestNodeNotReadyReturnsTheListError(t *testing.T) {
 func TestNodeRuleOnlyRunsClusterWide(t *testing.T) {
 	has := func(rs []engine.Rule) bool {
 		for _, r := range rs {
-			if r.ID() == "KD-K8S-006" {
+			if r.ID() == "VD-K8S-006" {
 				return true
 			}
 		}

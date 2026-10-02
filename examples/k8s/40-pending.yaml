@@ -1,4 +1,4 @@
-# KD-K8S-004: pide más CPU que cualquier nodo de kind y además un PVC inexistente.
+# VD-K8S-004: pide más CPU que cualquier nodo de kind y además un PVC inexistente.
 apiVersion: v1
 kind: Pod
 metadata:

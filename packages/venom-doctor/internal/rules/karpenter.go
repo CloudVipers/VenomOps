@@ -28,7 +28,7 @@ var (
 )
 
 // ID implements engine.Rule.
-func (KarpenterCapacity) ID() string { return "KD-K8S-008" }
+func (KarpenterCapacity) ID() string { return "VD-K8S-008" }
 
 // Description implements engine.Rule.
 func (KarpenterCapacity) Description() string {

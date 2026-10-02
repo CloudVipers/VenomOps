@@ -16,7 +16,7 @@ import (
 type ImagePullBackOff struct{ Namespace string }
 
 // ID implements engine.Rule.
-func (ImagePullBackOff) ID() string { return "KD-K8S-003" }
+func (ImagePullBackOff) ID() string { return "VD-K8S-003" }
 
 // Description implements engine.Rule.
 func (ImagePullBackOff) Description() string {

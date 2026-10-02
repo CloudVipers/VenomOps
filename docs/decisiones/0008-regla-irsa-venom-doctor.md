@@ -2,7 +2,7 @@
 
 - **Estado:** aceptado (alcance confirmado el 2026-10-01)
 - **Fecha:** 2026-10-01
-- **Alcance:** `packages/venom-doctor`, regla `KD-K8S-009`. Cierra la última regla de la segunda tanda de `CLAUDE.md`
+- **Alcance:** `packages/venom-doctor`, regla `VD-K8S-009`. Cierra la última regla de la segunda tanda de `CLAUDE.md`
   («IRSA / EKS Pod Identity mal configurado»).
 
 ## Contexto

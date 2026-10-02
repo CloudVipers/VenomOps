@@ -10,17 +10,17 @@ Produce *findings* en el formato común de [`findings-schema`](../findings-schem
 
 | ID | Regla | Qué explica |
 |---|---|---|
-| `KD-K8S-001` | CrashLoopBackOff | Último exit code (con su significado), líneas finales del log y reinicios |
-| `KD-K8S-002` | OOMKilled | Compara `limits.memory` con el uso (si hay metrics-server) y sugiere un nuevo valor |
-| `KD-K8S-003` | ImagePullBackOff | Distingue imagen/tag inexistente, credenciales, *rate limit* y problemas de red |
-| `KD-K8S-004` | Pending | Eventos del scheduler: recursos insuficientes, taints, selectores y PVC sin bind o inexistentes |
-| `KD-K8S-005` | Probes fallando | Liveness/readiness/startup con eventos `Unhealthy` confirmados por el estado actual del contenedor; distingue puerto/ruta incorrectos, timeouts, 5xx y comandos fallidos, e incluye la configuración de la probe |
-| `KD-K8S-006` | Nodos `NotReady` | Nodos que no están Ready (kubelet detenido, CNI, PLEG, runtime) y nodos Ready con presión de memoria, disco o PIDs; indica cuántos Pods se ven afectados. **Solo se ejecuta con `-A`** (los nodos son de todo el clúster y un namespace no debería requerir permiso para listarlos; con `-n` venom-doctor lo avisa en stderr) |
-| `KD-K8S-007` | PDB que bloquea drains | PodDisruptionBudgets sin disrupciones permitidas (workload sano pero sin margen, Pods no sanos o `minAvailable` mayor que las réplicas) y selectores que no coinciden con nada; ignora los PDB que el controlador aún no procesó |
-| `KD-K8S-008` | Karpenter sin capacidad | NodePools que no están Ready o que alcanzaron `spec.limits`, y NodeClaims atascados en `Launched`, `Registered` o `Initialized`. Muestra el reason y el mensaje que reporta cada objeto, sin interpretarlos. **Solo con `-A`**, necesita permiso de lectura sobre `nodepools` y `nodeclaims` de `karpenter.sh` y no hace nada si Karpenter no está instalado |
-| `KD-K8S-009` | IRSA mal cableado | ServiceAccounts con la anotación `eks.amazonaws.com/role-arn` mal formada, y Pods que no recibieron las variables de IRSA (`AWS_ROLE_ARN`, `AWS_WEB_IDENTITY_TOKEN_FILE`) o llevan un rol desactualizado. Un finding por ServiceAccount; los IDs de cuenta se enmascaran. Comprueba la **consistencia dentro del clúster**, no las políticas de confianza ni los permisos del rol IAM, ni EKS Pod Identity (ver ADR 0008) |
+| `VD-K8S-001` | CrashLoopBackOff | Último exit code (con su significado), líneas finales del log y reinicios |
+| `VD-K8S-002` | OOMKilled | Compara `limits.memory` con el uso (si hay metrics-server) y sugiere un nuevo valor |
+| `VD-K8S-003` | ImagePullBackOff | Distingue imagen/tag inexistente, credenciales, *rate limit* y problemas de red |
+| `VD-K8S-004` | Pending | Eventos del scheduler: recursos insuficientes, taints, selectores y PVC sin bind o inexistentes |
+| `VD-K8S-005` | Probes fallando | Liveness/readiness/startup con eventos `Unhealthy` confirmados por el estado actual del contenedor; distingue puerto/ruta incorrectos, timeouts, 5xx y comandos fallidos, e incluye la configuración de la probe |
+| `VD-K8S-006` | Nodos `NotReady` | Nodos que no están Ready (kubelet detenido, CNI, PLEG, runtime) y nodos Ready con presión de memoria, disco o PIDs; indica cuántos Pods se ven afectados. **Solo se ejecuta con `-A`** (los nodos son de todo el clúster y un namespace no debería requerir permiso para listarlos; con `-n` venom-doctor lo avisa en stderr) |
+| `VD-K8S-007` | PDB que bloquea drains | PodDisruptionBudgets sin disrupciones permitidas (workload sano pero sin margen, Pods no sanos o `minAvailable` mayor que las réplicas) y selectores que no coinciden con nada; ignora los PDB que el controlador aún no procesó |
+| `VD-K8S-008` | Karpenter sin capacidad | NodePools que no están Ready o que alcanzaron `spec.limits`, y NodeClaims atascados en `Launched`, `Registered` o `Initialized`. Muestra el reason y el mensaje que reporta cada objeto, sin interpretarlos. **Solo con `-A`**, necesita permiso de lectura sobre `nodepools` y `nodeclaims` de `karpenter.sh` y no hace nada si Karpenter no está instalado |
+| `VD-K8S-009` | IRSA mal cableado | ServiceAccounts con la anotación `eks.amazonaws.com/role-arn` mal formada, y Pods que no recibieron las variables de IRSA (`AWS_ROLE_ARN`, `AWS_WEB_IDENTITY_TOKEN_FILE`) o llevan un rol desactualizado. Un finding por ServiceAccount; los IDs de cuenta se enmascaran. Comprueba la **consistencia dentro del clúster**, no las políticas de confianza ni los permisos del rol IAM, ni EKS Pod Identity (ver ADR 0008) |
 
-Un contenedor terminado por OOM se reporta solo con `KD-K8S-002` (que trae la corrección), no dos veces.
+Un contenedor terminado por OOM se reporta solo con `VD-K8S-002` (que trae la corrección), no dos veces.
 
 ## Instalación
 
@@ -51,12 +51,12 @@ Ejemplo (sobre los manifiestos de [`examples/k8s`](../../examples/k8s)):
 
 ```text
 SEVERIDAD  ID          RECURSO                     PROBLEMA
-HIGH       KD-K8S-001  Pod venom-demo/crashloop  CrashLoopBackOff en el container app
-HIGH       KD-K8S-002  Pod venom-demo/oom        OOMKilled en el container app
-HIGH       KD-K8S-003  Pod venom-demo/badimage   No se puede descargar la imagen del container app
-HIGH       KD-K8S-004  Pod venom-demo/pending    Pod en Pending: el scheduler no puede programarlo
+HIGH       VD-K8S-001  Pod venom-demo/crashloop  CrashLoopBackOff en el container app
+HIGH       VD-K8S-002  Pod venom-demo/oom        OOMKilled en el container app
+HIGH       VD-K8S-003  Pod venom-demo/badimage   No se puede descargar la imagen del container app
+HIGH       VD-K8S-004  Pod venom-demo/pending    Pod en Pending: el scheduler no puede programarlo
 
-── [HIGH] KD-K8S-002 · OOMKilled en el container app
+── [HIGH] VD-K8S-002 · OOMKilled en el container app
 Recurso: Pod venom-demo/oom
 Causa probable: El contenedor superó su límite de memoria de 32Mi y el kernel lo terminó (OOMKilled).
 Evidencia:
@@ -77,7 +77,7 @@ si alguno incumpliera el contrato, el comando falla en vez de emitir un document
 
 ## Integración con `pr-agent`
 
-Los findings de OOMKilled (`KD-K8S-002`) traen una evidencia **parseable** `memory-limit-change`
+Los findings de OOMKilled (`VD-K8S-002`) traen una evidencia **parseable** `memory-limit-change`
 (`container=app;from=32Mi;to=64Mi`) con la que [`pr-agent`](../pr-agent) puede subir `limits.memory` en el Terraform que
 declara el workload:
 

@@ -1,4 +1,4 @@
-# KD-K8S-005: dos Pods con probes que fallan por distintas causas.
+# VD-K8S-005: dos Pods con probes que fallan por distintas causas.
 # - probe-readiness: la app escucha en el 8080 pero la readiness mira el 9999 (connection refused): Running pero sin Ready.
 # - probe-liveness: la liveness pide una ruta que no existe (404): el kubelet reinicia el contenedor una y otra vez.
 apiVersion: v1

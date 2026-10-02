@@ -1,6 +1,6 @@
 [
   {
-    "id": "KD-K8S-001",
+    "id": "VD-K8S-001",
     "schema_version": "1.1.0",
     "source": "venom-doctor",
     "severity": "high",
@@ -44,7 +44,7 @@
     "detected_at": "2026-09-30T19:53:38.049013401Z"
   },
   {
-    "id": "KD-K8S-002",
+    "id": "VD-K8S-002",
     "schema_version": "1.1.0",
     "source": "venom-doctor",
     "severity": "high",
@@ -88,7 +88,7 @@
     "detected_at": "2026-09-30T19:53:38.046268017Z"
   },
   {
-    "id": "KD-K8S-003",
+    "id": "VD-K8S-003",
     "schema_version": "1.1.0",
     "source": "venom-doctor",
     "severity": "high",
@@ -134,7 +134,7 @@
     "detected_at": "2026-09-30T19:53:38.047114224Z"
   },
   {
-    "id": "KD-K8S-004",
+    "id": "VD-K8S-004",
     "schema_version": "1.1.0",
     "source": "venom-doctor",
     "severity": "high",

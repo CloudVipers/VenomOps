@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from pr_agent import hcl
-from pr_agent.fixes import AlreadyFixedError, FixerError, get_fixer
+from pr_agent.fixes import AlreadyFixedError, FixerError, current_id, get_fixer
 from pr_agent.fixes.k8s_memory import K8sMemoryLimitFixer, parse_change
 from pr_agent.safety import SafeRunner
 from pr_agent.tools import ToolBox, ToolError
@@ -56,7 +56,7 @@ def oom(pod: str = "oom", namespace: str = "venom-demo", change: str | None = "c
     if change:
         evidence.append({"kind": "memory-limit-change", "detail": change})
     return make_finding(
-        id="KD-K8S-002",
+        id="VD-K8S-002",
         source="venom-doctor",
         resource={"type": "Pod", "name": pod, "namespace": namespace},
         evidence=evidence,
@@ -153,7 +153,17 @@ def test_the_toolbox_op_only_accepts_kubernetes_resources_and_valid_quantities(t
 
 
 def test_the_registry_knows_the_venom_doctor_finding() -> None:
+    assert isinstance(get_fixer("VD-K8S-002"), K8sMemoryLimitFixer)
+
+
+def test_findings_saved_with_the_legacy_kdoctor_id_are_still_fixed() -> None:
+    """The rules were first published as KD-K8S-*; findings saved before the rename must keep working."""
     assert isinstance(get_fixer("KD-K8S-002"), K8sMemoryLimitFixer)
+    assert current_id("KD-K8S-002") == "VD-K8S-002" and current_id("VD-K8S-002") == "VD-K8S-002"
+    assert (
+        current_id("TF-S3-001") == "TF-S3-001" and current_id("KD-OTHER-1") == "KD-OTHER-1"
+    )  # only the venom-doctor prefix
+    assert get_fixer("KD-K8S-001") is None  # a legacy id of a rule without a fixer is still not fixable
 
 
 def test_a_pod_oom_finding_raises_the_limit_in_its_terraform(tmp_path: Path) -> None:
@@ -239,6 +249,6 @@ def test_a_wrong_container_name_reports_the_available_ones(tmp_path: Path) -> No
 def test_the_workflow_produces_a_minimal_dry_run_diff(tmp_path: Path, runner_factory) -> None:  # type: ignore[no-untyped-def]
     repo = copy_example("k8s-oom-demo", tmp_path)
     report = run_fix(oom(), FixOptions(repo=repo, dry_run=True), runner_factory=runner_factory)
-    assert report.branch == "fix/kd-k8s-002-oom" and list(report.changed_files) == ["main.tf"]
+    assert report.branch == "fix/vd-k8s-002-oom" and list(report.changed_files) == ["main.tf"]
     changed = [ln for ln in report.diff.splitlines() if ln[:1] in "+-" and ln[:3] not in ("+++", "---")]
     assert changed == ['-          memory = "32Mi"', '+          memory = "64Mi"']

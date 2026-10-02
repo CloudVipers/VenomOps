@@ -180,7 +180,7 @@ func TestKarpenterReturnsListErrors(t *testing.T) {
 func TestKarpenterRuleOnlyRunsClusterWide(t *testing.T) {
 	has := func(rs []engine.Rule) bool {
 		for _, r := range rs {
-			if r.ID() == "KD-K8S-008" {
+			if r.ID() == "VD-K8S-008" {
 				return true
 			}
 		}

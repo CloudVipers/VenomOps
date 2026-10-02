@@ -15,7 +15,7 @@ import (
 type PDBBlocksDrain struct{ Namespace string }
 
 // ID implements engine.Rule.
-func (PDBBlocksDrain) ID() string { return "KD-K8S-007" }
+func (PDBBlocksDrain) ID() string { return "VD-K8S-007" }
 
 // Description implements engine.Rule.
 func (PDBBlocksDrain) Description() string {

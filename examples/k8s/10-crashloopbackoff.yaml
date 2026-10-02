@@ -1,4 +1,4 @@
-# KD-K8S-001: el contenedor escribe un error y termina con código 1 en bucle.
+# VD-K8S-001: el contenedor escribe un error y termina con código 1 en bucle.
 apiVersion: v1
 kind: Pod
 metadata:

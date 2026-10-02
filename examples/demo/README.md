@@ -18,7 +18,7 @@ Tarda ~3-4 minutos. Requiere `docker`, `kind`, `kubectl`, `go`, `terraform` y `u
 2. Compila `venom-doctor`.
 3. Crea el clúster `venomops-demo` y aplica [`examples/k8s/`](../k8s) (CrashLoopBackOff, OOMKilled, ImagePullBackOff, Pending).
 4. **venom-doctor** diagnostica y emite JSON.
-5. **pr-agent** elige el único finding con arreglo (`KD-K8S-002`) y, en `--dry-run`, muestra el diff
+5. **pr-agent** elige el único finding con arreglo (`VD-K8S-002`) y, en `--dry-run`, muestra el diff
    (`limits.memory` 32Mi → 64Mi en [`examples/terraform/k8s-oom-demo`](../terraform/k8s-oom-demo)) y el cuerpo del PR,
    con `terraform validate` y `plan` reales.
 6. **arch-committee** revisa [`examples/plans/k8s-oom.json`](../plans/k8s-oom.json) con el diagnóstico como contexto.

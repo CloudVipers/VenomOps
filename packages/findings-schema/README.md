@@ -19,7 +19,7 @@ examples/expected-errors.json  violación esperada de cada ejemplo inválido: (r
 
 | Campo | Tipo | Obligatorio |
 |---|---|---|
-| `id` | string (`KD-K8S-001`) | sí |
+| `id` | string (`VD-K8S-001`) | sí |
 | `schema_version` | string (`1.x.y`) | sí |
 | `source` | `venom-doctor` \| `pr-agent` \| `arch-committee` \| `manual` (`kdoctor`, el nombre anterior, solo se acepta al leer; ver [ADR 0009](../../docs/decisiones/0009-source-venom-doctor.md)) | sí |
 | `severity` | `critical` \| `high` \| `medium` \| `low` \| `info` | sí |

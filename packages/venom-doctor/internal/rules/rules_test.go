@@ -30,7 +30,7 @@ func TestCrashLoopBackOffDetects(t *testing.T) {
 	}
 	f := fs[0]
 	ev := evidenceKinds(f)
-	if f.ID != "KD-K8S-001" || f.Severity != findings.SeverityHigh || f.Resource.Namespace != "payments" {
+	if f.ID != "VD-K8S-001" || f.Severity != findings.SeverityHigh || f.Resource.Namespace != "payments" {
 		t.Fatalf("unexpected finding: %+v", f)
 	}
 	if !strings.Contains(ev["exit-code"], "exitCode=1") || ev["log-tail"] == "" {
@@ -93,7 +93,7 @@ func TestCrashLoopBackOffLeavesOOMToItsOwnRule(t *testing.T) {
 	p := oomPod(256, 6)
 	p.Status.ContainerStatuses[0].State = corev1.ContainerState{Waiting: &corev1.ContainerStateWaiting{Reason: "CrashLoopBackOff"}}
 	if fs := check(t, CrashLoopBackOff{}, newCluster(p)); len(fs) != 0 {
-		t.Fatalf("OOMKilled containers must only be reported by KD-K8S-002: %v", fs)
+		t.Fatalf("OOMKilled containers must only be reported by VD-K8S-002: %v", fs)
 	}
 	if fs := check(t, OOMKilled{}, newCluster(p)); len(fs) != 1 {
 		t.Fatalf("OOM rule should still report it: %v", fs)

@@ -1,4 +1,4 @@
-# KD-K8S-002: intenta reservar más memoria (~150 MB) que su límite (32Mi).
+# VD-K8S-002: intenta reservar más memoria (~150 MB) que su límite (32Mi).
 apiVersion: v1
 kind: Pod
 metadata:
