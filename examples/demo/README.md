@@ -3,7 +3,7 @@
 `run-demo.sh` recorre el flujo completo de VenomOps en un clúster **kind local**:
 
 ```
-kind  →  rompe 4 cosas  →  kdoctor diagnostica  →  pr-agent arma el PR (--dry-run)  →  arch-committee revisa el plan
+kind  →  rompe 4 cosas  →  venom-doctor diagnostica  →  pr-agent arma el PR (--dry-run)  →  arch-committee revisa el plan
 ```
 
 ```bash
@@ -15,9 +15,9 @@ Tarda ~3-4 minutos. Requiere `docker`, `kind`, `kubectl`, `go`, `terraform` y `u
 ## Qué hace, paso a paso
 
 1. Prepara los entornos de Python de `pr-agent` y `arch-committee`.
-2. Compila `kdoctor`.
+2. Compila `venom-doctor`.
 3. Crea el clúster `venomops-demo` y aplica [`examples/k8s/`](../k8s) (CrashLoopBackOff, OOMKilled, ImagePullBackOff, Pending).
-4. **kdoctor** diagnostica y emite JSON.
+4. **venom-doctor** diagnostica y emite JSON.
 5. **pr-agent** elige el único finding con arreglo (`KD-K8S-002`) y, en `--dry-run`, muestra el diff
    (`limits.memory` 32Mi → 64Mi en [`examples/terraform/k8s-oom-demo`](../terraform/k8s-oom-demo)) y el cuerpo del PR,
    con `terraform validate` y `plan` reales.
@@ -37,9 +37,9 @@ Tarda ~3-4 minutos. Requiere `docker`, `kind`, `kubectl`, `go`, `terraform` y `u
 | Variable | Efecto |
 |---|---|
 | `KEEP_CLUSTER=1` | No borra el clúster al terminar (el kubeconfig queda impreso) |
-| `DEMO_SAVE_FINDINGS=ruta.json` | Guarda la salida JSON de `kdoctor` (así se regenera `examples/findings/kdoctor-output.json`) |
+| `DEMO_SAVE_FINDINGS=ruta.json` | Guarda la salida JSON de `venom-doctor` (así se regenera `examples/findings/venom-doctor-output.json`) |
 | `TF_PLUGIN_CACHE_DIR=ruta` | Reutiliza los providers de Terraform entre ejecuciones |
 | `ARCH_COMMITTEE_BEDROCK_MODEL=<modelId>` | Ejecuta el comité de verdad en el paso 6 |
 
-La misma tubería, a mano: `kubectl venom-doctor -n kdoctor-demo -o json | pr-agent fix --finding - --supported --repo
+La misma tubería, a mano: `kubectl venom-doctor -n venom-demo -o json | pr-agent fix --finding - --supported --repo
 examples/terraform/k8s-oom-demo --dry-run`.

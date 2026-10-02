@@ -6,7 +6,7 @@ on:
       - "packages/arch-committee/**"
       - "packages/findings-schema/**"   # arch-committee depende del contrato (se instala en modo editable)
       - "examples/plans/**"
-      - "examples/findings/**"   # findings reales de kdoctor usados como contexto en las pruebas
+      - "examples/findings/**"   # findings reales de venom-doctor usados como contexto en las pruebas
       - ".github/workflows/ci-committee.yml"
   push:
     branches: [main]

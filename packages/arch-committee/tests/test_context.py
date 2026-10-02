@@ -21,9 +21,9 @@ runner = CliRunner()
 
 def prior(fid: str = "KD-K8S-002", name: str = "oom", severity: str = "high", **over: Any) -> dict[str, Any]:
     doc: dict[str, Any] = {
-        "id": fid, "schema_version": "1.0.0", "source": "kdoctor", "severity": severity,
+        "id": fid, "schema_version": "1.0.0", "source": "venom-doctor", "severity": severity,
         "title": f"OOMKilled en el container app ({name})",
-        "resource": {"type": "Pod", "name": name, "namespace": "kdoctor-demo"},
+        "resource": {"type": "Pod", "name": name, "namespace": "venom-demo"},
         "evidence": [{"kind": "last-state", "detail": "Terminated reason=OOMKilled, restartCount=6"},
                      {"kind": "limits", "detail": "limits.memory=32Mi"}],
         "root_cause": "El contenedor superó su límite de memoria de 32Mi.",
@@ -93,7 +93,7 @@ def test_the_report_lists_the_context_and_the_findings_still_validate(tmp_path: 
     result = run_committee(load_plan(plan_path(K8S_PLAN)), FakeCommittee(), context=ctx)
     report, findings_path, warnings = write_outputs(result, tmp_path / "out", "m")
     text = report.read_text(encoding="utf-8")
-    assert "## Contexto previo" in text and "KD-K8S-002" in text and "kdoctor" in text and not warnings
+    assert "## Contexto previo" in text and "KD-K8S-002" in text and "venom-doctor" in text and not warnings
     assert all(validate(d) == [] for d in json.loads(findings_path.read_text()))
     assert (
         "## Contexto previo"
@@ -173,7 +173,7 @@ def test_the_cli_accepts_context_and_shows_it_in_the_dry_run(tmp_path: Path) -> 
         ],
     )
     assert result.exit_code == 0, result.output
-    assert "Context: 2 prior findings (kdoctor)" in result.output
+    assert "Context: 2 prior findings (venom-doctor)" in result.output
     assert "Redacted prior findings that agents would receive" in result.output and "KD-K8S-009" in result.output
 
 
@@ -208,12 +208,12 @@ def test_the_cli_rejects_a_bad_context_file(tmp_path: Path) -> None:
     assert result.exit_code == 2 and "findings-schema" in result.output
 
 
-def test_the_real_kdoctor_output_works_as_committee_context(tmp_path: Path) -> None:
-    """End to end with findings captured from a real kind cluster: kdoctor's OOM finding about Pod `oom` is linked to the
+def test_the_real_venom_doctor_output_works_as_committee_context(tmp_path: Path) -> None:
+    """End to end with findings captured from a real kind cluster: venom-doctor's OOM finding about Pod `oom` is linked to the
     Terraform resource that declares it (examples/plans/k8s-oom.json)."""
     from .conftest import ROOT
 
-    ctx = load_context_findings([ROOT / "examples" / "findings" / "kdoctor-output.json"])
+    ctx = load_context_findings([ROOT / "examples" / "findings" / "venom-doctor-output.json"])
     assert [f.id for f in ctx] == ["KD-K8S-001", "KD-K8S-002", "KD-K8S-003", "KD-K8S-004"]
     result = run_committee(load_plan(plan_path(K8S_PLAN)), FakeCommittee(), context=ctx)
     linked = [f for f in result.final if f.resource == "kubernetes_pod_v1.oom"]

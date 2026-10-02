@@ -5,7 +5,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: probe-readiness
-  namespace: kdoctor-demo
+  namespace: venom-demo
 spec:
   containers:
     - name: app
@@ -20,7 +20,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: probe-liveness
-  namespace: kdoctor-demo
+  namespace: venom-demo
 spec:
   containers:
     - name: app

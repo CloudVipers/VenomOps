@@ -1,6 +1,6 @@
 # Comprobación del manifiesto de krew
 
-`check_manifest.py` descarga cada archivo que referencia el manifiesto de krew (`packages/kdoctor/kdoctor.yaml`), compara su
+`check_manifest.py` descarga cada archivo que referencia el manifiesto de krew (`packages/venom-doctor/venom-doctor.yaml`), compara su
 `sha256` y comprueba que el binario del plugin está en la raíz del archivo. Cubre lo que rompe una instalación con
 `kubectl krew install` y la validación de los mantenedores de krew-index: un release borrado (404), un archivo reconstruido
 con otro hash, un manifiesto con el `sha256` todavía en ceros o un archivo sin el binario.

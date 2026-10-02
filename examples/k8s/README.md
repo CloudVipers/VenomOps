@@ -1,14 +1,14 @@
-# Manifiestos rotos para probar kdoctor
+# Manifiestos rotos para probar venom-doctor
 
 Cada manifiesto provoca a propósito uno de los escenarios del MVP. **Aplícalos solo en un clúster local
 (kind)**, nunca en uno real, y con un kubeconfig dedicado para no tocar tus contextos habituales:
 
 ```bash
-export KUBECONFIG=/tmp/kdoctor-kind.kubeconfig
-kind create cluster --name kdoctor-test --kubeconfig "$KUBECONFIG"
+export KUBECONFIG=/tmp/venom-doctor-kind.kubeconfig
+kind create cluster --name venom-doctor-test --kubeconfig "$KUBECONFIG"
 kubectl apply -f examples/k8s/
-kubectl venom-doctor -n kdoctor-demo          # o: go run ./cmd/kubectl-venom_doctor -n kdoctor-demo
-kind delete cluster --name kdoctor-test --kubeconfig "$KUBECONFIG"
+kubectl venom-doctor -n venom-demo          # o: go run ./cmd/kubectl-venom_doctor -n venom-demo
+kind delete cluster --name venom-doctor-test --kubeconfig "$KUBECONFIG"
 ```
 
 | Archivo | Regla | Qué debe detectar |

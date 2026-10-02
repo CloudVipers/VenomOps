@@ -55,7 +55,8 @@ def doctor(ctx: typer.Context) -> None:
     binary = shutil.which(DOCTOR_BINARY)
     if binary is None:
         typer.secho(
-            f"Error: `{DOCTOR_BINARY}` is not on PATH (install kdoctor, e.g. `kubectl krew install venom-doctor`).",
+            f"Error: `{DOCTOR_BINARY}` is not on PATH "
+            f"(install venom-doctor, e.g. `kubectl krew install venom-doctor`).",
             fg="red",
             err=True,
         )

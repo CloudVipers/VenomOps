@@ -11,14 +11,14 @@ CloudVipers construye herramientas para arquitectos cloud, parte del ecosistema 
 | Paquete | Qué hace | Lenguaje |
 |---|---|---|
 | `findings-schema` | Contrato común (JSON Schema + tipos) | JSON Schema, Go, Python |
-| `kdoctor` | CLI open source (plugin de kubectl) que diagnostica EKS/Kubernetes y explica cómo arreglarlo | Go |
+| `venom-doctor` | CLI open source (plugin de kubectl) que diagnostica EKS/Kubernetes y explica cómo arreglarlo | Go |
 | `pr-agent` | Agente que toma un finding y abre un Pull Request con el arreglo en Terraform | Python |
 | `arch-committee` | Comité virtual de agentes que revisa un plan de Terraform y debate | Python |
 | `venom` | Comando paraguas: `venom doctor`, `venom fix`, `venom review` (ver [ADR 0006](docs/decisiones/0006-comando-venom.md)) | Python |
 
-**Flujo de valor:** `kdoctor` y otras fuentes **producen** findings → `pr-agent` los **corrige** → `arch-committee` los **debate y prioriza** antes de llegar a producción.
+**Flujo de valor:** `venom-doctor` y otras fuentes **producen** findings → `pr-agent` los **corrige** → `arch-committee` los **debate y prioriza** antes de llegar a producción.
 
-**Orden de construcción:** `findings-schema` → `kdoctor` → `pr-agent` → `arch-committee`.
+**Orden de construcción:** `findings-schema` → `venom-doctor` → `pr-agent` → `arch-committee`.
 
 ---
 
@@ -39,7 +39,7 @@ Estas reglas no se negocian, ni siquiera si el usuario lo pide de forma casual e
 ## 3. Convenciones generales
 
 - **Idioma:** código, nombres, comentarios, mensajes de commit y errores en **inglés**. Documentación (`README`, `docs/`) en **español**, con los términos técnicos en inglés cuando sea lo habitual.
-- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) — `feat(kdoctor): add OOMKilled rule`. Scopes válidos: `schema`, `kdoctor`, `pr-agent`, `committee`, `venom`, `repo`, `docs`.
+- **Commits:** [Conventional Commits](https://www.conventionalcommits.org/) — `feat(venom-doctor): add OOMKilled rule`. Scopes válidos: `schema`, `venom-doctor`, `pr-agent`, `committee`, `venom`, `repo`, `docs`.
 - **Ramas:** `feat/<scope>-<descripcion-corta>`, `fix/...`, `docs/...`. Una rama por feature; PRs pequeños y revisables.
 - **Licencia:** Apache 2.0 en todo el repo.
 - **Dependencias:** preferir la biblioteca estándar y dependencias ampliamente mantenidas. No añadir una dependencia nueva sin justificarla en el PR.
@@ -58,7 +58,7 @@ venomops/
 ├── .github/
 │   └── workflows/
 │       ├── ci-schema.yml
-│       ├── ci-kdoctor.yml
+│       ├── ci-venom-doctor.yml
 │       ├── ci-pr-agent.yml
 │       └── ci-committee.yml
 ├── docs/
@@ -70,7 +70,7 @@ venomops/
 │   │   ├── go/                   # tipos Go + validador
 │   │   ├── python/               # tipos Python (pydantic) + validador
 │   │   └── examples/             # findings válidos e inválidos
-│   ├── kdoctor/
+│   ├── venom-doctor/
 │   │   ├── cmd/kubectl-venom_doctor/main.go
 │   │   ├── internal/
 │   │   │   ├── engine/           # motor de reglas
@@ -100,7 +100,7 @@ venomops/
 └── examples/
     ├── terraform/                # repos de prueba con fallas deliberadas
     ├── plans/                    # terraform plan JSON de ejemplo
-    └── k8s/                      # manifiestos rotos para probar kdoctor
+    └── k8s/                      # manifiestos rotos para probar venom-doctor
 ```
 
 ---
@@ -162,9 +162,9 @@ Cada fase es **una sesión de Claude Code en su propia rama**. No empieces la si
 - [x] ADR 0001.
 - [x] CI `ci-schema.yml`: valida el schema y corre ambos suites de tests.
 
-**DoD:** todos los tests pasan; el paquete se puede importar desde `kdoctor` (Go) y `pr-agent` / `arch-committee` (Python).
+**DoD:** todos los tests pasan; el paquete se puede importar desde `venom-doctor` (Go) y `pr-agent` / `arch-committee` (Python).
 
-### Fase 2 — `kdoctor` (CLI open source)
+### Fase 2 — `venom-doctor` (CLI open source)
 
 **Objetivo:** plugin de kubectl que explica en lenguaje claro por qué algo está roto en un clúster y cómo arreglarlo.
 
@@ -195,10 +195,10 @@ type Rule interface {
 - [x] Tests unitarios con `fake.Clientset` para cada regla (caso positivo y negativo).
 - [x] Manifiestos rotos en `examples/k8s/` para probar cada regla en un clúster kind.
 - [x] README en español con instalación, ejemplos y tabla de reglas.
-- [x] `.goreleaser.yaml` y manifiesto de krew (`kdoctor.yaml`).
+- [x] `.goreleaser.yaml` y manifiesto de krew (`venom-doctor.yaml`).
 - [x] CI: `go vet`, `golangci-lint`, `go test -race ./...`.
 
-**Reglas fase 2 (segunda tanda, después del MVP):** ~~probes fallando~~ _(hecho: `KD-K8S-005`)_, ~~IRSA / EKS Pod Identity mal configurado~~ _(hecho para IRSA: `KD-K8S-009`; Pod Identity queda fuera, ver [ADR 0008](docs/decisiones/0008-regla-irsa-kdoctor.md))_, ~~nodos `NotReady`~~ _(hecho: `KD-K8S-006`)_, ~~PDB que bloquea drains~~ _(hecho: `KD-K8S-007`)_, ~~Karpenter sin capacidad~~ _(hecho: `KD-K8S-008`)_.
+**Reglas fase 2 (segunda tanda, después del MVP):** ~~probes fallando~~ _(hecho: `KD-K8S-005`)_, ~~IRSA / EKS Pod Identity mal configurado~~ _(hecho para IRSA: `KD-K8S-009`; Pod Identity queda fuera, ver [ADR 0008](docs/decisiones/0008-regla-irsa-venom-doctor.md))_, ~~nodos `NotReady`~~ _(hecho: `KD-K8S-006`)_, ~~PDB que bloquea drains~~ _(hecho: `KD-K8S-007`)_, ~~Karpenter sin capacidad~~ _(hecho: `KD-K8S-008`)_.
 
 **DoD:** `kubectl venom-doctor` detecta correctamente los 4 escenarios sobre los manifiestos de ejemplo en kind; cobertura de reglas >80%; binario compilado por GoReleaser en modo snapshot.
 
@@ -260,7 +260,7 @@ type Rule interface {
 
 ### Fase 5 — Integración
 
-- [x] `kdoctor --output json | pr-agent fix` funciona de extremo a extremo para un finding soportado.
+- [x] `venom-doctor --output json | pr-agent fix` funciona de extremo a extremo para un finding soportado.
 - [x] `arch-committee` puede consumir findings previos como contexto.
 - [x] `docs/arquitectura.md` con el diagrama del flujo completo.
 - [x] Demo reproducible en `examples/` (script que levanta kind, rompe algo, diagnostica y genera el PR en `--dry-run`).
@@ -300,9 +300,9 @@ make lint && make test
 # findings-schema
 cd packages/findings-schema && go test ./go/... && pytest python/
 
-# kdoctor
-cd packages/kdoctor && go vet ./... && go test -race ./... && go build ./cmd/kubectl-venom_doctor
-kind create cluster --name kdoctor-test && kubectl apply -f ../../examples/k8s/
+# venom-doctor
+cd packages/venom-doctor && go vet ./... && go test -race ./... && go build ./cmd/kubectl-venom_doctor
+kind create cluster --name venom-doctor-test && kubectl apply -f ../../examples/k8s/
 
 # pr-agent
 cd packages/pr-agent && ruff check . && mypy src && pytest

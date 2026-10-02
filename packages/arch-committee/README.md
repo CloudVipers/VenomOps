@@ -51,10 +51,10 @@ Salida en `--out`: `report.md` y `findings.json`.
 arch-committee review --plan plan.json --context-findings findings.json --out ./out   # repetible
 ```
 
-Acepta uno o varios archivos con un finding o un array (p. ej. `kdoctor -o json`). Se validan contra `findings-schema`, se
+Acepta uno o varios archivos con un finding o un array (p. ej. `venom-doctor -o json`). Se validan contra `findings-schema`, se
 redactan y se limitan (50 findings, 10 000 caracteres, los más severos primero) antes de enviarse a la ronda 1 y al moderador,
 siempre como **datos**. Sirve para contrastar el plan con lo observado en producción: por ejemplo, un OOMKilled que
-`kdoctor` vio en el Pod `oom` se enlaza con el recurso `kubernetes_pod_v1.oom` que el plan vuelve a declarar con un
+`venom-doctor` vio en el Pod `oom` se enlaza con el recurso `kubernetes_pod_v1.oom` que el plan vuelve a declarar con un
 límite bajo. El informe incluye una sección **Contexto previo**; `--dry-run` muestra exactamente qué se enviaría.
 
 ### Planes de ejemplo (`examples/plans/`)
@@ -67,7 +67,7 @@ cada uno con fallas sembradas a propósito:
 | `public-bucket.json` | Bucket con política pública (`Principal: *`), bloqueo de acceso público desactivado y política IAM `*:*` |
 | `rds-single-az.json` | RDS de producción en una sola AZ, sin backups ni cifrado, expuesta a Internet y sobredimensionada |
 | `nat-per-subnet.json` | Un NAT Gateway por subred privada (3) en un entorno dev: tensión entre **costo** y **confiabilidad** |
-| `k8s-oom.json` | Un `kubernetes_pod_v1` con `limits.memory = 32Mi`: se usa con los findings de `kdoctor` como contexto (demo de la Fase 5) |
+| `k8s-oom.json` | Un `kubernetes_pod_v1` con `limits.memory = 32Mi`: se usa con los findings de `venom-doctor` como contexto (demo de la Fase 5) |
 
 ## Límites de costo y degradación
 
@@ -110,7 +110,7 @@ ejemplo. **Esa prueba destapó cuatro defectos que los dobles no podían mostrar
 | Muchos desacuerdos «no resueltos» que no lo eran | El moderador fijaba la severidad final pero no rellenaba la lista de desacuerdos | Si el moderador dictaminó sobre el hallazgo en disputa, se registra como **resuelto** con su decisión; solo queda «sin resolver» lo que realmente omitió |
 | Ids del moderador con formato imperfecto | p. ej. `"SEC-1, COST-1"` o `[sec-1]` | Extracción tolerante de ids |
 
-Con el modelo real, sobre el plan de Kubernetes y la salida real de `kdoctor` como contexto, el comité **enlazó el OOMKilled
+Con el modelo real, sobre el plan de Kubernetes y la salida real de `venom-doctor` como contexto, el comité **enlazó el OOMKilled
 observado en el clúster con el `kubernetes_pod_v1.oom` del plan** (severidad crítica), que es la integración buscada.
 
 ## Desarrollo

@@ -2,13 +2,13 @@
 
 - **Estado:** aceptado
 - **Fecha:** 2026-09-30
-- **Alcance:** `kdoctor --explain`, `pr-agent --agent` y `arch-committee`. Resuelve la decisión abierta de la sección 11
+- **Alcance:** `venom-doctor --explain`, `pr-agent --agent` y `arch-committee`. Resuelve la decisión abierta de la sección 11
   de `CLAUDE.md` ("modelos de Bedrock por defecto").
 
 ## Contexto
 
 Las tres rutas con LLM son opcionales y explícitas (regla 5 de `CLAUDE.md`). Hoy cada una exige indicar el modelo
-(`--explain-model`/`KDOCTOR_BEDROCK_MODEL`, `--model-id`/`PR_AGENT_BEDROCK_MODEL`, `--model-id`/`ARCH_COMMITTEE_BEDROCK_MODEL`).
+(`--explain-model`/`VENOM_DOCTOR_BEDROCK_MODEL`, `--model-id`/`PR_AGENT_BEDROCK_MODEL`, `--model-id`/`ARCH_COMMITTEE_BEDROCK_MODEL`).
 Había que decidir si se fija un valor por defecto.
 
 ## Decisión

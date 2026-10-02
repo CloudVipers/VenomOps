@@ -64,7 +64,7 @@ def _describe(i: int, d: Any) -> str:
 
 
 def _select(data: list[Any], index: int | None, finding_id: str | None, resource: str | None, supported: bool) -> Any:
-    """Pick ONE finding from an array (e.g. ``kdoctor -o json``): by position, or by filters matching exactly one."""
+    """Pick ONE finding from an array (e.g. ``venom-doctor -o json``): by position, or by filters matching one."""
     if index is not None:
         if not 0 <= index < len(data):
             raise _usage_error(f"--index {index} is out of range (0..{len(data) - 1})")
@@ -95,7 +95,7 @@ def _load_finding(
     except json.JSONDecodeError as exc:
         raise _usage_error(f"{source}: not valid JSON ({exc.msg}, line {exc.lineno})") from exc
 
-    if isinstance(data, list):  # e.g. the output of `kdoctor -o json`
+    if isinstance(data, list):  # e.g. the output of `venom-doctor -o json`
         if not data:
             raise _usage_error("the input is an empty array: there is no finding to fix")
         if len(data) == 1 and index is None and not (finding_id or resource or supported):

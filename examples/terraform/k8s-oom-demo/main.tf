@@ -2,7 +2,7 @@
 resource "kubernetes_pod_v1" "oom" {
   metadata {
     name      = "oom"
-    namespace = "kdoctor-demo"
+    namespace = "venom-demo"
   }
 
   spec {

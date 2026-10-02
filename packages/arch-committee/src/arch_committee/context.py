@@ -1,6 +1,6 @@
-"""Prior findings (kdoctor, pr-agent, manual...) offered to the committee as extra context.
+"""Prior findings (venom-doctor, pr-agent, manual...) offered to the committee as extra context.
 
-They describe what was observed on the RUNNING system, which a plan alone cannot show (e.g. kdoctor saw a container
+They describe what was observed on the RUNNING system, which a plan alone cannot show (e.g. venom-doctor saw a container
 OOM-killed that the plan still declares with a low memory limit). They are validated against findings-schema,
 redacted and size-capped before reaching any model, and treated as data, never as instructions.
 """
@@ -25,7 +25,7 @@ class ContextError(ValueError):
 
 
 def load_context_findings(paths: list[Path]) -> list[Finding]:
-    """Load findings from files holding one finding or an array (e.g. ``kdoctor -o json`` output)."""
+    """Load findings from files holding one finding or an array (e.g. ``venom-doctor -o json`` output)."""
     findings: list[Finding] = []
     for path in paths:
         try:

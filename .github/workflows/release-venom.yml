@@ -29,8 +29,8 @@ jobs:
 
       - uses: actions/setup-go@v5
         with:
-          go-version-file: packages/kdoctor/go.mod
-          cache-dependency-path: packages/kdoctor/go.sum
+          go-version-file: packages/venom-doctor/go.mod
+          cache-dependency-path: packages/venom-doctor/go.sum
 
       - name: Install nfpm
         run: go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.47.0

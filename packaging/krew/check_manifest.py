@@ -4,7 +4,7 @@
 A manifest whose URLs return 404 (a deleted release) or whose hashes do not match cannot be installed by `kubectl krew`,
 and the krew-index maintainers download these files to validate a submission. Standard library only.
 
-Usage: check_manifest.py [manifest.yaml]     (default: packages/kdoctor/kdoctor.yaml)
+Usage: check_manifest.py [manifest.yaml]     (default: packages/venom-doctor/venom-doctor.yaml)
 Exit code 0 when every platform is fine, 1 otherwise.
 """
 
@@ -21,7 +21,7 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-DEFAULT = Path(__file__).resolve().parents[2] / "packages" / "kdoctor" / "kdoctor.yaml"
+DEFAULT = Path(__file__).resolve().parents[2] / "packages" / "venom-doctor" / "venom-doctor.yaml"
 MAX_BYTES = 200 * 1024 * 1024
 ZEROS = "0" * 64
 

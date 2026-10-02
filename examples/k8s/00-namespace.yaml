@@ -1,5 +1,5 @@
-# Namespace aislado para las pruebas de kdoctor. Solo usar en un clúster local (kind).
+# Namespace aislado para las pruebas de venom-doctor. Solo usar en un clúster local (kind).
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kdoctor-demo
+  name: venom-demo

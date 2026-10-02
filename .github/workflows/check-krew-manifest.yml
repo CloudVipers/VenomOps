@@ -1,9 +1,9 @@
 name: Check krew manifest
 
-# The krew manifest (packages/kdoctor/kdoctor.yaml) downloads release archives. If a release is deleted or rebuilt, the
+# The krew manifest (packages/venom-doctor/venom-doctor.yaml) downloads release archives. If a release is deleted or rebuilt, the
 # manifest silently breaks (and so does a pending krew-index PR). This downloads every archive, compares its sha256 and checks
 # the plugin binary is at its root.
-#  - weekly, when a kdoctor release is published, and on demand: checks the real downloads;
+#  - weekly, when a venom-doctor release is published, and on demand: checks the real downloads;
 #  - on a PR touching the checker: runs its unit tests (they use a local server, no network).
 on:
   schedule:
@@ -40,4 +40,4 @@ jobs:
         with:
           python-version: "3.12"
       - name: Check every download in the manifest
-        run: python packaging/krew/check_manifest.py packages/kdoctor/kdoctor.yaml
+        run: python packaging/krew/check_manifest.py packages/venom-doctor/venom-doctor.yaml
