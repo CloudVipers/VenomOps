@@ -59,4 +59,5 @@ versiones 0.1.0 y 0.1.1 llevan nombres antiguos; el cambio sale en la 0.1.2.
 Para instalar sin URL se añadió un generador de repositorio yum/dnf y apt con paquetes y metadatos firmados con GPG
 (`packaging/repo/`), probado de extremo a extremo con una clave desechable: instalación real con las comprobaciones de firma
 activas en cuatro distribuciones y rechazo, por el motivo correcto, de un cliente sin la clave y de paquetes o índices
-manipulados. **No está publicado**: queda por decidir el alojamiento y la clave de firma real (custodia y rotación).
+manipulados. Se alojará en GitHub Pages en este mismo repositorio, mediante el workflow manual `publish-repo.yml`. **Aún no está
+publicado**: falta que quien mantiene el repo genere y custodie la clave de firma real, y active Pages (ver `packaging/repo/README.md`).
