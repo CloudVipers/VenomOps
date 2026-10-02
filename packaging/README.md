@@ -37,6 +37,6 @@ El workflow [`release-venom.yml`](../.github/workflows/release-venom.yml) constr
 empujar un tag `venom-vX.Y.Z` y los adjunta a un release en borrador. También se puede lanzar a mano desde la pestaña Actions
 (`workflow_dispatch`, o `gh workflow run release-venom.yml`): en ese caso solo sube los paquetes como artefactos del workflow,
 lo que permite probar la construcción arm64 sin crear ningún release. En ambos casos instala cada paquete en contenedores
-limpios (Rocky 9, Amazon Linux 2023, Debian 12 y Ubuntu 24.04) antes de darlos por buenos. Para que funcione `sudo yum install venom` (sin URL) hace falta
-además un **repositorio yum** (metadatos `createrepo_c` firmados con GPG, p. ej. en GitHub Pages o S3); eso requiere una
-clave de firma y es una decisión aparte.
+limpios (Rocky 9, Amazon Linux 2023, Debian 12 y Ubuntu 24.04) antes de darlos por buenos. Para `sudo dnf install venom` / `sudo apt install venom` sin URL
+hace falta un repositorio firmado: el generador y su prueba están en [`repo/`](repo/README.md); publicarlo requiere elegir
+el alojamiento y una clave de firma real, que es una decisión aparte.
