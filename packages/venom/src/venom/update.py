@@ -22,6 +22,7 @@ import os
 import platform
 import re
 import shutil
+import ssl
 import subprocess
 import tempfile
 import urllib.error
@@ -46,6 +47,14 @@ MAX_INDEX_BYTES = 16 << 20
 MAX_PACKAGE_BYTES = 300 << 20
 TIMEOUT_SECONDS = 30
 LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
+# Where each distribution keeps its CA bundle. The frozen Python is built on Red Hat, so its OpenSSL looks only at the
+# Red Hat path by default and would not find the certificates on Debian or Ubuntu (found by running the binary there).
+CA_BUNDLES = (
+    "/etc/ssl/certs/ca-certificates.crt",  # Debian, Ubuntu
+    "/etc/pki/tls/certs/ca-bundle.crt",  # RHEL family, Amazon Linux
+    "/etc/ssl/ca-bundle.pem",  # SUSE
+    "/etc/ssl/cert.pem",  # Alpine, others
+)
 
 RPM_ARCH = {"x86_64": "x86_64", "amd64": "x86_64", "aarch64": "aarch64", "arm64": "aarch64"}
 DEB_ARCH = {"x86_64": "amd64", "amd64": "amd64", "aarch64": "arm64", "arm64": "arm64"}
@@ -129,6 +138,23 @@ def system_arch(fmt: str, machine: str | None = None) -> str:
 # ------------------------------------------------------------------------------------------------------ network
 
 
+def tls_context(bundles: tuple[str, ...] = CA_BUNDLES) -> ssl.SSLContext:
+    """A verifying TLS context that finds the system certificates on any Linux (SSL_CERT_FILE/DIR still apply)."""
+    context = ssl.create_default_context()
+    if context.cert_store_stats().get("x509_ca", 0) == 0:  # the build's default location is not there on this system
+        for path in bundles:
+            if Path(path).is_file():
+                context.load_verify_locations(cafile=path)
+                return context
+        try:
+            import certifi
+
+            context.load_verify_locations(cafile=certifi.where())
+        except (ImportError, OSError):
+            pass  # no bundle found: verification then fails with the certificate hint, never silently succeeds
+    return context
+
+
 class _NoDowngrade(urllib.request.HTTPRedirectHandler):
     """Refuse a redirect that would leave https (or loopback), so a download cannot be silently downgraded."""
 
@@ -141,13 +167,20 @@ class _NoDowngrade(urllib.request.HTTPRedirectHandler):
 
 def http_get(url: str, limit: int) -> bytes:
     request = urllib.request.Request(url, headers={"User-Agent": f"venom-update/{__version__}"})  # noqa: S310
-    opener = urllib.request.build_opener(_NoDowngrade)
+    opener = urllib.request.build_opener(_NoDowngrade, urllib.request.HTTPSHandler(context=tls_context()))
     try:
         with opener.open(request, timeout=TIMEOUT_SECONDS) as response:  # noqa: S310 - scheme checked in base_url()
             data: bytes = response.read(limit + 1)
     except urllib.error.HTTPError as exc:
         raise UpdateError(f"{url}: HTTP {exc.code}") from exc
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        reason = getattr(exc, "reason", exc)
+        if isinstance(reason, ssl.SSLCertVerificationError):
+            raise UpdateError(
+                f"cannot verify the TLS certificate of {url}. Install the CA certificates "
+                "(Debian/Ubuntu: apt-get install ca-certificates; RHEL family: dnf install ca-certificates) "
+                "and check the system clock and any proxy"
+            ) from exc
         raise UpdateError(f"cannot reach {url}: {exc}") from exc
     if len(data) > limit:
         raise UpdateError(f"{url} is larger than the {limit // (1 << 20)} MiB limit")
