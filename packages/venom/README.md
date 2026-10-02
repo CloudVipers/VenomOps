@@ -1,6 +1,6 @@
 # venom
 
-Un solo comando para las tres herramientas de VenomOps. No reimplementa nada: `review` y `fix` son los mismos
+Un solo comando para las tres herramientas de VenomOps (diagnosticar, corregir y revisar). La guía de uso con ejemplos reales está en [`docs/guia/uso.md`](../../docs/guia/uso.md). No reimplementa nada: `review` y `fix` son los mismos
 comandos de `arch-committee` y `pr-agent`, y `doctor` ejecuta el binario `kubectl-venom_doctor` (que sigue siendo el plugin
 de krew `kubectl venom-doctor`).
 

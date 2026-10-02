@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}} · VenomOps</title>
+<meta name="description" content="{{DESCRIPTION}}">
+<meta name="theme-color" content="#0a0f14">
+<link rel="canonical" href="{{URL}}/{{PAGE}}">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<meta property="og:title" content="{{TITLE}} · VenomOps">
+<meta property="og:description" content="{{DESCRIPTION}}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{URL}}/{{PAGE}}">
+<script>try{var t=localStorage.getItem('venom-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="docs-page">
+{{HEADER}}
+<div class="container docs" id="contenido">
+  <aside class="sidebar" aria-label="Guías">{{NAV}}</aside>
+  <main class="prose">
+{{CONTENT}}
+    <p class="edit-link"><a href="{{EDIT}}" rel="noopener">Editar esta página en GitHub</a></p>
+    {{PAGER}}
+  </main>
+  {{TOC}}
+</div>
+{{FOOTER}}
+</body>
+</html>

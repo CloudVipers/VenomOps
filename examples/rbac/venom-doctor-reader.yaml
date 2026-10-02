@@ -1,0 +1,37 @@
+# Permisos de solo lectura que necesita venom-doctor (kubectl venom-doctor). Solo get/list: no puede modificar nada.
+# Cada bloque corresponde a lo que lee una parte de las reglas VD-K8S-001..009; quita los que no uses.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: venom-doctor-reader
+rules:
+  # Pods, sus logs y eventos (VD-K8S-001 a 005, 009), PVC (004), ServiceAccounts (009) y nodos (006, solo con -A)
+  - apiGroups: [""]
+    resources: [pods, pods/log, events, persistentvolumeclaims, serviceaccounts, nodes]
+    verbs: [get, list]
+  # PodDisruptionBudgets (VD-K8S-007)
+  - apiGroups: [policy]
+    resources: [poddisruptionbudgets]
+    verbs: [get, list]
+  # Uso de memoria para sugerir un límite en VD-K8S-002 (opcional: necesita metrics-server)
+  - apiGroups: [metrics.k8s.io]
+    resources: [pods]
+    verbs: [get, list]
+  # Karpenter (VD-K8S-008, solo con -A; si no está instalado no hace nada)
+  - apiGroups: [karpenter.sh]
+    resources: [nodepools, nodeclaims]
+    verbs: [get, list]
+---
+# Ejemplo: dar ese rol a un grupo de tu proveedor de identidad (cambia el nombre del grupo).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: venom-doctor-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: venom-doctor-reader
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: sre-oncall

@@ -63,7 +63,10 @@ venomops/
 │       └── ci-committee.yml
 ├── docs/
 │   ├── arquitectura.md
+│   ├── guia/                     # guías de uso (fuente de la web): instalación, uso, casos de uso, reglas, seguridad, ayuda
+│   ├── web/                      # generador del sitio (GitHub Pages) y su comprobador
 │   └── decisiones/               # ADRs: 0001-findings-schema.md, ...
+├── packaging/                    # paquetes .rpm/.deb, repositorio yum/apt firmado y scripts de release
 ├── packages/
 │   ├── findings-schema/
 │   │   ├── schema/finding.schema.json
@@ -100,6 +103,7 @@ venomops/
 └── examples/
     ├── terraform/                # repos de prueba con fallas deliberadas
     ├── plans/                    # terraform plan JSON de ejemplo
+    ├── rbac/                     # ClusterRole de solo lectura que necesita venom-doctor
     └── k8s/                      # manifiestos rotos para probar venom-doctor
 ```
 

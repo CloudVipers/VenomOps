@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VenomOps · Diagnostica, corrige y revisa tu infraestructura</title>
+<meta name="description" content="Encuentra qué está roto en tu clúster de Kubernetes o EKS en lenguaje claro, conviértelo en un Pull Request con el cambio mínimo de Terraform y revisa tus planes con un comité de agentes. Solo lectura, sin apply.">
+<meta name="theme-color" content="#0a0f14">
+<link rel="canonical" href="{{URL}}/">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<meta property="og:title" content="VenomOps · Diagnostica, corrige y revisa tu infraestructura">
+<meta property="og:description" content="Diagnóstico de Kubernetes y EKS en lenguaje claro, del hallazgo al Pull Request, y revisión de planes de Terraform. Solo lectura.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{URL}}/">
+<script>try{var t=localStorage.getItem('venom-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+{{HEADER}}
+<main id="contenido">
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="container">
+    <div>
+      <p class="eyebrow"><i></i> Código abierto · Solo lectura · Apache 2.0</p>
+      <h1 class="hero-title">Encuentra qué está roto en tu clúster. <em>Arréglalo con un Pull Request.</em></h1>
+      <p class="lead">VenomOps explica en lenguaje claro por qué falla Kubernetes o EKS, convierte el hallazgo en el cambio mínimo de Terraform y revisa tus planes con un comité de agentes antes del <code>apply</code>. No modifica nada por su cuenta: la decisión siempre es de una persona.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="instalacion.html">Empezar
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn btn-ghost" href="#como-funciona">Ver cómo funciona</a>
+      </div>
+      <div class="install-pill" role="group" aria-label="Comando de instalación">
+        <span class="prompt">$</span><code>sudo dnf install venom</code>
+        <button class="copy" type="button" data-copy="sudo dnf install venom" aria-label="Copiar el comando">Copiar</button>
+      </div>
+      <p class="hero-meta"><span>Sin IA por defecto</span><span>Paquetes firmados con GPG</span><span>Plugin de kubectl para Linux, macOS y Windows</span></p>
+    </div>
+
+    <div class="terminal" aria-label="Ejemplo de salida de venom doctor">
+      <div class="terminal-bar"><i></i><i></i><i></i><span>venom doctor -n venom-demo</span></div>
+<pre><span class="t-prompt">$</span> venom doctor -n venom-demo
+<span class="t-dim">SEVERIDAD ID          RECURSO         PROBLEMA</span>
+<span class="t-high">HIGH</span>      <span class="t-id">VD-K8S-001</span>  crashloop       CrashLoopBackOff
+<span class="t-high">HIGH</span>      <span class="t-id">VD-K8S-002</span>  oom             OOMKilled
+<span class="t-high">HIGH</span>      <span class="t-id">VD-K8S-003</span>  badimage        ImagePullBackOff
+<span class="t-high">HIGH</span>      <span class="t-id">VD-K8S-005</span>  probe-liveness  Liveness probe falla
+<span class="t-high">HIGH</span>      <span class="t-id">VD-K8S-009</span>  irsa-mal        ARN de rol mal formado
+<span class="t-med">MEDIUM</span>    <span class="t-id">VD-K8S-007</span>  pdb-greedy      PDB imposible de cumplir
+<span class="t-low">LOW</span>       <span class="t-id">VD-K8S-007</span>  pdb-orphan      PDB sin Pods que cubrir
+
+<span class="t-dim">── [HIGH] VD-K8S-001 · CrashLoopBackOff en el container app</span>
+Causa probable: La aplicación terminó con un error (código 1).
+<span class="t-key">Evidencia:</span>
+  • exit-code: Last state: Terminated, exitCode=1
+  • log-tail: <span class="t-di">fatal: missing required env DB_HOST</span>
+<span class="t-key">Cómo arreglarlo</span> (riesgo low): corregir la causa…</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUÉ HACE ============ -->
+<section class="block" id="que-hace">
+  <div class="container">
+    <div class="section-head">
+      <p class="kicker">Qué hace</p>
+      <h2>Tres comandos. Un mismo formato de hallazgos.</h2>
+      <p>Cada comando hace una cosa y se puede encadenar con los demás: lo que uno produce, el siguiente lo entiende. Todo lo que ves en esta página es salida real.</p>
+    </div>
+    <div class="grid grid-3">
+      <article class="card cmd-card">
+        <div class="cmd-head">
+          <span class="tag">venom doctor</span>
+          <h3>Diagnostica</h3>
+          <p>Explica por qué algo está roto en tu clúster y cómo arreglarlo. Solo lee: no puede modificar nada.</p>
+        </div>
+        <div class="terminal">
+<pre><span class="t-dim">── [HIGH] VD-K8S-002 · OOMKilled</span>
+<span class="t-key">Evidencia:</span>
+  • exitCode=137, restartCount=4
+  • limits.memory=32Mi
+<span class="t-key">Cómo arreglarlo:</span>
+  Subir limits.memory de
+  <span class="t-di">32Mi</span> a <span class="t-ai">64Mi</span></pre>
+        </div>
+      </article>
+      <article class="card cmd-card">
+        <div class="cmd-head">
+          <span class="tag">venom fix</span>
+          <h3>Corrige</h3>
+          <p>Convierte un hallazgo en un Pull Request con el cambio mínimo en Terraform. Nunca lo mezcla: lo revisa una persona.</p>
+        </div>
+        <div class="terminal">
+<pre><span class="t-dim">--- a/main.tf</span>
+<span class="t-dim">+++ b/main.tf</span>
+        limits = {
+<span class="t-del">-         memory = "32Mi"</span>
+<span class="t-add">+         memory = "64Mi"</span>
+        }
+
+<span class="t-dim">Branch:</span> fix/vd-k8s-002-oom
+<span class="t-dim">Risk:</span>   low</pre>
+        </div>
+      </article>
+      <article class="card cmd-card">
+        <div class="cmd-head">
+          <span class="tag">venom review</span>
+          <h3>Revisa</h3>
+          <p>Un comité de agentes revisa tu plan de Terraform, debate y deja por escrito los desacuerdos y los riesgos aceptados.</p>
+        </div>
+        <div class="terminal">
+<pre>Hallazgos finales: <span class="t-high">10</span> (7 high, 3 medium)
+Desacuerdos registrados: 8
+Riesgos aceptados: 2
+
+<span class="t-dim">reliability:</span> «falta redundancia en IGW»
+<span class="t-dim">security:</span>    desacuerda
+<span class="t-dim">cost:</span>        desacuerda
+<span class="t-key">→ Resuelto:</span> un IGW por región es
+  la arquitectura correcta</pre>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CÓMO FUNCIONA ============ -->
+<section class="block alt" id="como-funciona">
+  <div class="container">
+    <div class="section-head">
+      <p class="kicker">Cómo funciona</p>
+      <h2>Del síntoma al cambio revisado, sin que nada se aplique solo.</h2>
+      <p>La información fluye en una sola dirección y cada paso termina en una persona. Lo que lee el clúster nunca escribe; lo que propone un cambio nunca lo aplica.</p>
+    </div>
+    <div class="diagram">
+      <svg viewBox="0 0 960 330" role="img" aria-labelledby="flow-title flow-desc">
+        <title id="flow-title">Flujo de VenomOps</title>
+        <desc id="flow-desc">Tu clúster se lee en modo solo lectura con venom doctor, que produce hallazgos. venom fix convierte un hallazgo en un Pull Request que revisa una persona. Un plan de Terraform pasa por venom review, que produce un informe para esa misma persona. Los hallazgos del clúster pueden servir de contexto a la revisión.</desc>
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrow"/></marker>
+        </defs>
+        <!-- fila 1 -->
+        <rect class="box" x="8" y="42" width="140" height="66" rx="12"/>
+        <text x="78" y="70" text-anchor="middle">Tu clúster</text>
+        <text class="sub" x="78" y="90" text-anchor="middle">Kubernetes / EKS</text>
+
+        <rect class="box accent" x="220" y="42" width="150" height="66" rx="12"/>
+        <text class="mono" x="295" y="70" text-anchor="middle">venom doctor</text>
+        <text class="sub" x="295" y="90" text-anchor="middle">diagnostica</text>
+
+        <rect class="box accent" x="442" y="42" width="150" height="66" rx="12"/>
+        <text class="mono" x="517" y="70" text-anchor="middle">venom fix</text>
+        <text class="sub" x="517" y="90" text-anchor="middle">propone el arreglo</text>
+
+        <rect class="box" x="664" y="42" width="130" height="66" rx="12"/>
+        <text x="729" y="70" text-anchor="middle">Pull Request</text>
+        <text class="sub" x="729" y="90" text-anchor="middle">cambio mínimo</text>
+
+        <!-- persona -->
+        <rect class="box human" x="832" y="42" width="120" height="222" rx="14"/>
+        <text x="892" y="140" text-anchor="middle">Una persona</text>
+        <text x="892" y="160" text-anchor="middle">decide</text>
+        <text class="sub" x="892" y="186" text-anchor="middle">revisa el PR</text>
+        <text class="sub" x="892" y="204" text-anchor="middle">o lee el informe</text>
+
+        <!-- fila 2 -->
+        <rect class="box" x="8" y="198" width="170" height="66" rx="12"/>
+        <text class="mono" x="93" y="226" text-anchor="middle">plan.json</text>
+        <text class="sub" x="93" y="246" text-anchor="middle">terraform show -json</text>
+
+        <rect class="box accent" x="262" y="198" width="152" height="66" rx="12"/>
+        <text class="mono" x="338" y="226" text-anchor="middle">venom review</text>
+        <text class="sub" x="338" y="246" text-anchor="middle">comité de agentes</text>
+
+        <rect class="box" x="498" y="198" width="190" height="66" rx="12"/>
+        <text x="593" y="226" text-anchor="middle">Informe</text>
+        <text class="sub" x="593" y="246" text-anchor="middle">desacuerdos y riesgos</text>
+
+        <!-- aristas fila 1 -->
+        <path class="edge" d="M148 75 H216" marker-end="url(#ah)"/>
+        <text class="edge-label" x="182" y="64" text-anchor="middle">solo lectura</text>
+        <path class="edge" d="M370 75 H438" marker-end="url(#ah)"/>
+        <text class="edge-label" x="404" y="64" text-anchor="middle">hallazgos</text>
+        <path class="edge" d="M592 75 H660" marker-end="url(#ah)"/>
+        <text class="edge-label" x="626" y="64" text-anchor="middle">diff</text>
+        <path class="edge" d="M794 75 H828" marker-end="url(#ah)"/>
+        <!-- aristas fila 2 -->
+        <path class="edge" d="M178 231 H258" marker-end="url(#ah)"/>
+        <path class="edge" d="M414 231 H494" marker-end="url(#ah)"/>
+        <path class="edge" d="M688 231 H828" marker-end="url(#ah)"/>
+        <!-- contexto -->
+        <path class="edge dash" d="M295 108 V160 Q295 176 311 176 H338 V194" marker-end="url(#ah)"/>
+        <text class="edge-label" x="352" y="156">hallazgos como contexto (opcional)</text>
+        <!-- etiquetas bajo las filas -->
+        <text class="edge-label" x="8" y="298">La IA solo interviene en venom review y, si la pides, con --explain o --agent. Los secretos se enmascaran antes de enviar nada.</text>
+      </svg>
+    </div>
+    <div class="diagram-legend">
+      <span><strong style="color:var(--accent)">■</strong> Herramientas de VenomOps</span>
+      <span><strong style="color:var(--warn)">■</strong> Decisión humana</span>
+      <span>Línea discontinua: contexto opcional</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ANATOMÍA ============ -->
+<section class="block" id="hallazgos">
+  <div class="container">
+    <div class="section-head">
+      <p class="kicker">Cómo identificar problemas</p>
+      <h2>Cada hallazgo trae la prueba, la causa y el arreglo.</h2>
+      <p>No es una lista de alertas: cada hallazgo se explica solo. Sabes qué es, dónde está, <strong>por qué lo creemos</strong> y qué hacer, sin tener que encadenar <code>get</code>, <code>describe</code>, <code>logs</code> y <code>events</code>.</p>
+    </div>
+    <div class="anatomy">
+      <ol>
+        <li><div><strong>Severidad e identificador</strong><span>De <code>critical</code> a <code>info</code>. Cada regla tiene un ID estable (<code>VD-K8S-005</code>) que puedes buscar, filtrar o ignorar.</span></div></li>
+        <li><div><strong>El recurso afectado</strong><span>El Pod, nodo, PDB o ServiceAccount exacto, con su namespace.</span></div></li>
+        <li><div><strong>La causa probable</strong><span>En lenguaje claro y con la consecuencia: aquí, que el kubelet reinicia el contenedor cada vez.</span></div></li>
+        <li><div><strong>La evidencia</strong><span>Lo que se observó de verdad: estado, eventos, configuración. Es lo que te permite fiarte del diagnóstico o rebatirlo.</span></div></li>
+        <li><div><strong>Cómo arreglarlo y con qué riesgo</strong><span>Pasos concretos, un nivel de riesgo y enlaces a la documentación oficial.</span></div></li>
+      </ol>
+      <div class="terminal" aria-label="Ejemplo de un hallazgo">
+        <div class="terminal-bar"><i></i><i></i><i></i><span>VD-K8S-005 · probes fallando</span></div>
+<pre><span class="t-dim">①</span> <span class="t-high">[HIGH]</span> <span class="t-id">VD-K8S-005</span> · La probe de liveness falla
+<span class="t-dim">②</span> Recurso: Pod venom-demo/probe-liveness
+<span class="t-dim">③</span> Causa probable: El endpoint de la probe devuelve
+   404: la ruta configurada no existe. El kubelet
+   reinicia el contenedor cada vez que falla.
+<span class="t-dim">④</span> <span class="t-key">Evidencia:</span>
+   • restartCount=3
+   • liveness probe failed (x4): <span class="t-di">statuscode: 404</span>
+   • probe-config: httpGet <span class="t-di">/no-existe</span>:8080,
+     periodSeconds=3, failureThreshold=1
+<span class="t-dim">⑤</span> <span class="t-key">Cómo arreglarlo</span> (riesgo low):
+   1. Corregir el path de la probe para que
+      coincida con el endpoint de salud real.
+   2. Verificar si la ruta cambió entre versiones.</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REGLAS ============ -->
+<section class="block alt" id="reglas">
+  <div class="container">
+    <div class="section-head">
+      <p class="kicker">Qué detecta</p>
+      <h2>Nueve situaciones de Kubernetes y EKS que quitan el sueño.</h2>
+      <p>Cada una tiene su página con el síntoma, la evidencia, cómo <strong>confirmarlo tú a mano</strong> con comandos de solo lectura y cómo arreglarlo.</p>
+    </div>
+    <div class="grid grid-3">
+      <a class="card rule" href="reglas.html#vd-k8s-001-crashloopbackoff"><div class="rule-top"><span class="rule-id">VD-K8S-001</span><span class="sev sev-high">high</span></div><h3>CrashLoopBackOff</h3><p>El contenedor arranca, falla y se reinicia en bucle.</p><div class="sees">kubectl get pods → CrashLoopBackOff</div></a>
+      <a class="card rule" href="reglas.html#vd-k8s-002-oomkilled"><div class="rule-top"><span class="rule-id">VD-K8S-002</span><span class="sev sev-high">high</span></div><h3>OOMKilled</h3><p>El kernel mató el contenedor por superar su memoria. Se puede corregir con un PR.</p><div class="sees">Last State: OOMKilled · exit 137</div></a>
+      <a class="card rule" href="reglas.html#vd-k8s-003-imagepullbackoff"><div class="rule-top"><span class="rule-id">VD-K8S-003</span><span class="sev sev-high">high</span></div><h3>ImagePullBackOff</h3><p>No se descarga la imagen. Distingue tag inexistente, credenciales, límite de descargas o red.</p><div class="sees">ErrImagePull · ImagePullBackOff</div></a>
+      <a class="card rule" href="reglas.html#vd-k8s-004-pending"><div class="rule-top"><span class="rule-id">VD-K8S-004</span><span class="sev sev-high">high</span></div><h3>Pending</h3><p>El scheduler no encuentra dónde colocar el Pod: recursos, taints, selectores o un PVC.</p><div class="sees">FailedScheduling · Pending</div></a>
+      <a class="card rule" href="reglas.html#vd-k8s-005-probes-fallando"><div class="rule-top"><span class="rule-id">VD-K8S-005</span><span class="sev sev-med">high / medium</span></div><h3>Probes fallando</h3><p>Liveness, readiness o startup. Distingue puerto, ruta, timeout, 5xx y comando fallido.</p><div class="sees">Unhealthy · READY 0/1 · Running</div></a>
+      <a class="card rule" href="reglas.html#vd-k8s-006-nodos-notready"><div class="rule-top"><span class="rule-id">VD-K8S-006</span><span class="sev sev-high">high</span></div><h3>Nodos NotReady</h3><p>Kubelet detenido, red de Pods o runtime caídos, o presión de memoria, disco y PIDs. Con <code>-A</code>.</p><div class="sees">kubectl get nodes → NotReady</div></a>
+      <a class="card rule" href="reglas.html#vd-k8s-007-pdb-que-bloquea-drains"><div class="rule-top"><span class="rule-id">VD-K8S-007</span><span class="sev sev-med">medium</span></div><h3>PDB que bloquea drains</h3><p>Un PodDisruptionBudget que hará colgar el próximo mantenimiento. Distingue cuatro causas.</p><div class="sees">ALLOWED DISRUPTIONS 0</div></a>
+      <a class="card rule" href="reglas.html#vd-k8s-008-karpenter-sin-capacidad"><div class="rule-top"><span class="rule-id">VD-K8S-008</span><span class="sev sev-high">high</span></div><h3>Karpenter sin capacidad</h3><p>NodePool no listo o en su límite, NodeClaim atascado. Con <code>-A</code>; muestra el motivo tal cual lo reporta Karpenter.</p><div class="sees">kubectl get nodeclaims → no Ready</div></a>
+      <a class="card rule" href="reglas.html#vd-k8s-009-irsa-mal-cableado"><div class="rule-top"><span class="rule-id">VD-K8S-009</span><span class="sev sev-high">high</span></div><h3>IRSA mal cableado</h3><p>Pods sin el rol de IAM de su ServiceAccount; pueden estar usando las credenciales del nodo sin saberlo.</p><div class="sees">AccessDenied · NoCredentialProviders</div></a>
+    </div>
+    <p style="margin-top:28px"><a class="btn btn-ghost" href="reglas.html">Ver el catálogo completo
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
+  </div>
+</section>
+
+<!-- ============ CASOS DE USO ============ -->
+<section class="block" id="casos">
+  <div class="container">
+    <div class="section-head">
+      <p class="kicker">Casos de uso</p>
+      <h2>Para el momento en que lo necesitas.</h2>
+      <p>Situaciones reales, con los comandos y qué esperar.</p>
+    </div>
+    <div class="grid grid-3">
+      <a class="card" href="casos-de-uso.html#1-un-pod-no-arranca-y-estoy-de-guardia"><span class="tag">De guardia</span><h3>Un Pod no arranca</h3><p>Sabes que algo falla pero no por dónde empezar. Una pantalla con la causa, la prueba y los pasos.</p><span class="more">Ver el caso →</span></a>
+      <a class="card" href="casos-de-uso.html#2-voy-a-actualizar-los-nodos-o-hacer-un-drain"><span class="tag">Mantenimiento</span><h3>Antes de un drain</h3><p>Descubre qué PDB y qué nodos van a impedir la actualización, antes de dejar medio clúster cordonado.</p><span class="more">Ver el caso →</span></a>
+      <a class="card" href="casos-de-uso.html#3-un-oomkilled-debería-ser-un-pull-request-no-una-tarde-de-trabajo"><span class="tag">Automatización</span><h3>Del OOMKilled al PR</h3><p>Un límite de memoria se convierte en un Pull Request revisable, con el plan de Terraform adjunto.</p><span class="more">Ver el caso →</span></a>
+      <a class="card" href="casos-de-uso.html#4-quiero-una-segunda-opinión-sobre-un-plan-de-terraform-antes-del-apply"><span class="tag">Antes del apply</span><h3>Segunda opinión sobre un plan</h3><p>Seguridad, costes, fiabilidad y operación a la vez, con los desacuerdos por escrito.</p><span class="more">Ver el caso →</span></a>
+      <a class="card" href="casos-de-uso.html#6-vigilar-el-clúster-desde-ci-o-un-cron"><span class="tag">CI / cron</span><h3>Vigilar el clúster</h3><p>Salida JSON validada y un script que falla si aparece algo grave. Con un rol de solo lectura.</p><span class="more">Ver el caso →</span></a>
+      <a class="card" href="casos-de-uso.html#7-auditar-o-migrar-a-irsa"><span class="tag">Auditoría</span><h3>Auditar o migrar a IRSA</h3><p>Qué ServiceAccounts están bien cableados y cuáles usan en silencio las credenciales del nodo.</p><span class="more">Ver el caso →</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SEGURIDAD ============ -->
+<section class="block alt" id="seguridad">
+  <div class="container">
+    <div class="section-head">
+      <p class="kicker">Diseñado para ser seguro</p>
+      <h2>Los límites están en el código, no solo en las instrucciones.</h2>
+      <p>Una herramienta que trabaja cerca de producción no puede confiar en que un prompt se porte bien. Estas garantías se hacen cumplir con código y tests.</p>
+    </div>
+    <div class="grid grid-3">
+      <div class="safe"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></div><div><h3>Solo lectura</h3><p>El lector del clúster solo expone <code>get</code> y <code>list</code>. Un test falla si algo emite otro verbo.</p></div></div>
+      <div class="safe"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg></div><div><h3>Nunca un apply</h3><p>Solo puede ejecutar <code>terraform init</code>, <code>validate</code> y <code>plan</code>. Cualquier otra orden lanza una excepción.</p></div></div>
+      <div class="safe"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><h3>Decide una persona</h3><p>Abre Pull Requests, nunca los mezcla ni empuja a <code>main</code>. Cada PR lleva su lista de revisión.</p></div></div>
+      <div class="safe"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><div><h3>La IA, solo si la pides</h3><p>Sin <code>--explain</code>, <code>--agent</code> o <code>venom review</code> no hay ninguna llamada de IA. Y no hay modelo por defecto.</p></div></div>
+      <div class="safe"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 8.3-8 9-4.8-.7-8-4.5-8-9V6l8-3Z"/><path d="M9 12l2 2 4-4"/></svg></div><div><h3>Secretos enmascarados</h3><p>Claves de AWS, tokens, contraseñas e IDs de cuenta se ocultan antes de enviar nada a un modelo o escribirlo en un PR.</p></div></div>
+      <div class="safe"><div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8Zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div><div><h3>Paquetes firmados</h3><p>El repositorio y los paquetes llevan firma GPG, y se rechazan los manipulados. Está probado, no solo declarado.</p></div></div>
+    </div>
+    <p style="margin-top:28px"><a class="btn btn-ghost" href="seguridad.html">Leer las garantías en detalle
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
+  </div>
+</section>
+
+<!-- ============ INSTALACIÓN ============ -->
+<section class="block" id="instalar">
+  <div class="container">
+    <div class="section-head">
+      <p class="kicker">Instalación</p>
+      <h2>En un minuto, sin Python ni dependencias.</h2>
+      <p>Los paquetes incluyen todo lo necesario. Elige tu sistema:</p>
+    </div>
+    <div class="tabs">
+      <div class="tab-list" role="tablist" aria-label="Sistema">
+        <button role="tab" id="t-rpm" aria-controls="p-rpm" aria-selected="true">RHEL · Rocky · Amazon Linux</button>
+        <button role="tab" id="t-deb" aria-controls="p-deb" aria-selected="false" tabindex="-1">Debian · Ubuntu</button>
+        <button role="tab" id="t-krew" aria-controls="p-krew" aria-selected="false" tabindex="-1">kubectl (krew)</button>
+        <button role="tab" id="t-bin" aria-controls="p-bin" aria-selected="false" tabindex="-1">Binario</button>
+      </div>
+      <div class="tab-panel" role="tabpanel" id="p-rpm" aria-labelledby="t-rpm">
+        <p>RHEL 9, Rocky, AlmaLinux y Amazon Linux 2023, en x86_64 y aarch64. Todo: <code>venom</code> y <code>kubectl-venom_doctor</code>.</p>
+        <figure class="code code-cmd"><figcaption><span>bash</span><button class="copy" type="button">Copiar</button></figcaption><div class="highlight"><pre>sudo tee /etc/yum.repos.d/venom.repo &lt;&lt;'REPO'
+[venom]
+name=VenomOps
+baseurl={{URL}}/rpm/$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey={{URL}}/venom-repo.asc
+REPO
+sudo dnf install venom</pre></div></figure>
+        <p>La primera vez, <code>dnf</code> muestra la huella de la clave: debe ser <code>A7BE 1F5E 03EC 7AA9 C797 A9DE 3237 E8D7 9E6E 29C5</code>.</p>
+      </div>
+      <div class="tab-panel" role="tabpanel" id="p-deb" aria-labelledby="t-deb" hidden>
+        <p>Debian 12+ y Ubuntu 22.04+, en amd64 y arm64.</p>
+        <figure class="code code-cmd"><figcaption><span>bash</span><button class="copy" type="button">Copiar</button></figcaption><div class="highlight"><pre>sudo curl -fsSL {{URL}}/venom-repo.gpg -o /usr/share/keyrings/venom.gpg
+echo 'deb [signed-by=/usr/share/keyrings/venom.gpg] {{URL}}/deb stable main' | sudo tee /etc/apt/sources.list.d/venom.list
+sudo apt update &amp;&amp; sudo apt install venom</pre></div></figure>
+      </div>
+      <div class="tab-panel" role="tabpanel" id="p-krew" aria-labelledby="t-krew" hidden>
+        <p>Solo el diagnóstico de clústeres, como plugin de <code>kubectl</code>. Linux, macOS y Windows.</p>
+        <figure class="code code-cmd"><figcaption><span>bash</span><button class="copy" type="button">Copiar</button></figcaption><div class="highlight"><pre>kubectl krew install --manifest-url=https://raw.githubusercontent.com/CloudVipers/VenomOps/main/packages/venom-doctor/venom-doctor.yaml
+kubectl venom-doctor -A</pre></div></figure>
+        <p>Está propuesto al índice oficial de krew; cuando lo acepten bastará <code>kubectl krew install venom-doctor</code>.</p>
+      </div>
+      <div class="tab-panel" role="tabpanel" id="p-bin" aria-labelledby="t-bin" hidden>
+        <p>Cada <a href="{{REPO}}/releases">versión</a> trae el binario para Linux, macOS y Windows, con su <code>checksums.txt</code>.</p>
+        <figure class="code code-cmd"><figcaption><span>bash</span><button class="copy" type="button">Copiar</button></figcaption><div class="highlight"><pre>VERSION={{VERSION}}
+curl -fsSLO {{REPO}}/releases/download/venom-doctor-v${VERSION}/venom-doctor_v${VERSION}_linux_amd64.tar.gz
+curl -fsSLO {{REPO}}/releases/download/venom-doctor-v${VERSION}/checksums.txt
+sha256sum -c checksums.txt --ignore-missing
+tar -xzf venom-doctor_v${VERSION}_linux_amd64.tar.gz && sudo install kubectl-venom_doctor /usr/local/bin/</pre></div></figure>
+      </div>
+    </div>
+    <p style="margin-top:26px;display:flex;flex-wrap:wrap;gap:12px">
+      <a class="btn btn-primary" href="instalacion.html">Guía de instalación completa
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a class="btn btn-ghost" href="uso.html">Cómo se usa</a>
+    </p>
+  </div>
+</section>
+
+</main>
+{{FOOTER}}
+</body>
+</html>
