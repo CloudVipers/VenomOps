@@ -1,4 +1,4 @@
-"""KD-K8S-002 (from venom-doctor): container killed by OOM -> raise ``limits.memory`` in the owning Terraform workload.
+"""VD-K8S-002 (from venom-doctor): container killed by OOM -> raise ``limits.memory`` in the owning Terraform workload.
 
 Contract with venom-doctor (docs/decisiones/0004): the finding carries an evidence of kind ``memory-limit-change`` with
 ``container=<name>;from=<quantity>;to=<quantity>``. Without it (e.g. the container had no limit) there is nothing
@@ -62,7 +62,7 @@ def _metadata(attrs: dict[str, Any]) -> tuple[str | None, str]:
 
 
 class K8sMemoryLimitFixer:
-    ids: ClassVar[frozenset[str]] = frozenset({"KD-K8S-002"})
+    ids: ClassVar[frozenset[str]] = frozenset({"VD-K8S-002"})
     title: ClassVar[str] = "Contenedor terminado por OOMKilled"
 
     def find_workload(self, tools: ToolBox, finding: Finding) -> tuple[str, str, str]:

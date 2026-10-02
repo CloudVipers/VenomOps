@@ -129,7 +129,7 @@ def test_nothing_to_do_when_already_fixed(s3_repo: Path, runner_factory: Factory
 
 
 def test_unknown_finding_without_agent_is_refused(s3_repo: Path, runner_factory: Factory) -> None:
-    finding = make_finding(id="KD-K8S-001")
+    finding = make_finding(id="VD-K8S-001")
     with pytest.raises(FixAborted, match="no fixer"):
         run_fix(finding, FixOptions(repo=s3_repo, dry_run=True), runner_factory=runner_factory)
 

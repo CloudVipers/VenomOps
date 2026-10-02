@@ -1,4 +1,4 @@
-# Corresponde al Pod de examples/k8s/20-oomkilled.yaml (falla deliberada KD-K8S-002: límite de memoria demasiado bajo).
+# Corresponde al Pod de examples/k8s/20-oomkilled.yaml (falla deliberada VD-K8S-002: límite de memoria demasiado bajo).
 resource "kubernetes_pod_v1" "oom" {
   metadata {
     name      = "oom"

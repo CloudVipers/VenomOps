@@ -27,7 +27,7 @@ finding.json ──▶ validar contra findings-schema
 | `TF-S3-001` | Bucket S3 sin cifrado | Agrega `aws_s3_bucket_server_side_encryption_configuration` (SSE-S3, AES256) |
 | `TF-TAG-001` | Tags obligatorios faltantes | Agrega solo los tags que faltan (nunca pisa un valor existente) |
 | `TF-EBS-001` | Volumen gp2 | Cambia a gp3 en `aws_ebs_volume`, `aws_instance` o `aws_launch_template`; avisa si el volumen es grande |
-| `KD-K8S-002` (de `venom-doctor`) | Contenedor terminado por OOMKilled | Sube `limits.memory` del contenedor en el recurso `kubernetes_*` de Terraform que declara el Pod/Deployment/StatefulSet... (solo ese `limits`, nunca `requests`) |
+| `VD-K8S-002` (de `venom-doctor`) | Contenedor terminado por OOMKilled | Sube `limits.memory` del contenedor en el recurso `kubernetes_*` de Terraform que declara el Pod/Deployment/StatefulSet... (solo ese `limits`, nunca `requests`) |
 
 Para **`TF-TAG-001`** el finding debe traer los valores en una evidencia `required-tags` con
 `detail: "Environment=prod;Owner=team-a"`. Todos son idempotentes: si el código ya tiene el arreglo, no hace nada.
@@ -58,7 +58,7 @@ kubectl venom-doctor -n venom-demo -o json | pr-agent fix --finding - --supporte
     --repo ../../examples/terraform/k8s-oom-demo --dry-run
 ```
 
-`KD-K8S-002` se asocia al recurso de Terraform por `metadata.name`/`namespace` literales (un Deployment se deduce por el
+`VD-K8S-002` se asocia al recurso de Terraform por `metadata.name`/`namespace` literales (un Deployment se deduce por el
 nombre del Pod) y necesita la evidencia `memory-limit-change` ([ADR 0004](../../docs/decisiones/0004-convenciones-evidence.md)).
 Si no hay coincidencia única, o el valor no es literal, se detiene en lugar de adivinar. Demo completa:
 [`examples/demo`](../../examples/demo).
@@ -136,7 +136,7 @@ omiten con `PR_AGENT_SKIP_TERRAFORM=1` o si `terraform` no está en el `PATH`. E
 
 - `terraform init -backend=false` es necesario para que `validate` cargue los providers; es el único comando fuera de
   la lista original de `CLAUDE.md` (ver ADR 0002) y nunca toca el estado remoto.
-- `KD-K8S-002` necesita `metadata.name`/`namespace` literales y un único recurso que coincida; no usa variables ni `for_each`.
+- `VD-K8S-002` necesita `metadata.name`/`namespace` literales y un único recurso que coincida; no usa variables ni `for_each`.
 - Tags: solo edita mapas `tags = { ... }` literales de varias líneas; si son una variable o `merge(...)` se detiene.
 - La copia de trabajo no incluye `*.tfvars` (pueden tener secretos): en repos con variables obligatorias el `plan` puede no
   estar disponible y el PR lo dice; `validate` sí se ejecuta siempre.

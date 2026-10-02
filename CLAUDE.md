@@ -113,7 +113,7 @@ Todo módulo produce o consume este formato. **Es lo primero que se construye** 
 
 | Campo | Tipo | Descripción |
 |---|---|---|
-| `id` | string | Identificador estable de la regla, p. ej. `KD-K8S-001` |
+| `id` | string | Identificador estable de la regla, p. ej. `VD-K8S-001` |
 | `schema_version` | string | Versión semántica del schema, p. ej. `1.0.0` |
 | `source` | enum | `venom-doctor` (antes `kdoctor`, obsoleto pero válido al leer), `pr-agent`, `arch-committee`, `manual` |
 | `severity` | enum | `critical`, `high`, `medium`, `low`, `info` |
@@ -198,7 +198,7 @@ type Rule interface {
 - [x] `.goreleaser.yaml` y manifiesto de krew (`venom-doctor.yaml`).
 - [x] CI: `go vet`, `golangci-lint`, `go test -race ./...`.
 
-**Reglas fase 2 (segunda tanda, después del MVP):** ~~probes fallando~~ _(hecho: `KD-K8S-005`)_, ~~IRSA / EKS Pod Identity mal configurado~~ _(hecho para IRSA: `KD-K8S-009`; Pod Identity queda fuera, ver [ADR 0008](docs/decisiones/0008-regla-irsa-venom-doctor.md))_, ~~nodos `NotReady`~~ _(hecho: `KD-K8S-006`)_, ~~PDB que bloquea drains~~ _(hecho: `KD-K8S-007`)_, ~~Karpenter sin capacidad~~ _(hecho: `KD-K8S-008`)_.
+**Reglas fase 2 (segunda tanda, después del MVP):** ~~probes fallando~~ _(hecho: `VD-K8S-005`)_, ~~IRSA / EKS Pod Identity mal configurado~~ _(hecho para IRSA: `VD-K8S-009`; Pod Identity queda fuera, ver [ADR 0008](docs/decisiones/0008-regla-irsa-venom-doctor.md))_, ~~nodos `NotReady`~~ _(hecho: `VD-K8S-006`)_, ~~PDB que bloquea drains~~ _(hecho: `VD-K8S-007`)_, ~~Karpenter sin capacidad~~ _(hecho: `VD-K8S-008`)_.
 
 **DoD:** `kubectl venom-doctor` detecta correctamente los 4 escenarios sobre los manifiestos de ejemplo en kind; cobertura de reglas >80%; binario compilado por GoReleaser en modo snapshot.
 

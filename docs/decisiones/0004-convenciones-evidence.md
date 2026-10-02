@@ -18,7 +18,7 @@ schema:
 
 | `kind` | Formato de `detail` | Lo produce | Lo consume |
 |---|---|---|---|
-| `memory-limit-change` | `container=<nombre>;from=<cantidad>;to=<cantidad>` (p. ej. `container=app;from=32Mi;to=64Mi`) | `venom-doctor` (KD-K8S-002) | `pr-agent` (fixer `KD-K8S-002`) |
+| `memory-limit-change` | `container=<nombre>;from=<cantidad>;to=<cantidad>` (p. ej. `container=app;from=32Mi;to=64Mi`) | `venom-doctor` (VD-K8S-002) | `pr-agent` (fixer `VD-K8S-002`) |
 | `required-tags` | `Clave=Valor;Clave2=Valor2` | cualquier fuente (p. ej. manual) | `pr-agent` (fixer `TF-TAG-001`) |
 | `prior-finding` | `<id> (<fuente>): <título>` | `arch-committee` | personas (trazabilidad) |
 | `debate` | `<agente> (<postura>): <argumento>` | `arch-committee` | personas |
@@ -43,9 +43,9 @@ Reglas:
 | `TF-S3-001` | Agrega cifrado SSE-S3 a un bucket |
 | `TF-TAG-001` | Agrega los tags faltantes |
 | `TF-EBS-001` | gp2 → gp3 |
-| `KD-K8S-002` | Sube `limits.memory` en el recurso `kubernetes_*` de Terraform que declara el workload |
+| `VD-K8S-002` | Sube `limits.memory` en el recurso `kubernetes_*` de Terraform que declara el workload |
 
-Los demás findings (`KD-K8S-001/003/004`, `AC-*`) requieren una persona o el agente LLM opcional (`--agent`).
+Los demás findings (`VD-K8S-001/003/004`, `AC-*`) requieren una persona o el agente LLM opcional (`--agent`).
 
 ## Consecuencias
 

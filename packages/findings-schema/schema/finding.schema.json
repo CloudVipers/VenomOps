@@ -20,7 +20,7 @@
   ],
   "properties": {
     "id": {
-      "description": "Identificador estable de la regla, p. ej. KD-K8S-001.",
+      "description": "Identificador estable de la regla, p. ej. VD-K8S-001.",
       "type": "string",
       "pattern": "^[A-Z][A-Z0-9]+(-[A-Z0-9]+)+$",
       "maxLength": 64

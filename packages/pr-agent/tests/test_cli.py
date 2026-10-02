@@ -78,7 +78,7 @@ def test_invalid_finding_is_reported_with_the_schema_errors(s3_repo: Path, tmp_p
 
 def test_unsupported_finding_is_aborted_with_a_helpful_message(s3_repo: Path, tmp_path: Path) -> None:
     data = json.loads(Path(S3).read_text())
-    data["id"] = "KD-K8S-001"
+    data["id"] = "VD-K8S-001"
     f = tmp_path / "k8s.json"
     f.write_text(json.dumps(data))
     result = runner.invoke(cli.app, ["fix", "--finding", str(f), "--repo", str(s3_repo), "--dry-run"])
@@ -139,10 +139,10 @@ def venom_doctor_like(tmp_path: Path) -> Path:
         }  # fmt: skip
 
     arr = [
-        f("KD-K8S-001", "crashloop"),
-        f("KD-K8S-002", "oom", change="container=app;from=32Mi;to=64Mi"),
-        f("KD-K8S-003", "badimage"),
-        f("KD-K8S-004", "pending"),
+        f("VD-K8S-001", "crashloop"),
+        f("VD-K8S-002", "oom", change="container=app;from=32Mi;to=64Mi"),
+        f("VD-K8S-003", "badimage"),
+        f("VD-K8S-004", "pending"),
     ]
     path = tmp_path / "venom-doctor.json"
     path.write_text(json.dumps(arr))
@@ -154,23 +154,23 @@ def test_the_supported_finding_is_picked_from_a_venom_doctor_array(tmp_path: Pat
     src = venom_doctor_like(tmp_path)
     for flags in (
         ["--supported"],
-        ["--id", "KD-K8S-002"],
+        ["--id", "VD-K8S-002"],
         ["--resource", "oom"],
         ["--resource", "venom-demo/oom"],
         ["--index", "1"],
     ):
         result = runner.invoke(cli.app, ["fix", "--finding", str(src), "--repo", str(repo), "--dry-run", *flags])
         assert result.exit_code == 0, (flags, result.output)
-        assert "KD-K8S-002" in result.output and '+          memory = "64Mi"' in result.output
+        assert "VD-K8S-002" in result.output and '+          memory = "64Mi"' in result.output
 
 
 def test_ambiguous_or_empty_selections_are_explained(tmp_path: Path) -> None:
     repo = copy_k8s_example(tmp_path)
     src = str(venom_doctor_like(tmp_path))
     many = runner.invoke(cli.app, ["fix", "--finding", src, "--repo", str(repo), "--dry-run"])
-    assert many.exit_code == 2 and "4 findings match" in many.output and "[1] KD-K8S-002 venom-demo/oom" in many.output
-    none = runner.invoke(cli.app, ["fix", "--finding", src, "--repo", str(repo), "--dry-run", "--id", "KD-NOPE"])
-    assert none.exit_code == 2 and "no finding matches" in none.output and "KD-K8S-003" in none.output
+    assert many.exit_code == 2 and "4 findings match" in many.output and "[1] VD-K8S-002 venom-demo/oom" in many.output
+    none = runner.invoke(cli.app, ["fix", "--finding", src, "--repo", str(repo), "--dry-run", "--id", "VD-NOPE"])
+    assert none.exit_code == 2 and "no finding matches" in none.output and "VD-K8S-003" in none.output
     nofixer = runner.invoke(
         cli.app, ["fix", "--finding", src, "--repo", str(repo), "--dry-run", "--resource", "pending", "--supported"]
     )
@@ -186,4 +186,4 @@ def test_the_pipe_from_stdin_works(tmp_path: Path) -> None:
     result = runner.invoke(
         cli.app, ["fix", "--finding", "-", "--repo", str(repo), "--dry-run", "--supported"], input=data
     )
-    assert result.exit_code == 0 and "KD-K8S-002" in result.output
+    assert result.exit_code == 0 and "VD-K8S-002" in result.output

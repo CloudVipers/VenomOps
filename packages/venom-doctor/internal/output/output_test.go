@@ -14,7 +14,7 @@ import (
 
 func sample() findings.Finding {
 	return findings.Finding{
-		ID: "KD-K8S-001", SchemaVersion: "1.1.0", Source: findings.SourceVenomDoctor, Severity: findings.SeverityHigh,
+		ID: "VD-K8S-001", SchemaVersion: "1.1.0", Source: findings.SourceVenomDoctor, Severity: findings.SeverityHigh,
 		Title:     "Pod payments/api en CrashLoopBackOff",
 		Resource:  findings.Resource{Type: "Pod", Name: "api", Namespace: "payments"},
 		Evidence:  []findings.Evidence{{Kind: "exit-code", Detail: "exitCode=1"}, {Kind: "log-tail", Detail: "line1\nline2"}},
@@ -66,13 +66,13 @@ func TestJSONRefusesAFindingThatBreaksTheContract(t *testing.T) {
 
 func TestTableShowsSummaryAndDetail(t *testing.T) {
 	var buf bytes.Buffer
-	errs := []engine.RuleError{{RuleID: "KD-K8S-009", Err: errTest{}}}
+	errs := []engine.RuleError{{RuleID: "VD-K8S-009", Err: errTest{}}}
 	if err := output.Table(&buf, []findings.Finding{sample()}, errs); err != nil {
 		t.Fatal(err)
 	}
 	out := buf.String()
-	for _, want := range []string{"SEVERIDAD", "HIGH", "KD-K8S-001", "Pod payments/api", "Causa probable:", "Evidencia:",
-		"exit-code: exitCode=1", "      line2", "1. Agregar DB_HOST", "IaC:", "Ref: https://kubernetes.io", "KD-K8S-009 no pudo ejecutarse"} {
+	for _, want := range []string{"SEVERIDAD", "HIGH", "VD-K8S-001", "Pod payments/api", "Causa probable:", "Evidencia:",
+		"exit-code: exitCode=1", "      line2", "1. Agregar DB_HOST", "IaC:", "Ref: https://kubernetes.io", "VD-K8S-009 no pudo ejecutarse"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("table output is missing %q:\n%s", want, out)
 		}

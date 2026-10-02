@@ -62,7 +62,7 @@ def test_venom_doctor_oom_finding_passes_real_terraform_validate_and_plan(tmp_pa
     from .conftest import EXAMPLES
 
     docs = json.loads((EXAMPLES / "findings" / "venom-doctor-output.json").read_text(encoding="utf-8"))
-    finding = next(Finding.from_dict(d) for d in docs if d["id"] == "KD-K8S-002")
+    finding = next(Finding.from_dict(d) for d in docs if d["id"] == "VD-K8S-002")
     repo = copy_example("k8s-oom-demo", tmp_path)
     before = snapshot(repo)
     report = run_fix(finding, FixOptions(repo=repo, dry_run=True, require_plan=True), runner_factory=SafeRunner)

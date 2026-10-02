@@ -21,7 +21,7 @@ import (
 type IRSAConsistency struct{ Namespace string }
 
 // ID implements engine.Rule.
-func (IRSAConsistency) ID() string { return "KD-K8S-009" }
+func (IRSAConsistency) ID() string { return "VD-K8S-009" }
 
 // Description implements engine.Rule.
 func (IRSAConsistency) Description() string {

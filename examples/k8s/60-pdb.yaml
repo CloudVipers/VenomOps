@@ -1,4 +1,4 @@
-# KD-K8S-007: cuatro PodDisruptionBudgets que estorban a un drain, cada uno por una causa distinta.
+# VD-K8S-007: cuatro PodDisruptionBudgets que estorban a un drain, cada uno por una causa distinta.
 # - pdb-single: una sola réplica sana con minAvailable: 1 -> no se puede desalojar nunca.
 # - pdb-degraded: 2 réplicas con minAvailable: 2 y readiness que nunca pasa -> faltan Pods sanos.
 # - pdb-greedy: minAvailable: 3 sobre un workload de 1 réplica -> pide más Pods de los que existen.

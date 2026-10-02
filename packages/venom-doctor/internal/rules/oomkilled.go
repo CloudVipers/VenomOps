@@ -14,7 +14,7 @@ import (
 type OOMKilled struct{ Namespace string }
 
 // ID implements engine.Rule.
-func (OOMKilled) ID() string { return "KD-K8S-002" }
+func (OOMKilled) ID() string { return "VD-K8S-002" }
 
 // Description implements engine.Rule.
 func (OOMKilled) Description() string {
@@ -97,7 +97,7 @@ func (r OOMKilled) Check(ctx context.Context, cluster engine.ClusterReader) ([]f
 					ev = append(ev, findings.Evidence{Kind: "usage", Detail: fmt.Sprintf("uso actual de memoria=%dMi (metrics-server)", u/mi)})
 				}
 				suggested := suggestLimit(limit, u, haveUsage)
-				// Machine-readable contract consumed by pr-agent (fixer for KD-K8S-002): see docs/decisiones/0004.
+				// Machine-readable contract consumed by pr-agent (fixer for VD-K8S-002): see docs/decisiones/0004.
 				ev = append(ev, findings.Evidence{
 					Kind:   "memory-limit-change",
 					Detail: fmt.Sprintf("container=%s;from=%dMi;to=%dMi", cs.Name, limit/mi, suggested/mi),

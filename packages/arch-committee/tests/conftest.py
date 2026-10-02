@@ -95,7 +95,7 @@ class FakeCommittee:
         for pf in prior or []:
             name = pf["resource"].rsplit("/", 1)[-1]
             target = next((r for r in res if r["address"].endswith(f".{name}")), None)
-            if agent == "reliability" and pf["id"] == "KD-K8S-002" and target:
+            if agent == "reliability" and pf["id"] == "VD-K8S-002" and target:
                 limit = json.dumps(target["attributes"])
                 out.append(finding("OOMKilled observado en el clúster: el límite del plan es insuficiente", "high", target["address"],
                     [("prior-finding", f"{pf['id']} ({pf['source']}): {pf['title']}"), ("plan", f"limits.memory del plan: {limit}")],

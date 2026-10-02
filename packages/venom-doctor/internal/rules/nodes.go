@@ -18,7 +18,7 @@ import (
 type NodeNotReady struct{}
 
 // ID implements engine.Rule.
-func (NodeNotReady) ID() string { return "KD-K8S-006" }
+func (NodeNotReady) ID() string { return "VD-K8S-006" }
 
 // Description implements engine.Rule.
 func (NodeNotReady) Description() string {

@@ -30,7 +30,7 @@ def test_registry_maps_ids_to_fixers() -> None:
     assert isinstance(get_fixer("TF-S3-001"), S3EncryptionFixer)
     assert isinstance(get_fixer("TF-TAG-001"), RequiredTagsFixer)
     assert isinstance(get_fixer("TF-EBS-001"), EbsGp3Fixer)
-    assert get_fixer("KD-K8S-001") is None
+    assert get_fixer("VD-K8S-001") is None
 
 
 # ---- S3 encryption ---------------------------------------------------------------------------

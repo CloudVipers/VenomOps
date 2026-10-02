@@ -50,7 +50,7 @@ func TestRunTableAndAllNamespaces(t *testing.T) {
 	if err := run(context.Background(), options{output: "table", namespace: ""}, reader, nil, &out, &errOut); err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"KD-K8S-001", "a/p1", "b/p2", "Causa probable:"} {
+	for _, want := range []string{"VD-K8S-001", "a/p1", "b/p2", "Causa probable:"} {
 		if !strings.Contains(out.String(), want) {
 			t.Fatalf("missing %q in:\n%s", want, out.String())
 		}
@@ -118,7 +118,7 @@ func TestRunExplainFailureOnlyWarns(t *testing.T) {
 	if err := run(context.Background(), options{output: "table"}, reader, st, &out, &errOut); err != nil {
 		t.Fatalf("a failing explainer must not fail the run: %v", err)
 	}
-	if !strings.Contains(errOut.String(), "throttled") || !strings.Contains(out.String(), "KD-K8S-001") {
+	if !strings.Contains(errOut.String(), "throttled") || !strings.Contains(out.String(), "VD-K8S-001") {
 		t.Fatalf("stderr=%q stdout=%q", errOut.String(), out.String())
 	}
 }

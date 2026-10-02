@@ -15,7 +15,7 @@ flowchart LR
     end
 
     C -->|get / list, solo lectura| K[venom-doctor<br/>kubectl venom-doctor]
-    K -->|findings JSON<br/>array, KD-K8S-00x| F{{findings-schema<br/>contrato común}}
+    K -->|findings JSON<br/>array, VD-K8S-00x| F{{findings-schema<br/>contrato común}}
     H -->|findings manuales| F
 
     F -->|un finding<br/>--id / --supported| PA[pr-agent]
@@ -32,7 +32,7 @@ flowchart LR
     R --> H2
 ```
 
-- **`venom-doctor`** lee el clúster (nunca escribe) y emite findings. Sus reglas son KD-K8S-001..004.
+- **`venom-doctor`** lee el clúster (nunca escribe) y emite findings. Sus reglas son VD-K8S-001..004.
 - **`pr-agent`** toma UN finding y lo convierte en un PR con el cambio mínimo en Terraform. Nunca hace merge.
 - **`arch-committee`** revisa un plan de Terraform con cuatro especialistas y un moderador. Puede recibir findings
   previos (p. ej. de `venom-doctor`) como contexto para contrastar el plan con lo que ocurre en producción.
@@ -45,15 +45,15 @@ sequenceDiagram
     autonumber
     participant D as run-demo.sh
     participant K8s as kind (local)
-    participant KD as venom-doctor
+    participant VD as venom-doctor
     participant PA as pr-agent (--dry-run)
     participant AC as arch-committee
 
     D->>K8s: crea clúster y aplica manifiestos rotos
-    KD->>K8s: get/list pods, logs, eventos (solo lectura)
-    KD-->>D: findings JSON (KD-K8S-001..004)
+    VD->>K8s: get/list pods, logs, eventos (solo lectura)
+    VD-->>D: findings JSON (VD-K8S-001..004)
     D->>PA: --finding venom-doctor.json --supported
-    PA->>PA: sandbox + fixer KD-K8S-002 + terraform validate/plan
+    PA->>PA: sandbox + fixer VD-K8S-002 + terraform validate/plan
     PA-->>D: diff 32Mi → 64Mi y cuerpo del PR (sin tocar nada)
     D->>AC: --plan k8s-oom.json --context-findings venom-doctor.json
     AC-->>D: informe (o --dry-run con el payload redactado)
@@ -87,7 +87,8 @@ Decisiones: [ADR 0002](decisiones/0002-pr-agent-seguridad.md) (seguridad de pr-a
 [ADR 0005](decisiones/0005-modelos-bedrock.md) (modelos de Bedrock) y
 [ADR 0006](decisiones/0006-comando-venom.md) (comando paraguas `venom`) y
 [ADR 0007](decisiones/0007-dependencias-python.md) (dependencias Python) y
-[ADR 0008](decisiones/0008-regla-irsa-venom-doctor.md) (regla de IRSA de venom-doctor).
+[ADR 0008](decisiones/0008-regla-irsa-venom-doctor.md) (regla de IRSA de venom-doctor) y
+[ADR 0010](decisiones/0010-ids-de-regla-vd.md) (IDs `VD-K8S-*`).
 
 ## Mapa del repositorio
 
@@ -108,7 +109,7 @@ docs/decisiones/     ADRs
 
 ## Limitaciones y siguientes pasos
 
-- Solo `KD-K8S-002` se corrige automáticamente desde `venom-doctor`; los otros tres findings de Kubernetes piden intervención
+- Solo `VD-K8S-002` se corrige automáticamente desde `venom-doctor`; los otros tres findings de Kubernetes piden intervención
   humana o el agente LLM opcional.
 - El mapeo Pod → recurso de Terraform exige `metadata.name`/`namespace` literales (deduce Deployments y StatefulSets por
   el nombre del Pod); si son variables, se detiene en lugar de adivinar.

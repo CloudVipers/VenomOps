@@ -28,7 +28,7 @@ debe ser independiente del lenguaje.
 5. **Campos obligatorios mínimos pero con evidencia.** Son obligatorios `id`, `schema_version`, `source`,
    `severity`, `title`, `resource`, `evidence` (al menos una), `root_cause`, `suggested_fix` (con al menos un
    paso), `risk_of_fix` y `detected_at`. `references` y `tags` son opcionales.
-6. **Identificador de regla estable:** `id` con forma `PREFIJO-AREA-NNN` (p. ej. `KD-K8S-001`); el schema
+6. **Identificador de regla estable:** `id` con forma `PREFIJO-AREA-NNN` (p. ej. `VD-K8S-001`); el schema
    exige mayúsculas, dígitos y guiones.
 7. **Mensajes de error claros:** ambos validadores devuelven todas las violaciones con la ruta al campo
    (`/severity`), el keyword que falló y un mensaje legible; el JSON malformado se reporta como una

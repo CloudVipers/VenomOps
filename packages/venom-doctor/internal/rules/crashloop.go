@@ -15,7 +15,7 @@ import (
 type CrashLoopBackOff struct{ Namespace string }
 
 // ID implements engine.Rule.
-func (CrashLoopBackOff) ID() string { return "KD-K8S-001" }
+func (CrashLoopBackOff) ID() string { return "VD-K8S-001" }
 
 // Description implements engine.Rule.
 func (CrashLoopBackOff) Description() string {
@@ -83,7 +83,7 @@ func (r CrashLoopBackOff) Check(ctx context.Context, cluster engine.ClusterReade
 				continue
 			}
 			if oomTerminated(cs.ContainerStatus) != nil {
-				continue // killed for memory: reported by KD-K8S-002, with the actionable fix
+				continue // killed for memory: reported by VD-K8S-002, with the actionable fix
 			}
 			ev := []findings.Evidence{
 				{Kind: "pod-status", Detail: fmt.Sprintf("%s %q crash-looping, restartCount=%d", kindLabel(cs.Init), cs.Name, cs.RestartCount)},

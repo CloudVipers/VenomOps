@@ -17,7 +17,7 @@ import (
 type ProbeFailures struct{ Namespace string }
 
 // ID implements engine.Rule.
-func (ProbeFailures) ID() string { return "KD-K8S-005" }
+func (ProbeFailures) ID() string { return "VD-K8S-005" }
 
 // Description implements engine.Rule.
 func (ProbeFailures) Description() string {

@@ -14,7 +14,7 @@ import (
 
 func finding() findings.Finding {
 	return findings.Finding{
-		ID: "KD-K8S-001", Title: "Pod api en CrashLoopBackOff",
+		ID: "VD-K8S-001", Title: "Pod api en CrashLoopBackOff",
 		Resource: findings.Resource{Type: "Pod", Name: "api", Namespace: "payments"},
 		Evidence: []findings.Evidence{
 			{Kind: "log-tail", Detail: "connecting with password=hunter2 to db"},

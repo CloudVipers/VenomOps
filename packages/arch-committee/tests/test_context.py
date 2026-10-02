@@ -19,7 +19,7 @@ from .conftest import FakeCommittee, plan_path
 runner = CliRunner()
 
 
-def prior(fid: str = "KD-K8S-002", name: str = "oom", severity: str = "high", **over: Any) -> dict[str, Any]:
+def prior(fid: str = "VD-K8S-002", name: str = "oom", severity: str = "high", **over: Any) -> dict[str, Any]:
     doc: dict[str, Any] = {
         "id": fid, "schema_version": "1.0.0", "source": "venom-doctor", "severity": severity,
         "title": f"OOMKilled en el container app ({name})",
@@ -65,7 +65,7 @@ def test_the_committee_links_a_runtime_finding_to_the_plan_resource(tmp_path: Pa
     result = run_committee(load_plan(plan_path(K8S_PLAN)), FakeCommittee(), context=ctx)
     linked = [f for f in result.final if f.resource == "kubernetes_pod_v1.oom"]
     assert linked and linked[0].severity == "high"
-    assert any(e.kind == "prior-finding" and "KD-K8S-002" in e.detail for e in linked[0].evidence)
+    assert any(e.kind == "prior-finding" and "VD-K8S-002" in e.detail for e in linked[0].evidence)
     assert "Confirmado por un finding previo" in linked[0].decision
     # the same plan without the runtime observation produces no such finding
     bare = run_committee(load_plan(plan_path(K8S_PLAN)), FakeCommittee())
@@ -93,7 +93,7 @@ def test_the_report_lists_the_context_and_the_findings_still_validate(tmp_path: 
     result = run_committee(load_plan(plan_path(K8S_PLAN)), FakeCommittee(), context=ctx)
     report, findings_path, warnings = write_outputs(result, tmp_path / "out", "m")
     text = report.read_text(encoding="utf-8")
-    assert "## Contexto previo" in text and "KD-K8S-002" in text and "venom-doctor" in text and not warnings
+    assert "## Contexto previo" in text and "VD-K8S-002" in text and "venom-doctor" in text and not warnings
     assert all(validate(d) == [] for d in json.loads(findings_path.read_text()))
     assert (
         "## Contexto previo"
@@ -107,9 +107,9 @@ def test_the_report_lists_the_context_and_the_findings_still_validate(tmp_path: 
 
 
 def test_one_finding_an_array_and_several_files_are_accepted(tmp_path: Path) -> None:
-    a = write(tmp_path, "a.json", prior("KD-K8S-001", "a"))
-    b = write(tmp_path, "b.json", [prior("KD-K8S-002", "b"), prior("KD-K8S-003", "c")])
-    assert [f.id for f in load_context_findings([a, b])] == ["KD-K8S-001", "KD-K8S-002", "KD-K8S-003"]
+    a = write(tmp_path, "a.json", prior("VD-K8S-001", "a"))
+    b = write(tmp_path, "b.json", [prior("VD-K8S-002", "b"), prior("VD-K8S-003", "c")])
+    assert [f.id for f in load_context_findings([a, b])] == ["VD-K8S-001", "VD-K8S-002", "VD-K8S-003"]
     assert load_context_findings([]) == []
 
 
@@ -125,20 +125,20 @@ def test_bad_context_files_are_rejected_with_a_clear_message(tmp_path: Path) -> 
 
 
 def test_rendering_is_ordered_by_severity_and_capped(tmp_path: Path) -> None:
-    docs = [prior(f"KD-{i:03d}", f"p{i}", severity="low") for i in range(MAX_CONTEXT_FINDINGS + 10)] + [
-        prior("KD-CRIT", "boss", severity="critical")
+    docs = [prior(f"VD-{i:03d}", f"p{i}", severity="low") for i in range(MAX_CONTEXT_FINDINGS + 10)] + [
+        prior("VD-CRIT", "boss", severity="critical")
     ]
     findings = load_context_findings([write(tmp_path, "many.json", docs)])
     text, truncated = render_context(findings)
     items = json.loads(text)
-    assert truncated and len(items) <= MAX_CONTEXT_FINDINGS and items[0]["id"] == "KD-CRIT"
+    assert truncated and len(items) <= MAX_CONTEXT_FINDINGS and items[0]["id"] == "VD-CRIT"
     tiny, cut = render_context(findings, max_chars=600)
-    assert cut and len(tiny) <= 600 and json.loads(tiny)[0]["id"] == "KD-CRIT"
+    assert cut and len(tiny) <= 600 and json.loads(tiny)[0]["id"] == "VD-CRIT"
     assert render_context([]) == ("[]", False)
 
 
 def test_a_huge_context_is_reported_as_a_note(tmp_path: Path) -> None:
-    docs = [prior(f"KD-{i:03d}", f"p{i}") for i in range(MAX_CONTEXT_FINDINGS + 5)]
+    docs = [prior(f"VD-{i:03d}", f"p{i}") for i in range(MAX_CONTEXT_FINDINGS + 5)]
     result = run_committee(
         load_plan(plan_path(K8S_PLAN)),
         FakeCommittee(),
@@ -158,7 +158,7 @@ def fake_llm(monkeypatch: pytest.MonkeyPatch) -> FakeCommittee:
 
 
 def test_the_cli_accepts_context_and_shows_it_in_the_dry_run(tmp_path: Path) -> None:
-    f1, f2 = write(tmp_path, "1.json", [prior()]), write(tmp_path, "2.json", prior("KD-K8S-009", "x"))
+    f1, f2 = write(tmp_path, "1.json", [prior()]), write(tmp_path, "2.json", prior("VD-K8S-009", "x"))
     result = runner.invoke(
         cli.app,
         [
@@ -174,7 +174,7 @@ def test_the_cli_accepts_context_and_shows_it_in_the_dry_run(tmp_path: Path) -> 
     )
     assert result.exit_code == 0, result.output
     assert "Context: 2 prior findings (venom-doctor)" in result.output
-    assert "Redacted prior findings that agents would receive" in result.output and "KD-K8S-009" in result.output
+    assert "Redacted prior findings that agents would receive" in result.output and "VD-K8S-009" in result.output
 
 
 def test_the_cli_runs_with_context_and_links_the_finding(tmp_path: Path) -> None:
@@ -214,9 +214,9 @@ def test_the_real_venom_doctor_output_works_as_committee_context(tmp_path: Path)
     from .conftest import ROOT
 
     ctx = load_context_findings([ROOT / "examples" / "findings" / "venom-doctor-output.json"])
-    assert [f.id for f in ctx] == ["KD-K8S-001", "KD-K8S-002", "KD-K8S-003", "KD-K8S-004"]
+    assert [f.id for f in ctx] == ["VD-K8S-001", "VD-K8S-002", "VD-K8S-003", "VD-K8S-004"]
     result = run_committee(load_plan(plan_path(K8S_PLAN)), FakeCommittee(), context=ctx)
     linked = [f for f in result.final if f.resource == "kubernetes_pod_v1.oom"]
-    assert linked and any("KD-K8S-002" in e.detail for e in linked[0].evidence if e.kind == "prior-finding")
+    assert linked and any("VD-K8S-002" in e.detail for e in linked[0].evidence if e.kind == "prior-finding")
     _, findings_path, warnings = write_outputs(result, tmp_path, "m")
     assert not warnings and all(validate(d) == [] for d in json.loads(findings_path.read_text()))

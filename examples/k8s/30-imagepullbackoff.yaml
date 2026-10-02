@@ -1,4 +1,4 @@
-# KD-K8S-003: referencia una imagen/tag que no existe en el registro.
+# VD-K8S-003: referencia una imagen/tag que no existe en el registro.
 apiVersion: v1
 kind: Pod
 metadata:
