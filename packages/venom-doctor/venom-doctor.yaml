@@ -21,25 +21,25 @@ spec:
     - selector:
         matchLabels: {os: linux, arch: amd64}
       uri: https://github.com/CloudVipers/VenomOps/releases/download/venom-doctor-v0.1.5/venom-doctor_v0.1.5_linux_amd64.tar.gz
-      sha256: "7077dc57a97c65a2140de3deb8899dbe1cb5c1f6c7cb9044ff9500dc774e1d09"
+      sha256: "b33fda7d68124974ee78bbdf90e6331ddef040d93cb6ef0bb9b04b90ab6b7056"
       bin: kubectl-venom_doctor
     - selector:
         matchLabels: {os: linux, arch: arm64}
       uri: https://github.com/CloudVipers/VenomOps/releases/download/venom-doctor-v0.1.5/venom-doctor_v0.1.5_linux_arm64.tar.gz
-      sha256: "0e6566335719c6e3e78cc77869ba05b5b0ff720400f3dd164e182a961bbbf37a"
+      sha256: "5286146f22c012a4fedfaa701ff6cb013548d9abc16c0624fe5063a64e98ac45"
       bin: kubectl-venom_doctor
     - selector:
         matchLabels: {os: darwin, arch: amd64}
       uri: https://github.com/CloudVipers/VenomOps/releases/download/venom-doctor-v0.1.5/venom-doctor_v0.1.5_darwin_amd64.tar.gz
-      sha256: "de5fb2246bbdf918d663acdbbaac70e147c4af1a9a964c41b715ed01a66296bb"
+      sha256: "09c81a4f3ec18e8d641315f9d8195c909eea38c3acc5b38c8f51151827418381"
       bin: kubectl-venom_doctor
     - selector:
         matchLabels: {os: darwin, arch: arm64}
       uri: https://github.com/CloudVipers/VenomOps/releases/download/venom-doctor-v0.1.5/venom-doctor_v0.1.5_darwin_arm64.tar.gz
-      sha256: "a7e453977c4cf6f5bebd31d9018b75c8a19132e512a2da325c159715a9bf6a00"
+      sha256: "b388514a0f44285d8309915b1b749ee8f945d3ca3b2b0d216e061f9167433b7e"
       bin: kubectl-venom_doctor
     - selector:
         matchLabels: {os: windows, arch: amd64}
       uri: https://github.com/CloudVipers/VenomOps/releases/download/venom-doctor-v0.1.5/venom-doctor_v0.1.5_windows_amd64.zip
-      sha256: "0928774777766ac5063000b22e7e26dc008a470809c3aab86edeac9d3e4d6fc4"
+      sha256: "fcdae9195d79a745add8aadea793787d283dc6cfff48c46839ab94c70a3294f8"
       bin: kubectl-venom_doctor.exe
