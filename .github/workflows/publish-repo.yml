@@ -86,6 +86,11 @@ jobs:
           python docs/web/build.py --out site --url "https://${owner}.github.io/${GITHUB_REPOSITORY#*/}" --version "$VERSION"
           python docs/web/check_site.py site --strict
 
+      # The pointer `venom update` reads (version and package list). It goes last: the web build leaves only the repository files alone.
+      - name: Write latest.json for venom update
+        if: ${{ env.PUBLISH == 'true' }}
+        run: python packaging/repo/make_latest.py site
+
       - uses: actions/configure-pages@v5
         if: ${{ env.PUBLISH == 'true' }}
 

@@ -17,6 +17,7 @@ from arch_committee.cli import review as _review
 from pr_agent.cli import fix as _fix
 
 from . import __version__
+from .update import update_command
 
 DOCTOR_BINARY = "kubectl-venom_doctor"
 
@@ -44,6 +45,12 @@ def main(
 
 app.command("review", help="A virtual committee reviews a Terraform plan (same as `arch-committee review`).")(_review)
 app.command("fix", help="Turn a finding into a PR with the minimal Terraform fix (same as `pr-agent fix`).")(_fix)
+
+
+app.command(
+    "update",
+    help="Check for the latest venom and download its package for this system, verified (--install installs it).",
+)(update_command)
 
 
 @app.command(

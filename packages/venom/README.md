@@ -9,6 +9,7 @@ de krew `kubectl venom-doctor`).
 | `venom doctor -n NS [--explain] [-o json]` | `kubectl venom-doctor …` | Explica por qué algo está roto en un clúster (solo lectura) |
 | `venom fix --finding f.json --repo ./tf [--dry-run]` | `pr-agent fix …` | Abre un PR con el arreglo mínimo en Terraform (nunca hace merge) |
 | `venom review --plan plan.json --model-id <id>` | `arch-committee review …` | Un comité virtual revisa un plan de Terraform y reporta |
+| `venom update [--check] [--install]` | (propio de `venom`) | Descarga la última versión, la verifica con la clave fijada dentro de `venom` y, con `--install`, la instala |
 
 ```bash
 venom doctor -A -o json | venom fix --finding - --supported --repo ./infra --dry-run

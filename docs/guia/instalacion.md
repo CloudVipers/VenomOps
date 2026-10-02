@@ -39,10 +39,12 @@ sudo apt update && sudo apt install venom
 > **Comprueba la clave.** La primera vez, `dnf` te muestra la huella de la clave de firma y te pide confirmar. Debe ser
 > exactamente `A7BE 1F5E 03EC 7AA9 C797 A9DE 3237 E8D7 9E6E 29C5` (`VenomOps Packages`). Si es otra, no continúes.
 
-Actualizar y desinstalar son los comandos normales de tu gestor de paquetes:
+Actualizar y desinstalar son los comandos normales de tu gestor de paquetes, o el propio `venom`:
 
 ```bash
 sudo dnf upgrade venom        # o: sudo apt install --only-upgrade venom
+venom update --check          # ¿hay una versión nueva?
+venom update --install        # descarga, verifica la firma e instala (ver la guía de uso)
 sudo dnf remove venom         # o: sudo apt remove venom
 ```
 

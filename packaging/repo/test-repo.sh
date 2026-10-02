@@ -23,6 +23,16 @@ gpg --batch --pinentry-mode loopback --passphrase "$PASS" --armor --export-secre
 
 GPG_KEY_FILE="$WORK/key.asc" GPG_PASSPHRASE="$PASS" "$ROOT/packaging/repo/build-repo.sh" "$PKG_DIR" "$WORK/site" >/dev/null
 echo "repository built: $(ls "$WORK/site")"
+# latest.json (what `venom update` reads) must list every package present, with the hash of each
+python3 "$ROOT/packaging/repo/make_latest.py" "$WORK/site"
+python3 - "$WORK/site" <<'PY'
+import hashlib, json, pathlib, sys
+site = pathlib.Path(sys.argv[1]); doc = json.loads((site / "latest.json").read_text())
+assert doc["schema"] == 1 and doc["packages"], doc
+for p in doc["packages"]:
+    assert hashlib.sha256((site / p["path"]).read_bytes()).hexdigest() == p["sha256"], p
+print("latest.json ok:", doc["version"], [f'{p["format"]}/{p["arch"]}' for p in doc["packages"]])
+PY
 
 docker network create venom-repo-net >/dev/null
 docker run -d --rm --name venom-repo-test --network venom-repo-net -v "$WORK/site":/usr/share/nginx/html:ro nginx:alpine >/dev/null
