@@ -1,0 +1,43 @@
+name: Check krew manifest
+
+# The krew manifest (packages/kdoctor/kdoctor.yaml) downloads release archives. If a release is deleted or rebuilt, the
+# manifest silently breaks (and so does a pending krew-index PR). This downloads every archive, compares its sha256 and checks
+# the plugin binary is at its root.
+#  - weekly, when a kdoctor release is published, and on demand: checks the real downloads;
+#  - on a PR touching the checker: runs its unit tests (they use a local server, no network).
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  release:
+    types: [published]
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "packaging/krew/**"
+      - ".github/workflows/check-krew-manifest.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pytest
+      - run: python -m pytest -q packaging/krew
+
+  check:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check every download in the manifest
+        run: python packaging/krew/check_manifest.py packages/kdoctor/kdoctor.yaml
