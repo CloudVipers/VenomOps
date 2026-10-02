@@ -145,3 +145,30 @@ func TestRootCommandDefinesTheDocumentedFlags(t *testing.T) {
 		t.Fatal("--explain must be off by default")
 	}
 }
+
+func TestNamespaceScopedTableRunsSaysNodesAndKarpenterWereSkipped(t *testing.T) {
+	const hint = "no se revisan los nodos ni Karpenter"
+	cases := []struct {
+		name string
+		opts options
+		want bool
+	}{
+		{"namespace + table", options{namespace: "payments", output: "table"}, true},
+		{"all namespaces + table", options{output: "table"}, false},
+		{"namespace + json stays quiet for pipelines", options{namespace: "payments", output: "json"}, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			var out, errOut bytes.Buffer
+			if err := run(context.Background(), c.opts, cluster.New(fake.NewSimpleClientset()), nil, &out, &errOut); err != nil {
+				t.Fatal(err)
+			}
+			if got := strings.Contains(errOut.String(), hint); got != c.want {
+				t.Fatalf("hint present=%v, want %v (stderr=%q)", got, c.want, errOut.String())
+			}
+			if strings.Contains(out.String(), hint) {
+				t.Fatal("the note must go to stderr, never to stdout")
+			}
+		})
+	}
+}

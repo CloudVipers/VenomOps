@@ -146,6 +146,14 @@ func run(ctx context.Context, o options, reader engine.ClusterReader, explainer 
 		}
 		return output.JSON(stdout, report.Findings)
 	default:
-		return output.Table(stdout, report.Findings, report.Errors)
+		if err := output.Table(stdout, report.Findings, report.Errors); err != nil {
+			return err
+		}
+		if o.namespace != "" {
+			// Nodes and Karpenter are cluster-scoped, so a namespace-scoped run skips them. Say so, otherwise a clean
+			// result reads as "the whole cluster is fine". Interactive output only: pipelines using -o json stay quiet.
+			warnf(stderr, "nota: con un namespace (-n) no se revisan los nodos ni Karpenter; usa -A para diagnosticar todo el clúster.\n")
+		}
+		return nil
 	}
 }
