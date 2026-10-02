@@ -83,6 +83,17 @@ Exporta un token con permiso sobre el repositorio de Terraform (`export GITHUB_T
 
 El modelo debe estar **habilitado en tu cuenta y región** de AWS. Si usas un perfil de inferencia (los identificadores que empiezan por `us.`), la región tiene que coincidir.
 
+### `venom update`
+
+| Mensaje | Qué pasa |
+|---|---|
+| `the rpm signature is NOT valid for the VenomOps key. Do not install it.` | La firma del paquete no corresponde a la clave de VenomOps (o el paquete se alteró). **No lo instales.** El comando ya ha borrado el archivo; si se repite, abre una incidencia |
+| `… does not match the signed Packages index. Do not install.` | Lo mismo para `.deb`: el paquete no coincide con el índice firmado |
+| `cannot verify the signature: the rpm tool is not installed` / `gpgv is not installed` | Faltan las herramientas para verificar (`rpm` en sistemas rpm, `gpgv` en Debian/Ubuntu). Instálalas; nunca se instala sin verificar |
+| `venom update only works on Linux` | En macOS o Windows actualiza el plugin con krew o descarga el binario |
+| `cannot reach https://…` | Sin acceso a la web de VenomOps (proxy, cortafuegos o sin red). Usa tu gestor de paquetes si tienes el repositorio configurado |
+| `installing needs root and sudo is not available` | Ejecuta el comando que muestra como root |
+
 ## Instalación
 
 ### `dnf` o `apt` rechazan el repositorio o la firma

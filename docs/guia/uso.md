@@ -8,6 +8,7 @@ común, el **finding**: un hallazgo con su severidad, evidencia, causa probable 
 | [`venom doctor`](#venom-doctor-diagnosticar-un-clúster) | Explica por qué algo está roto en un clúster y cómo arreglarlo | No, solo lee | Solo con `--explain` |
 | [`venom fix`](#venom-fix-del-hallazgo-al-pull-request) | Convierte un hallazgo en un Pull Request con el cambio mínimo en Terraform | Abre un PR (nunca lo mezcla) | Solo con `--agent` |
 | [`venom review`](#venom-review-revisar-un-plan-de-terraform) | Un comité de agentes revisa un plan de Terraform y debate | Escribe un informe local | Sí (necesita Bedrock) |
+| [`venom update`](#venom-update-actualizar-venom) | Descarga la última versión de venom, la verifica y, si lo pides, la instala | Solo con `--install` | No |
 
 ## `venom doctor`: diagnosticar un clúster
 
@@ -228,6 +229,43 @@ Budget: 200,000 tokens
 | `--max-tokens`, `--max-rounds` | Presupuesto total de tokens (200 000 por defecto) y rondas: 1 = solo análisis, 2 = con réplica |
 | `--context-findings` | Hallazgos previos (por ejemplo la salida de `venom doctor -o json`) para contrastar el plan con lo que pasa en producción |
 | `--dry-run` | Muestra lo que se enviaría, sin llamar a ningún modelo |
+
+## `venom update`: actualizar venom
+
+Comprueba si hay una versión nueva, **descarga el paquete de tu sistema y arquitectura y lo verifica** antes de nada. No instala nada a menos que se lo pidas.
+
+```bash
+venom update --check       # ¿hay versión nueva? No descarga nada (sale con código 100 si la hay, como `dnf check-update`)
+venom update               # descarga el paquete, lo verifica y te dice cómo instalarlo
+venom update --install     # además lo instala con tu gestor de paquetes (te pregunta antes y usa sudo)
+```
+
+```text
+Installed: 0.1.5
+Latest:    0.1.6
+Downloading venom-0.1.6-1.x86_64.rpm ...
+Verifying the signature with the VenomOps key pinned in venom ...
+Verified: ./venom-0.1.6-1.x86_64.rpm
+Not installed. To install it:
+  sudo dnf install -y /home/ana/venom-0.1.6-1.x86_64.rpm
+or run: venom update --install
+```
+
+**Cómo sabe que el paquete es legítimo.** La clave pública de VenomOps (huella `A7BE 1F5E 03EC 7AA9 C797 A9DE 3237 E8D7 9E6E 29C5`) viaja **dentro de `venom`**, no se descarga de internet,
+así que quien controle el sitio no puede cambiarla. Con ella se comprueba la firma: en un `.rpm`, la del propio paquete (con una base de datos de `rpm` temporal; la de tu sistema no se toca) y en un `.deb`, la cadena que sigue `apt`
+(índice firmado → hash de `Packages.gz` → hash del `.deb`). Si algo no cuadra, **se borra el paquete y el comando falla**, aunque pases `--install --yes`. Está probado con paquetes manipulados y con un
+`latest.json` regenerado para que sus hashes coincidan con el paquete manipulado.
+
+| Opción | Para qué sirve |
+|---|---|
+| `--check` | Solo comprueba la versión; no descarga nada |
+| `--install` | Instala el paquete **verificado** con `dnf`/`yum` o `apt-get`, usando `sudo` si no eres root. Muestra el comando exacto y pide confirmación |
+| `-y`, `--yes` | Con `--install`, no pide confirmación (para scripts) |
+| `--force` | Descarga y verifica aunque ya tengas la última versión (útil para reinstalar) |
+| `--dir` | Dónde guardar el paquete (por defecto, la carpeta actual) |
+
+Detalles: solo funciona en Linux (en macOS o Windows, actualiza el plugin con krew o el binario); usa solo HTTPS y rechaza redirecciones que salgan de HTTPS; y si instalaste `venom` desde el
+[repositorio firmado](instalacion.md#paquete-rpm-o-deb-recomendado), `sudo dnf upgrade venom` o `sudo apt install --only-upgrade venom` hacen lo mismo con la verificación del propio gestor de paquetes.
 
 ## Encadenarlos
 

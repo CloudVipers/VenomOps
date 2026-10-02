@@ -17,7 +17,7 @@ python3.12 -m venv /tmp/venv
   ./packages/findings-schema/python ./packages/pr-agent ./packages/arch-committee ./packages/venom
 
 /tmp/venv/bin/pyinstaller --noconfirm --clean --name venom --onedir \
-  --collect-data findings_schema --collect-data arch_committee \
+  --collect-data findings_schema --collect-data arch_committee --collect-data venom \
   --collect-all hcl2 --collect-data jsonschema --collect-data jsonschema_specifications \
   --collect-data botocore --collect-submodules pr_agent --collect-submodules arch_committee \
   --distpath /out/pyi --workpath /tmp/pyi-work --specpath /tmp/pyi-spec \

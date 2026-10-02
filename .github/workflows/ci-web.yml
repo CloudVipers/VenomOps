@@ -7,6 +7,8 @@ on:
     paths:
       - "docs/guia/**"
       - "docs/web/**"
+      - "packaging/repo/make_latest.py"
+      - "packaging/repo/test_make_latest.py"
       - "README.md"
       - ".github/workflows/ci-web.yml"
   push:
@@ -30,3 +32,4 @@ jobs:
       - run: pip install -r docs/web/requirements.txt
       - run: python docs/web/build.py --out "$RUNNER_TEMP/site" --version 0.0.0
       - run: python docs/web/check_site.py "$RUNNER_TEMP/site"
+      - run: pip install pytest && python -m pytest -q packaging/repo/test_make_latest.py
