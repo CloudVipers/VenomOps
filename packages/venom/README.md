@@ -22,11 +22,30 @@ y nunca se ejecuta `terraform apply` ni nada que modifique infraestructura. Deci
 ## Instalación
 
 **Paquete (recomendado, sin Python):** `.rpm` para RHEL 9 / Rocky / Alma / Amazon Linux 2023 y `.deb` para Debian 12+ /
-Ubuntu 22.04+; instalan `venom` y `kubectl-venom_doctor`. Ver [`packaging/`](../../packaging/README.md).
+Ubuntu 22.04+, desde el repositorio firmado con GPG (instala `venom` y `kubectl-venom_doctor`):
 
 ```bash
-sudo dnf install https://github.com/CloudVipers/VenomOps/releases/download/venom-v0.1.3/venom-0.1.3-1.x86_64.rpm
+# RHEL 9 / Rocky / Alma / Amazon Linux 2023
+sudo tee /etc/yum.repos.d/venom.repo <<'REPO'
+[venom]
+name=VenomOps
+baseurl=https://cloudvipers.github.io/VenomOps/rpm/$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://cloudvipers.github.io/VenomOps/venom-repo.asc
+REPO
+sudo dnf install venom
+
+# Debian 12+ / Ubuntu 22.04+
+sudo curl -fsSL https://cloudvipers.github.io/VenomOps/venom-repo.gpg -o /usr/share/keyrings/venom.gpg
+echo 'deb [signed-by=/usr/share/keyrings/venom.gpg] https://cloudvipers.github.io/VenomOps/deb stable main' | sudo tee /etc/apt/sources.list.d/venom.list
+sudo apt update && sudo apt install venom
 ```
+
+La clave de firma es `A7BE 1F5E 03EC 7AA9 C797  A9DE 3237 E8D7 9E6E 29C5` (`VenomOps Packages`); `dnf` te muestra la huella al
+importarla y debe coincidir con esta. También puedes bajar el paquete suelto de la
+[página de releases](https://github.com/CloudVipers/VenomOps/releases) (ver [`packaging/`](../../packaging/README.md)).
 
 **Desde el monorepo (desarrollo):**
 

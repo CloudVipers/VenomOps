@@ -5,6 +5,10 @@ autocontenido (PyInstaller) en `/usr/lib/venom/`, con `/usr/bin/venom` y `/usr/b
 
 ## Instalar
 
+Lo más cómodo es el **repositorio firmado** (`sudo dnf install venom` / `sudo apt install venom`): las instrucciones están en
+[`packages/venom/README.md`](../packages/venom/README.md) y en https://cloudvipers.github.io/VenomOps/. Alternativa, desde un
+release de GitHub:
+
 ```bash
 # RHEL 9 / Rocky / Alma / Amazon Linux 2023 (desde un release de GitHub)
 sudo dnf install https://github.com/CloudVipers/VenomOps/releases/download/venom-v0.1.3/venom-0.1.3-1.x86_64.rpm
@@ -37,6 +41,4 @@ El workflow [`release-venom.yml`](../.github/workflows/release-venom.yml) constr
 empujar un tag `venom-vX.Y.Z` y los adjunta a un release en borrador. También se puede lanzar a mano desde la pestaña Actions
 (`workflow_dispatch`, o `gh workflow run release-venom.yml`): en ese caso solo sube los paquetes como artefactos del workflow,
 lo que permite probar la construcción arm64 sin crear ningún release. En ambos casos instala cada paquete en contenedores
-limpios (Rocky 9, Amazon Linux 2023, Debian 12 y Ubuntu 24.04) antes de darlos por buenos. Para `sudo dnf install venom` / `sudo apt install venom` sin URL
-hace falta un repositorio firmado: el generador y su prueba están en [`repo/`](repo/README.md); publicarlo requiere elegir
-el alojamiento y una clave de firma real, que es una decisión aparte.
+limpios (Rocky 9, Amazon Linux 2023, Debian 12 y Ubuntu 24.04) antes de darlos por buenos. El repositorio firmado (GitHub Pages) lo genera y publica el workflow `publish-repo.yml`: ver [`repo/`](repo/README.md).
