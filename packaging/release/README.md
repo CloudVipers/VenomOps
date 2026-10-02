@@ -6,8 +6,8 @@ paquetes arm64 del workflow `release-venom.yml` se añaden solos si están en `p
 releases son públicos.
 
 ```bash
-./packaging/release/publish-release.sh 0.1.4 --dry-run   # solo comprobaciones, no publica nada
-./packaging/release/publish-release.sh 0.1.4             # comprueba, pide confirmación y publica
+./packaging/release/publish-release.sh 0.1.5 --dry-run   # solo comprobaciones, no publica nada
+./packaging/release/publish-release.sh 0.1.5             # comprueba, pide confirmación y publica
 ```
 
 **Antes de publicar comprueba:** que están todos los archivos, que los `checksums.txt` coinciden con ellos, que el manifiesto de

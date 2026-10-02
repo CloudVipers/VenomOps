@@ -18,6 +18,25 @@ REPO=${REPO:-CloudVipers/VenomOps}
 KD="$ROOT/packages/venom-doctor/dist"; VN="$ROOT/packaging/dist"
 fail() { echo "ERROR: $*" >&2; exit 1; }
 
+# >>> verify_release
+# After publishing, every asset on GitHub must be exactly the local file (same sha256), with nothing extra and nothing missing.
+# This catches anything that touches a release after the upload (it once happened: a workflow overwrote the packages).
+verify_release() { # verify_release <tag> <local files...>
+  local tag=$1; shift
+  local -A want=()
+  local f name digest seen=" " bad=0
+  for f in "$@"; do want["${f##*/}"]="sha256:$(sha256sum "$f" | cut -d' ' -f1)"; done
+  while read -r name digest; do
+    seen+="$name "
+    if [ -z "${want[$name]:-}" ]; then echo "   UNEXPECTED asset in $tag: $name"; bad=1
+    elif [ "${want[$name]}" != "$digest" ]; then echo "   MISMATCH in $tag: $name (published $digest, local ${want[$name]})"; bad=1; fi
+  done < <(gh release view "$tag" --repo "$REPO" --json assets -q '.assets[]|"\(.name) \(.digest)"')
+  for name in "${!want[@]}"; do [[ "$seen" == *" $name "* ]] || { echo "   MISSING in $tag: $name"; bad=1; }; done
+  [ "$bad" = 0 ] || return 1
+  echo "   $tag: ${#want[@]} assets match the local files"
+}
+# <<< verify_release
+
 echo "==> files for $VERSION"
 kd_files=(); for f in darwin_amd64.tar.gz darwin_arm64.tar.gz linux_amd64.tar.gz linux_arm64.tar.gz windows_amd64.zip; do kd_files+=("$KD/venom-doctor_v${VERSION}_$f"); done
 kd_files+=("$KD/checksums.txt")
@@ -75,6 +94,10 @@ gh release create "venom-doctor-v$VERSION" "${kd_files[@]}" --repo "$REPO" --tar
   --notes "venom-doctor v$VERSION: plugin de kubectl (kubectl venom-doctor), solo lectura. Archivos para Linux, macOS y Windows." --generate-notes
 gh release create "venom-v$VERSION" "${vn_files[@]}" --repo "$REPO" --target main --title "venom v$VERSION" \
   --notes "venom v$VERSION: venom doctor, venom fix y venom review, con kubectl-venom_doctor incluido. Paquetes .rpm y .deb sin Python." --generate-notes
+
+echo "==> the published assets are exactly the local files"
+verify_release "venom-doctor-v$VERSION" "${kd_files[@]}" && verify_release "venom-v$VERSION" "${vn_files[@]}" \
+  || fail "a published release differs from the local files: do NOT announce it; fix it (re-upload with --clobber) or publish a new version"
 
 echo "==> verifying the public downloads against the manifest"
 python3 "$ROOT/packaging/krew/check_manifest.py" "$ROOT/packages/venom-doctor/venom-doctor.yaml" || echo "(expected while the manifest still has placeholders: fill it with a PR)"
