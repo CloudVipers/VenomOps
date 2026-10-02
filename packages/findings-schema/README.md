@@ -1,6 +1,6 @@
 # findings-schema
 
-Contrato común de hallazgos (*findings*) de VenomOps: lo **producen** `kdoctor` y otras fuentes, lo **corrige**
+Contrato común de hallazgos (*findings*) de VenomOps: lo **producen** `venom-doctor` y otras fuentes, lo **corrige**
 `pr-agent` y lo **debate** `arch-committee`. Decisiones y política de versionado en
 [ADR 0001](../../docs/decisiones/0001-findings-schema.md).
 
@@ -21,7 +21,7 @@ examples/expected-errors.json  violación esperada de cada ejemplo inválido: (r
 |---|---|---|
 | `id` | string (`KD-K8S-001`) | sí |
 | `schema_version` | string (`1.x.y`) | sí |
-| `source` | `kdoctor` \| `pr-agent` \| `arch-committee` \| `manual` | sí |
+| `source` | `venom-doctor` \| `pr-agent` \| `arch-committee` \| `manual` (`kdoctor`, el nombre anterior, solo se acepta al leer; ver [ADR 0009](../../docs/decisiones/0009-source-venom-doctor.md)) | sí |
 | `severity` | `critical` \| `high` \| `medium` \| `low` \| `info` | sí |
 | `title` | string | sí |
 | `resource` | `{type, name, namespace?, region?, account_alias?, path?}` | sí |

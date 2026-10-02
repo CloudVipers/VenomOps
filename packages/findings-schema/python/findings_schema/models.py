@@ -12,7 +12,8 @@ from .validator import validate_or_raise
 
 
 class Source(StrEnum):
-    KDOCTOR = "kdoctor"
+    VENOM_DOCTOR = "venom-doctor"
+    KDOCTOR = "kdoctor"  # former name of venom-doctor: accepted when reading only
     PR_AGENT = "pr-agent"
     ARCH_COMMITTEE = "arch-committee"
     MANUAL = "manual"

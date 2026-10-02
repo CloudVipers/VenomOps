@@ -9,6 +9,11 @@ type Source string
 
 // Valid sources.
 const (
+	SourceVenomDoctor Source = "venom-doctor"
+	// SourceKDoctor is the former name of venom-doctor. It stays valid so findings already generated can still be read;
+	// producers must emit SourceVenomDoctor.
+	//
+	// Deprecated: use SourceVenomDoctor.
 	SourceKDoctor       Source = "kdoctor"
 	SourcePRAgent       Source = "pr-agent"
 	SourceArchCommittee Source = "arch-committee"
@@ -60,7 +65,7 @@ type SuggestedFix struct {
 	IaCHint string   `json:"iac_hint,omitempty"`
 }
 
-// Finding is the common contract shared by kdoctor, pr-agent and arch-committee.
+// Finding is the common contract shared by venom-doctor, pr-agent and arch-committee.
 type Finding struct {
 	ID            string       `json:"id"`
 	SchemaVersion string       `json:"schema_version"`

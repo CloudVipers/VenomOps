@@ -1,6 +1,6 @@
 [project]
 name = "venomops-findings-schema"
-version = "1.0.0"
+version = "1.1.0"
 description = "Tipos pydantic y validador del contrato común de findings de VenomOps"
 readme = "README.md"
 requires-python = ">=3.12"

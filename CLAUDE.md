@@ -115,7 +115,7 @@ Todo módulo produce o consume este formato. **Es lo primero que se construye** 
 |---|---|---|
 | `id` | string | Identificador estable de la regla, p. ej. `KD-K8S-001` |
 | `schema_version` | string | Versión semántica del schema, p. ej. `1.0.0` |
-| `source` | enum | `kdoctor`, `pr-agent`, `arch-committee`, `manual` |
+| `source` | enum | `venom-doctor` (antes `kdoctor`, obsoleto pero válido al leer), `pr-agent`, `arch-committee`, `manual` |
 | `severity` | enum | `critical`, `high`, `medium`, `low`, `info` |
 | `title` | string | Título corto |
 | `resource` | objeto | `{ type, name, namespace?, region?, account_alias?, path? }` |
