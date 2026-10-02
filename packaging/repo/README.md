@@ -69,8 +69,37 @@ echo 'deb [signed-by=/usr/share/keyrings/venom.gpg] <URL>/deb stable main' | sud
 sudo apt update && sudo apt install venom
 ```
 
-## Pendiente (decisión de quien mantiene el repo)
+## Publicar en GitHub Pages (mismo repositorio)
 
-Dónde se aloja (GitHub Pages es lo más simple: rama `gh-pages` o despliegue por Actions), qué clave real se usa y quién la
-custodia, y el workflow que regenera y publica el sitio en cada release. Hasta entonces el repositorio está **probado pero
-no publicado**.
+El workflow [`publish-repo.yml`](../../.github/workflows/publish-repo.yml) toma los paquetes de un release `venom-vX.Y.Z`,
+regenera el repositorio firmado y lo despliega en `https://<org>.github.io/<repo>/` (hoy
+`https://cloudvipers.github.io/VenomOps/`, con una página de inicio con las instrucciones). Es solo manual y el repositorio
+contiene **únicamente la última versión publicada**.
+
+**Puesta en marcha (una vez, con permisos de administración):**
+
+```bash
+# 1. Clave de firma, en tu máquina (te pedirá la contraseña); apunta el ID largo que muestra
+gpg --quick-generate-key "VenomOps Packages <tu-correo>" rsa4096 sign 2y
+gpg --list-secret-keys --keyid-format long
+
+# 2. Exportarla y guardarla como secretos del repositorio
+gpg --armor --export-secret-keys <ID> > ~/venom-signing.asc
+gh secret set GPG_SIGNING_KEY --repo CloudVipers/VenomOps < ~/venom-signing.asc
+gh secret set GPG_PASSPHRASE  --repo CloudVipers/VenomOps          # pega la contraseña cuando la pida
+# Haz una copia de la clave en tu gestor de contraseñas ANTES de borrar el archivo; sin ella no se podrá rotar ni revocar.
+shred -u ~/venom-signing.asc
+
+# 3. Activar Pages con «GitHub Actions» como origen
+gh api -X POST repos/CloudVipers/VenomOps/pages -f build_type=workflow
+```
+
+**Cada release** (después de subir los `.rpm`/`.deb` a `venom-vX.Y.Z`):
+
+```bash
+gh workflow run publish-repo.yml --repo CloudVipers/VenomOps -f tag=venom-v0.1.3 -f publish=true
+```
+
+Con `publish=false` (por defecto) hace un **ensayo**: construye el repositorio con una clave desechable, instala `venom` con
+el `dnf` y el `apt` reales y comprueba los rechazos, sin publicar nada y sin necesitar los secretos. Úsalo para validar el
+cableado tras cambiar el empaquetado.
