@@ -37,7 +37,7 @@ def build(
     plan_note: str | None,
 ) -> str:
     r = finding.resource
-    # Kubernetes objects (from kdoctor) have a namespace; Terraform resources are `type.name`.
+    # Kubernetes objects (from venom-doctor) have a namespace; Terraform resources are `type.name`.
     where = f"`{r.type} {r.namespace}/{r.name}`" if r.namespace else f"`{r.type}.{r.name}`"
     where += f" en `{r.path}`" if r.path else ""
     evidence = "\n".join(f"- **{e.kind}**: {redact(e.detail)}" for e in finding.evidence)

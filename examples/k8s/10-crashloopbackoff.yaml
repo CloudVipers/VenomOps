@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: crashloop
-  namespace: kdoctor-demo
+  namespace: venom-demo
 spec:
   restartPolicy: Always
   containers:

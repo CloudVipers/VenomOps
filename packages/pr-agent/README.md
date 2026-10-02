@@ -27,7 +27,7 @@ finding.json ──▶ validar contra findings-schema
 | `TF-S3-001` | Bucket S3 sin cifrado | Agrega `aws_s3_bucket_server_side_encryption_configuration` (SSE-S3, AES256) |
 | `TF-TAG-001` | Tags obligatorios faltantes | Agrega solo los tags que faltan (nunca pisa un valor existente) |
 | `TF-EBS-001` | Volumen gp2 | Cambia a gp3 en `aws_ebs_volume`, `aws_instance` o `aws_launch_template`; avisa si el volumen es grande |
-| `KD-K8S-002` (de `kdoctor`) | Contenedor terminado por OOMKilled | Sube `limits.memory` del contenedor en el recurso `kubernetes_*` de Terraform que declara el Pod/Deployment/StatefulSet... (solo ese `limits`, nunca `requests`) |
+| `KD-K8S-002` (de `venom-doctor`) | Contenedor terminado por OOMKilled | Sube `limits.memory` del contenedor en el recurso `kubernetes_*` de Terraform que declara el Pod/Deployment/StatefulSet... (solo ese `limits`, nunca `requests`) |
 
 Para **`TF-TAG-001`** el finding debe traer los valores en una evidencia `required-tags` con
 `detail: "Environment=prod;Owner=team-a"`. Todos son idempotentes: si el código ya tiene el arreglo, no hace nada.
@@ -47,14 +47,14 @@ export GITHUB_TOKEN=...            # solo para abrir el PR
 pr-agent fix --finding finding.json --repo ./infra
 ```
 
-El finding puede ser un archivo, un **array** (la salida de `kdoctor -o json`; elige con `--index`) o `-` por stdin.
-### Desde `kdoctor` (tubería)
+El finding puede ser un archivo, un **array** (la salida de `venom-doctor -o json`; elige con `--index`) o `-` por stdin.
+### Desde `venom-doctor` (tubería)
 
-`kdoctor -o json` emite un **array**; para elegir un finding usa `--id`, `--resource` (`nombre` o `namespace/nombre`),
+`venom-doctor -o json` emite un **array**; para elegir un finding usa `--id`, `--resource` (`nombre` o `namespace/nombre`),
 `--index` o `--supported` (el único con arreglo automático):
 
 ```bash
-kubectl venom-doctor -n kdoctor-demo -o json | pr-agent fix --finding - --supported \
+kubectl venom-doctor -n venom-demo -o json | pr-agent fix --finding - --supported \
     --repo ../../examples/terraform/k8s-oom-demo --dry-run
 ```
 

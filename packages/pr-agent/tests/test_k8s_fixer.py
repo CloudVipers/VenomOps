@@ -51,13 +51,13 @@ DEPLOYMENT = """resource "kubernetes_deployment_v1" "api" {
 """
 
 
-def oom(pod: str = "oom", namespace: str = "kdoctor-demo", change: str | None = "container=app;from=32Mi;to=64Mi"):  # type: ignore[no-untyped-def]
+def oom(pod: str = "oom", namespace: str = "venom-demo", change: str | None = "container=app;from=32Mi;to=64Mi"):  # type: ignore[no-untyped-def]
     evidence = [{"kind": "last-state", "detail": 'container "app" Terminated reason=OOMKilled'}]
     if change:
         evidence.append({"kind": "memory-limit-change", "detail": change})
     return make_finding(
         id="KD-K8S-002",
-        source="kdoctor",
+        source="venom-doctor",
         resource={"type": "Pod", "name": pod, "namespace": namespace},
         evidence=evidence,
     )
@@ -152,7 +152,7 @@ def test_the_toolbox_op_only_accepts_kubernetes_resources_and_valid_quantities(t
 # ---- the fixer --------------------------------------------------------------------------------
 
 
-def test_the_registry_knows_the_kdoctor_finding() -> None:
+def test_the_registry_knows_the_venom_doctor_finding() -> None:
     assert isinstance(get_fixer("KD-K8S-002"), K8sMemoryLimitFixer)
 
 

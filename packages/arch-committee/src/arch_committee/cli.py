@@ -75,7 +75,7 @@ def review(
     context_findings: Annotated[
         list[Path] | None,
         typer.Option(
-            "--context-findings", help="findings JSON (one or an array, e.g. kdoctor -o json) as prior context."
+            "--context-findings", help="findings JSON (one or an array, e.g. venom-doctor -o json) as prior context."
         ),
     ] = None,
     dry_run: Annotated[

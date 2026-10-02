@@ -6,9 +6,9 @@
 
 ## Contexto
 
-`kdoctor`, `pr-agent` y `arch-committee` intercambian hallazgos (*findings*). Sin un contrato único cada
-paquete inventaría su formato, y el flujo `kdoctor → pr-agent → arch-committee` se rompería en las
-costuras. Hay código en Go (`kdoctor`) y en Python (`pr-agent`, `arch-committee`), por lo que el contrato
+`venom-doctor`, `pr-agent` y `arch-committee` intercambian hallazgos (*findings*). Sin un contrato único cada
+paquete inventaría su formato, y el flujo `venom-doctor → pr-agent → arch-committee` se rompería en las
+costuras. Hay código en Go (`venom-doctor`) y en Python (`pr-agent`, `arch-committee`), por lo que el contrato
 debe ser independiente del lenguaje.
 
 ## Decisiones

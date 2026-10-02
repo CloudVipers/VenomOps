@@ -1,6 +1,6 @@
-"""KD-K8S-002 (from kdoctor): container killed by OOM -> raise ``limits.memory`` in the owning Terraform workload.
+"""KD-K8S-002 (from venom-doctor): container killed by OOM -> raise ``limits.memory`` in the owning Terraform workload.
 
-Contract with kdoctor (docs/decisiones/0004): the finding carries an evidence of kind ``memory-limit-change`` with
+Contract with venom-doctor (docs/decisiones/0004): the finding carries an evidence of kind ``memory-limit-change`` with
 ``container=<name>;from=<quantity>;to=<quantity>``. Without it (e.g. the container had no limit) there is nothing
 safe to change automatically.
 """
@@ -43,8 +43,8 @@ def parse_change(finding: Finding) -> tuple[str, str, str]:
             return container, old, new
         raise FixerError(f"malformed '{EVIDENCE_KIND}' evidence: {ev.detail!r}")
     raise FixerError(
-        f"the finding has no '{EVIDENCE_KIND}' evidence (kdoctor found no current memory limit, so there is no value "
-        "to change): define requests/limits by hand"
+        f"the finding has no '{EVIDENCE_KIND}' evidence (venom-doctor found no current memory limit, so there is no "
+        "value to change): define requests/limits by hand"
     )
 
 
@@ -112,8 +112,10 @@ class K8sMemoryLimitFixer:
             summary=f"Subir limits.memory del contenedor `{container}` de {old} a {new} en `{rtype}.{rname}`.",
             details=[
                 f"Resultado: {tools.edits[-1].detail}.",
-                f"Origen: kdoctor detectó OOMKilled en el pod `{finding.resource.namespace}/{finding.resource.name}`.",
-                f"{new} es un punto de partida sugerido por kdoctor: ajustar con el consumo real (metrics-server o tu "
+                f"Origen: venom-doctor detectó OOMKilled en el pod "
+                f"`{finding.resource.namespace}/{finding.resource.name}`.",
+                f"{new} es un punto de partida sugerido por venom-doctor: ajustar con el consumo real "
+                f"(metrics-server o tu "
                 "herramienta de métricas). Si el consumo sigue creciendo, hay una fuga de memoria que corregir.",
                 "Más memoria por réplica significa más costo y puede requerir nodos más grandes.",
             ],

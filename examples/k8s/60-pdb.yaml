@@ -5,7 +5,7 @@
 # - pdb-orphan: el selector no coincide con ningún Pod.
 apiVersion: apps/v1
 kind: Deployment
-metadata: {name: single, namespace: kdoctor-demo}
+metadata: {name: single, namespace: venom-demo}
 spec:
   replicas: 1
   selector: {matchLabels: {app: single}}
@@ -16,14 +16,14 @@ spec:
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
-metadata: {name: pdb-single, namespace: kdoctor-demo}
+metadata: {name: pdb-single, namespace: venom-demo}
 spec:
   minAvailable: 1
   selector: {matchLabels: {app: single}}
 ---
 apiVersion: apps/v1
 kind: Deployment
-metadata: {name: degraded, namespace: kdoctor-demo}
+metadata: {name: degraded, namespace: venom-demo}
 spec:
   replicas: 2
   selector: {matchLabels: {app: degraded}}
@@ -38,14 +38,14 @@ spec:
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
-metadata: {name: pdb-degraded, namespace: kdoctor-demo}
+metadata: {name: pdb-degraded, namespace: venom-demo}
 spec:
   minAvailable: 2
   selector: {matchLabels: {app: degraded}}
 ---
 apiVersion: apps/v1
 kind: Deployment
-metadata: {name: greedy, namespace: kdoctor-demo}
+metadata: {name: greedy, namespace: venom-demo}
 spec:
   replicas: 1
   selector: {matchLabels: {app: greedy}}
@@ -56,14 +56,14 @@ spec:
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
-metadata: {name: pdb-greedy, namespace: kdoctor-demo}
+metadata: {name: pdb-greedy, namespace: venom-demo}
 spec:
   minAvailable: 3
   selector: {matchLabels: {app: greedy}}
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
-metadata: {name: pdb-orphan, namespace: kdoctor-demo}
+metadata: {name: pdb-orphan, namespace: venom-demo}
 spec:
   minAvailable: 1
   selector: {matchLabels: {app: no-existe}}

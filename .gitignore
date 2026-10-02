@@ -16,9 +16,9 @@ crash.log
 plan.out
 
 # Go
-/packages/kdoctor/bin/
-/packages/kdoctor/dist/
-/packages/kdoctor/LICENSE
+/packages/venom-doctor/bin/
+/packages/venom-doctor/dist/
+/packages/venom-doctor/LICENSE
 *.test
 *.out
 coverage.*
