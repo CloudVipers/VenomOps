@@ -14,7 +14,7 @@ import (
 
 func sample() findings.Finding {
 	return findings.Finding{
-		ID: "KD-K8S-001", SchemaVersion: "1.0.0", Source: findings.SourceKDoctor, Severity: findings.SeverityHigh,
+		ID: "KD-K8S-001", SchemaVersion: "1.1.0", Source: findings.SourceVenomDoctor, Severity: findings.SeverityHigh,
 		Title:     "Pod payments/api en CrashLoopBackOff",
 		Resource:  findings.Resource{Type: "Pod", Name: "api", Namespace: "payments"},
 		Evidence:  []findings.Evidence{{Kind: "exit-code", Detail: "exitCode=1"}, {Kind: "log-tail", Detail: "line1\nline2"}},
