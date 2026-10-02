@@ -94,7 +94,7 @@ venom doctor -n pagos --explain
       el problema persiste; si sigue creciendo, investigar si hay una fuga de memoria.
 ```
 
-No hay un modelo por defecto: lo eliges tú (es una decisión de coste, región y disponibilidad en tu cuenta). Detalles en el
+No hay un modelo por defecto: lo eliges tú (es una decisión de coste, región y disponibilidad en tu cuenta). Qué aporta de verdad, qué datos salen y qué permisos hacen falta: [la IA es opcional](ia.md). Detalles en el
 [ADR 0005](https://github.com/CloudVipers/VenomOps/blob/main/docs/decisiones/0005-modelos-bedrock.md).
 
 ### Permisos que necesita en el clúster

@@ -221,6 +221,16 @@ a.card:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)
 .cmd-card .terminal { border-radius: 0; border-width: 1px 0 0; box-shadow: none; flex: 1; }
 .cmd-card .terminal pre { font-size: 0.76rem; }
 
+/* AI is optional */
+.ia-card { padding: 26px; }
+.ia-card.ia-off { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); background: linear-gradient(180deg, var(--accent-soft), var(--surface) 55%); }
+.ia-card h3 { font-size: 1.25rem; margin-bottom: 14px; }
+.checklist { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 10px; }
+.checklist li { position: relative; padding-left: 28px; color: var(--text-2); font-size: 0.96rem; }
+.checklist li::before { content: "✓"; position: absolute; left: 0; top: 0; color: var(--accent); font-weight: 800; }
+.checklist.plain li::before { content: "○"; color: var(--muted); font-weight: 400; }
+.checklist strong { color: var(--text); }
+
 /* flow diagram */
 .diagram { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px; overflow-x: auto; }
 .diagram svg { display: block; min-width: 760px; width: 100%; height: auto; }
