@@ -6,7 +6,13 @@
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
-WORK=$(mktemp -d); trap 'docker rm -f venom-repo-test >/dev/null 2>&1 || true; docker network rm venom-repo-net >/dev/null 2>&1 || true' EXIT
+WORK=$(mktemp -d)
+cleanup() { # also removes the throwaway private key and the generated site
+  docker rm -f venom-repo-test >/dev/null 2>&1 || true
+  docker network rm venom-repo-net >/dev/null 2>&1 || true
+  [ -n "${WORK:-}" ] && [ -d "$WORK" ] && rm -rf -- "$WORK"
+}
+trap cleanup EXIT
 PKG_DIR=${PKG_DIR:-$ROOT/packaging/dist}   # may also hold arm64 packages: the repo is generated for every arch present
 PASS="test-passphrase-$$"
 
