@@ -1,6 +1,7 @@
 # Arquitectura de VenomOps
 
-VenomOps son tres herramientas que comparten un contrato: el **finding** ([`findings-schema`](../packages/findings-schema)).
+VenomOps son tres herramientas que comparten un contrato, el **finding** ([`findings-schema`](../packages/findings-schema)), y un comando único,
+`venom`, que las reúne (`venom doctor`, `venom fix`, `venom review`; ver el [ADR 0006](decisiones/0006-comando-venom.md)).
 Una **detecta** problemas (`venom-doctor`), otra los **corrige** abriendo un PR (`pr-agent`) y otra los **debate y prioriza**
 antes de producción (`arch-committee`). Ninguna aplica cambios: siempre decide una persona.
 
@@ -32,7 +33,7 @@ flowchart LR
     R --> H2
 ```
 
-- **`venom-doctor`** lee el clúster (nunca escribe) y emite findings. Sus reglas son VD-K8S-001..004.
+- **`venom-doctor`** lee el clúster (nunca escribe) y emite findings. Tiene nueve reglas (`VD-K8S-001`..`009`: Pods, probes, nodos, PDB, Karpenter e IRSA); ver el [catálogo](guia/reglas.md).
 - **`pr-agent`** toma UN finding y lo convierte en un PR con el cambio mínimo en Terraform. Nunca hace merge.
 - **`arch-committee`** revisa un plan de Terraform con cuatro especialistas y un moderador. Puede recibir findings
   previos (p. ej. de `venom-doctor`) como contexto para contrastar el plan con lo que ocurre en producción.
@@ -51,7 +52,7 @@ sequenceDiagram
 
     D->>K8s: crea clúster y aplica manifiestos rotos
     VD->>K8s: get/list pods, logs, eventos (solo lectura)
-    VD-->>D: findings JSON (VD-K8S-001..004)
+    VD-->>D: findings JSON (VD-K8S-001..009)
     D->>PA: --finding venom-doctor.json --supported
     PA->>PA: sandbox + fixer VD-K8S-002 + terraform validate/plan
     PA-->>D: diff 32Mi → 64Mi y cuerpo del PR (sin tocar nada)
@@ -87,29 +88,39 @@ Decisiones: [ADR 0002](decisiones/0002-pr-agent-seguridad.md) (seguridad de pr-a
 [ADR 0005](decisiones/0005-modelos-bedrock.md) (modelos de Bedrock) y
 [ADR 0006](decisiones/0006-comando-venom.md) (comando paraguas `venom`) y
 [ADR 0007](decisiones/0007-dependencias-python.md) (dependencias Python) y
-[ADR 0008](decisiones/0008-regla-irsa-venom-doctor.md) (regla de IRSA de venom-doctor) y
+[ADR 0008](decisiones/0008-regla-irsa-venom-doctor.md) (regla de IRSA de venom-doctor),
+[ADR 0009](decisiones/0009-source-venom-doctor.md) (valor `venom-doctor` en el contrato) y
 [ADR 0010](decisiones/0010-ids-de-regla-vd.md) (IDs `VD-K8S-*`).
+
+Las guías de uso (instalación, comandos, casos de uso, catálogo de reglas, seguridad y ayuda) están en [`docs/guia/`](guia/) y se publican como web en
+<https://cloudvipers.github.io/VenomOps/>.
 
 ## Mapa del repositorio
 
 ```
 packages/
   findings-schema/   contrato común (Go + Python)
-  venom-doctor/           plugin de kubectl (Go)
+  venom-doctor/      plugin de kubectl (Go): nueve reglas de diagnóstico
   pr-agent/          finding -> Pull Request con el arreglo mínimo (Python)
   arch-committee/    comité de agentes que revisa un plan (Python)
+  venom/             comando único: venom doctor | fix | review (Python)
+packaging/           paquetes .rpm/.deb, repositorio yum/apt firmado y scripts de release
 examples/
-  k8s/               manifiestos rotos para probar venom-doctor
+  k8s/               manifiestos rotos, uno por regla, para probar venom-doctor
+  rbac/              ClusterRole de solo lectura que necesita venom-doctor
   terraform/         repos con fallas deliberadas (pr-agent y arch-committee)
   plans/             terraform show -json de ejemplo (arch-committee)
   findings/          findings de ejemplo, incluida la salida real de venom-doctor
   demo/              run-demo.sh: demo reproducible de punta a punta
-docs/decisiones/     ADRs
+docs/
+  guia/              guías de uso (fuente de la web)
+  web/               generador del sitio y su comprobador
+  decisiones/        ADRs
 ```
 
 ## Limitaciones y siguientes pasos
 
-- Solo `VD-K8S-002` se corrige automáticamente desde `venom-doctor`; los otros tres findings de Kubernetes piden intervención
+- Solo `VD-K8S-002` se corrige automáticamente desde `venom-doctor`; los demás findings de Kubernetes piden intervención
   humana o el agente LLM opcional.
 - El mapeo Pod → recurso de Terraform exige `metadata.name`/`namespace` literales (deduce Deployments y StatefulSets por
   el nombre del Pod); si son variables, se detiene en lugar de adivinar.

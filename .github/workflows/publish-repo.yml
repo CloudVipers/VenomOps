@@ -1,22 +1,30 @@
-name: Publish package repository
+name: Publish site and package repository
 
-# Regenerates the signed yum/dnf and apt repository from the packages of a venom release and publishes it to GitHub Pages
-# (https://<org>.github.io/<repo>/). Manual only.
-#  - publish=false (default): DRY RUN. Builds the repository with a THROWAWAY key and runs the end-to-end install test; nothing
-#    is published and no secret is needed. Use it to check the wiring after changing the packaging.
-#  - publish=true: signs with the real key (secrets GPG_SIGNING_KEY and GPG_PASSPHRASE) and deploys to Pages.
+# Builds the website (docs/guia + docs/web) next to the signed yum/dnf and apt repository and publishes both to GitHub Pages
+# (https://<org>.github.io/<repo>/). The signed repository is regenerated from the packages of a venom release, because Pages
+# replaces the whole site on every deploy.
+#  - Manual run, publish=false (default): DRY RUN. Builds the repository with a THROWAWAY key and runs the end-to-end install
+#    test; nothing is published and no secret is needed. Use it to check the wiring after changing the packaging.
+#  - Manual run, publish=true: signs with the real key (secrets GPG_SIGNING_KEY and GPG_PASSPHRASE) and deploys to Pages.
+#  - Push to main that changes the guides or the web: republishes using the LATEST venom release (no packaging change, so the
+#    dry run is skipped).
 # One-time setup (a person with admin rights): Settings > Pages > Source = "GitHub Actions", and the two secrets. See
 # packaging/repo/README.md.
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "venom release to take the packages from (for example venom-v0.1.3)"
-        required: true
+        description: "venom release to take the packages from (for example venom-v0.1.5); empty = the latest"
+        required: false
       publish:
         description: "Sign with the real key and publish to Pages (false = dry run with a throwaway key)"
         type: boolean
         default: false
+  push:
+    branches: [main]
+    paths:
+      - "docs/guia/**"
+      - "docs/web/**"
 
 permissions:
   contents: read
@@ -29,26 +37,36 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      TAG: ${{ inputs.tag }}
+      INPUT_TAG: ${{ inputs.tag }}
+      PUBLISH: ${{ github.event_name == 'push' || inputs.publish }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Download the packages of the release
         run: |
-          [[ "$TAG" == venom-v* ]] || { echo "tag must look like venom-vX.Y.Z"; exit 1; }
+          TAG="$INPUT_TAG"
+          if [ -z "$TAG" ]; then
+            TAG=$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-drafts --limit 50 --json tagName \
+              -q '[.[] | select(.tagName | startswith("venom-v"))][0].tagName')
+          fi
+          [[ "$TAG" == venom-v* ]] || { echo "tag must look like venom-vX.Y.Z (got '$TAG')"; exit 1; }
           mkdir -p packages
           gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern '*.rpm' --pattern '*.deb' --dir packages
           ls -l packages
-          VERSION="${TAG#venom-v}"
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "VERSION=${TAG#venom-v}" >> "$GITHUB_ENV"
 
-      # Always: proves the generator and the install flow on this runner, with a key that exists only for this run.
+      # Proves the generator and the install flow on this runner, with a key that exists only for this run.
       - name: Dry run (throwaway key, real dnf and apt installs, tamper checks)
+        if: ${{ github.event_name != 'push' }}
         run: PKG_DIR="$PWD/packages" ./packaging/repo/test-repo.sh
 
-      - name: Build the signed site with the real key
-        if: ${{ inputs.publish }}
+      - name: Build the signed repository with the real key
+        if: ${{ env.PUBLISH == 'true' }}
         env:
           GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
@@ -59,24 +77,26 @@ jobs:
           printf '%s\n' "$GPG_SIGNING_KEY" > "$keyfile"
           GPG_KEY_FILE="$keyfile" ./packaging/repo/build-repo.sh packages site
           rm -f "$keyfile"
-          URL="https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}"
-          export URL VERSION
-          # shellcheck disable=SC2016  # envsubst takes the literal variable list
-          envsubst '${URL} ${VERSION}' < packaging/repo/index.html.tpl > site/index.html
-          touch site/.nojekyll
-          echo "SITE_URL=$URL" >> "$GITHUB_ENV"
+
+      - name: Build the website next to the repository
+        if: ${{ env.PUBLISH == 'true' }}
+        run: |
+          pip install -q -r docs/web/requirements.txt
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          python docs/web/build.py --out site --url "https://${owner}.github.io/${GITHUB_REPOSITORY#*/}" --version "$VERSION"
+          python docs/web/check_site.py site --strict
 
       - uses: actions/configure-pages@v5
-        if: ${{ inputs.publish }}
+        if: ${{ env.PUBLISH == 'true' }}
 
       - uses: actions/upload-pages-artifact@v3
-        if: ${{ inputs.publish }}
+        if: ${{ env.PUBLISH == 'true' }}
         with:
           path: site
 
   deploy:
     needs: build
-    if: ${{ inputs.publish }}
+    if: ${{ github.event_name == 'push' || inputs.publish }}
     runs-on: ubuntu-latest
     permissions:
       pages: write

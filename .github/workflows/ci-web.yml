@@ -1,0 +1,32 @@
+name: CI web
+
+# Builds the website from the guides and checks it: internal links and anchors, assets, metadata, no external requests and no
+# leftover of the old tool name. Nothing is published here.
+on:
+  pull_request:
+    paths:
+      - "docs/guia/**"
+      - "docs/web/**"
+      - "README.md"
+      - ".github/workflows/ci-web.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/guia/**"
+      - "docs/web/**"
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: build + check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r docs/web/requirements.txt
+      - run: python docs/web/build.py --out "$RUNNER_TEMP/site" --version 0.0.0
+      - run: python docs/web/check_site.py "$RUNNER_TEMP/site"

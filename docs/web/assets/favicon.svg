@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="VenomOps">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#58e69b"/>
+      <stop offset="1" stop-color="#12935a"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="#0b1118"/>
+  <rect x="2" y="2" width="60" height="60" rx="13" fill="none" stroke="url(#g)" stroke-width="2" opacity=".55"/>
+  <path d="M15 19 L32 47 L49 19" fill="none" stroke="url(#g)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="32" cy="12" r="3" fill="#58e69b"/>
+</svg>

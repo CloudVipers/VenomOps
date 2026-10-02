@@ -20,7 +20,7 @@ finding.json ──▶ validar contra findings-schema
    del PR; no toca nada       (el repo solo se modifica cuando todo lo anterior pasó)
 ```
 
-## Fixers incluidos (MVP)
+## Fixers incluidos
 
 | ID del finding | Qué corrige | Cómo |
 |---|---|---|

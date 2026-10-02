@@ -72,8 +72,8 @@ sudo apt update && sudo apt install venom
 ## Publicar en GitHub Pages (mismo repositorio)
 
 El workflow [`publish-repo.yml`](../../.github/workflows/publish-repo.yml) toma los paquetes de un release `venom-vX.Y.Z`,
-regenera el repositorio firmado y lo despliega en `https://<org>.github.io/<repo>/` (hoy
-`https://cloudvipers.github.io/VenomOps/`, con una página de inicio con las instrucciones). Es solo manual y el repositorio
+regenera el repositorio firmado, construye la web (`docs/web`) junto a él y lo despliega todo en `https://<org>.github.io/<repo>/` (hoy
+`https://cloudvipers.github.io/VenomOps/`). Se lanza a mano y también solo cuando cambian las guías o la web; el repositorio
 contiene **únicamente la última versión publicada**.
 
 **Puesta en marcha (una vez, con permisos de administración):**

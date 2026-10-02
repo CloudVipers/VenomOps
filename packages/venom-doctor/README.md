@@ -6,7 +6,9 @@ de Kubernetes/EKS y **cómo arreglarlo**. Es de **solo lectura**: nunca modifica
 Produce *findings* en el formato común de [`findings-schema`](../findings-schema), que luego puede corregir
 [`pr-agent`](../pr-agent) y debatir [`arch-committee`](../arch-committee).
 
-## Qué detecta (MVP)
+## Qué detecta
+
+Nueve reglas. Para cada una, cómo reconocer el problema, confirmarlo a mano y arreglarlo: [catálogo de reglas](../../docs/guia/reglas.md).
 
 | ID | Regla | Qué explica |
 |---|---|---|
@@ -24,7 +26,18 @@ Un contenedor terminado por OOM se reporta solo con `VD-K8S-002` (que trae la co
 
 ## Instalación
 
-Todavía no hay release público. Por ahora, desde el monorepo (Go 1.26+):
+```bash
+# Paquete (instala también el comando `venom`): RHEL/Rocky/Alma/Amazon Linux o Debian/Ubuntu
+# Instrucciones del repositorio firmado: ../../docs/guia/instalacion.md
+sudo dnf install venom            # o: sudo apt install venom
+
+# Solo este plugin, con krew (Linux, macOS y Windows)
+kubectl krew install --manifest-url=https://raw.githubusercontent.com/CloudVipers/VenomOps/main/packages/venom-doctor/venom-doctor.yaml
+kubectl venom-doctor --version
+```
+
+También hay un binario por plataforma en cada [release](https://github.com/CloudVipers/VenomOps/releases) (`venom-doctor_vX.Y.Z_<os>_<arch>`, con su
+`checksums.txt`), y puedes compilarlo desde el monorepo con Go 1.26+:
 
 ```bash
 cd packages/venom-doctor
@@ -32,9 +45,8 @@ make build                      # deja el binario en bin/kubectl-venom_doctor
 sudo install bin/kubectl-venom_doctor /usr/local/bin/   # kubectl lo detecta como `kubectl venom-doctor`
 ```
 
-La distribución por [krew](https://krew.sigs.k8s.io/) está preparada en [`venom-doctor.yaml`](venom-doctor.yaml) y se
-activará cuando exista un release público (los `sha256` se rellenan entonces). Los binarios de release se
-generan con GoReleaser (`make snapshot` los construye sin publicar nada).
+El manifiesto de [krew](https://krew.sigs.k8s.io/) es [`venom-doctor.yaml`](venom-doctor.yaml) y está propuesto al índice oficial; los binarios de release se
+generan con GoReleaser (`make snapshot` los construye sin publicar nada). Guía completa: [instalación](../../docs/guia/instalacion.md).
 
 ## Uso
 
@@ -46,6 +58,9 @@ kubectl venom-doctor -A -o json          # salida JSON (array de findings válid
 ```
 
 Acepta los flags habituales de kubectl (`--kubeconfig`, `--context`, `-n`, ...).
+
+**Con `-n` no se revisan los nodos (`VD-K8S-006`) ni Karpenter (`VD-K8S-008`)**, porque son de todo el clúster; el comando lo avisa por `stderr`. Usa `-A` para el
+diagnóstico completo.
 
 Ejemplo (sobre los manifiestos de [`examples/k8s`](../../examples/k8s)):
 
@@ -112,8 +127,10 @@ kubectl venom-doctor -n payments --explain
   verifica que no se emite ningún otro verbo.
 - Los logs y mensajes de eventos se **redactan** antes de entrar en un finding, porque los findings viajan a
   otros sistemas (PRs, prompts).
-- Permisos mínimos que necesita el usuario: `get/list` sobre `pods`, `pods/log`, `events` y
-  `persistentvolumeclaims`, y opcionalmente `pods.metrics.k8s.io`.
+- **Permisos mínimos:** solo `get` y `list`. Un [`ClusterRole` de referencia](../../examples/rbac/venom-doctor-reader.yaml) cubre todas las reglas y está probado
+  (suplantando a un usuario que solo tiene ese rol, no aparece ningún error de permisos): `pods`, `pods/log`, `events`, `persistentvolumeclaims`, `serviceaccounts` y `nodes`; `poddisruptionbudgets`
+  (`policy`); opcionalmente `pods` de `metrics.k8s.io`; y `nodepools` y `nodeclaims` de `karpenter.sh` si usas Karpenter. Si falta un permiso, la regla afectada se salta con un aviso
+  y las demás siguen; `events` y `pods/log` son contexto opcional y su ausencia solo resta evidencia, sin avisar.
 
 ## Desarrollo
 
@@ -137,14 +154,18 @@ ejemplo en un clúster real.**
 ```bash
 export KUBECONFIG=/tmp/venom-doctor-kind.kubeconfig
 kind create cluster --name venom-doctor-test --kubeconfig "$KUBECONFIG"
-kubectl apply -f ../../examples/k8s/
-sleep 90 && ./bin/kubectl-venom_doctor -n venom-demo
+kubectl apply -f ../../examples/k8s/        # ver examples/k8s/README.md (hay un escenario por regla)
+sleep 120 && ./bin/kubectl-venom_doctor -n venom-demo
 kind delete cluster --name venom-doctor-test --kubeconfig "$KUBECONFIG"
 ```
 
 ## Limitaciones conocidas
 
-- Solo Pods (los workloads se infieren por sus Pods); segunda tanda de reglas pendiente: probes fallando,
-  IRSA / EKS Pod Identity, nodos `NotReady`, PDB que bloquea drains y Karpenter sin capacidad.
+- Es una fotografía del momento en que se ejecuta: los eventos de Kubernetes duran cerca de una hora y un Pod ya recuperado no deja rastro. No es un sistema de monitorización ni sustituye la observabilidad.
+- Las reglas de nodos y de Karpenter solo corren con `-A`; la de Karpenter no hace nada si no está instalado y nunca se ha probado contra un controlador de Karpenter en ejecución
+  (sí contra un API server con los CRDs oficiales).
+- `VD-K8S-009` comprueba la **consistencia de IRSA dentro del clúster**, no las políticas de confianza ni los permisos del rol IAM, y no cubre EKS Pod Identity (ver el
+  [ADR 0008](../../docs/decisiones/0008-regla-irsa-venom-doctor.md)).
+- Solo `VD-K8S-002` tiene arreglo automático con `pr-agent`; el resto pide intervención humana a propósito.
 - El texto de los findings está en español; el código, los errores y los identificadores, en inglés.
 - El uso de memoria para `OOMKilled` requiere metrics-server; sin él se sugiere duplicar el límite actual.

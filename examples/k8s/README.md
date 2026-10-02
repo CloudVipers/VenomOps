@@ -19,6 +19,7 @@ kind delete cluster --name venom-doctor-test --kubeconfig "$KUBECONFIG"
 | `40-pending.yaml` | VD-K8S-004 | Sin CPU suficiente y PVC inexistente |
 | `50-probes.yaml` | VD-K8S-005 | Readiness con `connection refused` y liveness con 404 que reinicia el contenedor |
 | `60-pdb.yaml` | VD-K8S-007 | Cuatro PDB que estorban a un drain: réplica única, Pods no sanos, `minAvailable` mayor que las réplicas y selector huérfano |
+| `70-irsa.yaml` | VD-K8S-009 | ServiceAccount con ARN mal formado, Pods sin las variables de IRSA y un Pod con un rol desactualizado |
 
 ## Nodo NotReady (VD-K8S-006)
 
