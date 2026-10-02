@@ -53,3 +53,10 @@ la acción, y `venom` a secas no la indica. Se adopta **`venom-doctor`**: plugin
 `kubectl venom-doctor` y binario `kubectl-venom_doctor` (kubectl exige guion bajo en el binario cuando el plugin lleva
 guion). El paquete Go sigue llamándose `kdoctor` y `venom doctor` ejecuta `kubectl-venom_doctor`. Los archivos de las
 versiones 0.1.0 y 0.1.1 llevan nombres antiguos; el cambio sale en la 0.1.2.
+
+## Repositorio firmado (addendum, 2026-10-02)
+
+Para instalar sin URL se añadió un generador de repositorio yum/dnf y apt con paquetes y metadatos firmados con GPG
+(`packaging/repo/`), probado de extremo a extremo con una clave desechable: instalación real con las comprobaciones de firma
+activas en cuatro distribuciones y rechazo, por el motivo correcto, de un cliente sin la clave y de paquetes o índices
+manipulados. **No está publicado**: queda por decidir el alojamiento y la clave de firma real (custodia y rotación).
