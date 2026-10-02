@@ -1,9 +1,10 @@
 """OPTIONAL LLM agent (Amazon Bedrock Converse with tool use) for findings that have no deterministic fixer.
 
-It is never used by default: the CLI needs ``--agent`` *and* an explicit model id, and the finding is
-redacted before it is sent. The model can only act through :class:`~pr_agent.tools.ToolBox`, so the
-hard boundaries (command allowlist, path confinement, verified structured edits) apply no matter what the
-model asks for. After the run, the workflow still enforces "minimal diff" and ``terraform validate``.
+It is never used by default: the CLI needs ``--agent`` *and* an explicit model id. Everything the model sees
+(the finding, the files it reads and terraform's output) is redacted before it is sent.
+The model can only act through :class:`~pr_agent.tools.ToolBox`, so the hard boundaries (command allowlist,
+path confinement, verified structured edits) apply no matter what the model asks for.
+After the run, the workflow still enforces "minimal diff" and ``terraform validate``.
 """
 
 from __future__ import annotations
@@ -68,10 +69,12 @@ def _flatten(text: str, limit: int = 500) -> str:
 
 def dispatch_tool(tools: ToolBox, name: str, args: dict[str, Any]) -> str:
     """Run one tool call. Raises ToolError/SecurityError for anything refused; never executes unknown tools."""
+    # Everything the model sees leaves the machine, so file contents are masked like the finding and terraform's output.
+    # Edits apply to the real files, so a masked value is never written back: an edit that depends on one simply fails.
     if name == "read_file":
-        return tools.read_file(str(args.get("path", "")))
+        return redact(tools.read_file(str(args.get("path", ""))))
     if name == "list_files":
-        return "\n".join(tools.list_files(str(args.get("glob") or "**/*.tf")))
+        return redact("\n".join(tools.list_files(str(args.get("glob") or "**/*.tf"))))
     if name == "edit_hcl":
         patch = args.get("patch")
         if not isinstance(patch, dict):

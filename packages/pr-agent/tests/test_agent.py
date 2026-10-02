@@ -81,6 +81,30 @@ def test_the_finding_is_redacted_before_it_reaches_the_model(toolbox: ToolBox) -
     assert "hunter2" not in sent and "123456789012" not in sent
 
 
+def test_file_contents_are_redacted_before_they_reach_the_model(toolbox: ToolBox, s3_repo: Path) -> None:
+    """Found while documenting what leaves the machine: read_file used to hand the raw Terraform to the model."""
+    main = s3_repo / "main.tf"
+    main.write_text(
+        main.read_text()
+        + '\nlocals {\n  db_password = "hunter2-very-secret"\n  deployer = "arn:aws:iam::123456789012:role/ci"\n'
+        + '  key = "AKIAIOSFODNN7EXAMPLE"\n}\n'
+    )
+    bedrock = ScriptedBedrock([tool_use("read_file", {"path": "main.tf"}), final("nothing to change")])
+    with pytest.raises(FixAborted):
+        build_agent(bedrock, "m")(make_finding(id="CUSTOM-001"), toolbox)
+    returned = bedrock.requests[1]["messages"][-1]["content"][0]["toolResult"]["content"][0]["text"]
+    for secret in ("hunter2-very-secret", "123456789012", "AKIAIOSFODNN7EXAMPLE"):
+        assert secret not in returned, f"{secret!r} was sent to the model"
+    assert (
+        "[REDACTED]" in returned and "[ACCOUNT-ID]" in returned and "aws_s3_bucket" in returned
+    )  # the code is still readable
+
+
+def test_dispatch_redacts_what_read_file_returns(toolbox: ToolBox, s3_repo: Path) -> None:
+    (s3_repo / "main.tf").write_text('password = "hunter2"\n')
+    assert "hunter2" not in dispatch_tool(toolbox, "read_file", {"path": "main.tf"})
+
+
 def test_a_misbehaving_model_cannot_escape_the_boundaries(toolbox: ToolBox, s3_repo: Path) -> None:
     (s3_repo / "terraform.tfstate").write_text("{}")
     bedrock = ScriptedBedrock(
