@@ -6,8 +6,11 @@ import http.server
 import json
 import platform
 import shutil
+import ssl
 import subprocess
 import threading
+import urllib.error
+import urllib.request
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -196,6 +199,62 @@ def test_a_redirect_that_leaves_https_is_refused(tmp_path: Path, monkeypatch: py
             update.http_get(f"http://127.0.0.1:{httpd.server_port}/x", 1000)
     finally:
         httpd.shutdown()
+
+
+class FakeContext:
+    """Stands in for an SSLContext whose build-time default CA location does not exist on this machine."""
+
+    def __init__(self, loaded: int) -> None:
+        self.loaded = loaded
+        self.files: list[str] = []
+
+    def cert_store_stats(self) -> dict[str, int]:
+        return {"x509_ca": self.loaded}
+
+    def load_verify_locations(self, cafile: str) -> None:
+        self.files.append(cafile)
+
+
+def test_the_system_ca_bundle_is_found_on_any_distribution(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    debian_style = tmp_path / "ca-certificates.crt"
+    debian_style.write_text("x")
+    ctx = FakeContext(loaded=0)  # as when the Python was built on Red Hat and runs on Debian
+    monkeypatch.setattr(ssl, "create_default_context", lambda: ctx)
+    update.tls_context(("/nonexistent/ca-bundle.crt", str(debian_style)))
+    assert ctx.files == [str(debian_style)]  # the first bundle that exists is used
+
+
+def test_nothing_extra_is_loaded_when_the_default_store_already_has_certificates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ctx = FakeContext(loaded=140)
+    monkeypatch.setattr(ssl, "create_default_context", lambda: ctx)
+    update.tls_context()
+    assert ctx.files == []
+
+
+def test_without_any_bundle_the_context_still_verifies_and_never_trusts_everything(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ctx = FakeContext(loaded=0)
+    original = ssl.create_default_context
+    monkeypatch.setattr(ssl, "create_default_context", lambda: ctx)
+    monkeypatch.setitem(__import__("sys").modules, "certifi", None)  # certifi not importable
+    update.tls_context(("/nonexistent/a", "/nonexistent/b"))  # must not raise nor load anything
+    assert ctx.files == []
+    monkeypatch.setattr(ssl, "create_default_context", original)
+    real = update.tls_context(("/nonexistent/a",))
+    assert real.verify_mode == ssl.CERT_REQUIRED and real.check_hostname  # verification is never switched off
+
+
+def test_a_certificate_failure_explains_what_to_install(monkeypatch: pytest.MonkeyPatch) -> None:
+    class Opener:
+        def open(self, *_: Any, **__: Any) -> None:
+            raise urllib.error.URLError(ssl.SSLCertVerificationError("unable to get local issuer certificate"))
+
+    monkeypatch.setattr(urllib.request, "build_opener", lambda *_: Opener())
+    with pytest.raises(update.UpdateError, match="ca-certificates"):
+        update.http_get("https://cloudvipers.github.io/VenomOps/latest.json", 100)
 
 
 def test_a_download_whose_hash_differs_from_latest_json_is_not_kept(site: Path, tmp_path: Path) -> None:
