@@ -1,0 +1,26 @@
+{
+  "id": "MAN-OPS-001",
+  "schema_version": "1.2.0",
+  "source": "no-existe",
+  "severity": "info",
+  "detected_at": "2026-09-30T00:00:00+00:00",
+  "title": "Revisar política de retención de logs",
+  "resource": {
+    "type": "log_group",
+    "name": "/example/app"
+  },
+  "evidence": [
+    {
+      "kind": "note",
+      "detail": "Retención sin expiración configurada"
+    }
+  ],
+  "root_cause": "No se definió retención al crear el log group.",
+  "suggested_fix": {
+    "summary": "Definir retención de 30 días.",
+    "steps": [
+      "Configurar retention_in_days = 30."
+    ]
+  },
+  "risk_of_fix": "low"
+}

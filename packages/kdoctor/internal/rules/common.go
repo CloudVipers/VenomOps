@@ -13,7 +13,7 @@ import (
 	"github.com/CloudVipers/VenomOps/packages/kdoctor/internal/redact"
 )
 
-const schemaVersion = "1.0.0"
+const schemaVersion = "1.1.0"
 
 // now is replaceable in tests.
 var now = func() time.Time { return time.Now().UTC() }
@@ -106,7 +106,7 @@ func newFindingFor(id string, sev findings.Severity, title string, res findings.
 	return findings.Finding{
 		ID:            id,
 		SchemaVersion: schemaVersion,
-		Source:        findings.SourceKDoctor,
+		Source:        findings.SourceVenomDoctor,
 		Severity:      sev,
 		Title:         title,
 		Resource:      res,

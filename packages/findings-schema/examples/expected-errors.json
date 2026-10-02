@@ -26,5 +26,9 @@
   "unsupported-major-version.json": {
     "path": "/schema_version",
     "keyword": "pattern"
+  },
+  "unknown-source.json": {
+    "path": "/source",
+    "keyword": "enum"
   }
 }

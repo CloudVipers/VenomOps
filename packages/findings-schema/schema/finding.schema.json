@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/venomops/schemas/finding/1.0.0/finding.schema.json",
+  "$id": "https://example.com/venomops/schemas/finding/1.1.0/finding.schema.json",
   "title": "VenomOps Finding",
-  "description": "Contrato común de hallazgos (findings) entre kdoctor, pr-agent y arch-committee.",
+  "description": "Contrato común de hallazgos (findings) entre venom-doctor, pr-agent y arch-committee.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -32,7 +32,8 @@
     },
     "source": {
       "description": "Módulo que produjo el finding.",
-      "enum": ["kdoctor", "pr-agent", "arch-committee", "manual"]
+      "description": "Módulo que produjo el finding. `kdoctor` es el nombre anterior de `venom-doctor`: sigue siendo válido para leer findings ya generados, pero los productores deben emitir `venom-doctor`.",
+      "enum": ["venom-doctor", "kdoctor", "pr-agent", "arch-committee", "manual"]
     },
     "severity": {
       "enum": ["critical", "high", "medium", "low", "info"]
