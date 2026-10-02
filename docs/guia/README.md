@@ -10,6 +10,7 @@ Estas guías también están publicadas en la web: <https://cloudvipers.github.i
 | [Instalación](instalacion.md) | Instalar `venom` o solo `venom-doctor` en Linux, macOS o Windows |
 | [Uso](uso.md) | Los comandos `venom doctor`, `venom fix` y `venom review`, sus opciones y permisos |
 | [Casos de uso](casos-de-uso.md) | Situaciones reales, con los comandos y qué esperar |
+| [La IA es opcional](ia.md) | Qué funciona sin IA, qué aporta de verdad, qué datos salen y qué necesitas en AWS |
 | [Catálogo de reglas](reglas.md) | Qué detecta cada una de las nueve reglas, cómo reconocerla y cómo arreglarla |
 | [Seguridad](seguridad.md) | Qué garantiza, dónde se hace cumplir y cómo verificar lo que instalas |
 | [Ayuda](ayuda.md) | Qué hacer cuando algo no funciona, con los mensajes exactos |

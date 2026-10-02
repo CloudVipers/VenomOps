@@ -3,7 +3,7 @@
 **Encuentra qué está roto en tu clúster. Arréglalo con un Pull Request.**
 
 Herramientas para arquitectos cloud, parte del ecosistema **Ecosistema Nexus by ITera** y desarrolladas por [CloudVipers](https://cloudvipers.com).
-VenomOps explica en lenguaje claro por qué falla Kubernetes o EKS, convierte el hallazgo en el cambio mínimo de Terraform y revisa tus
+VenomOps explica en lenguaje claro por qué falla Kubernetes o EKS, convierte el hallazgo en el cambio mínimo de Terraform y, si quieres una segunda opinión con IA, revisa tus
 planes con un comité de agentes antes del `apply`. Es de **solo lectura y simulación**: nada se aplica solo, cada cambio pasa por una persona,
 y la IA solo se usa si la pides.
 
@@ -49,7 +49,8 @@ venom review --plan plan.json --model-id <modelo> --out ./informe               
 |---|---|---|---|
 | `venom doctor` | Explica por qué algo está roto en un clúster y cómo arreglarlo | No, solo lee | Solo con `--explain` |
 | `venom fix` | Convierte un hallazgo en un Pull Request con el cambio mínimo en Terraform | Abre un PR (nunca lo mezcla) | Solo con `--agent` |
-| `venom review` | Un comité de agentes revisa un plan de Terraform y debate | Escribe un informe local | Sí (Bedrock) |
+| `venom review` | Un comité de agentes revisa un plan de Terraform y debate | Escribe un informe local | **Sí** (Bedrock), la única que la necesita |
+| `venom update` | Descarga la última versión y verifica su firma | Con `--install`, instala el paquete | No |
 
 ## Documentación
 
@@ -58,6 +59,7 @@ venom review --plan plan.json --model-id <modelo> --out ./informe               
 | [Instalación](docs/guia/instalacion.md) | Instalar `venom` o solo `venom-doctor` |
 | [Uso](docs/guia/uso.md) | Los tres comandos, sus opciones y los permisos de solo lectura |
 | [Casos de uso](docs/guia/casos-de-uso.md) | Situaciones reales: de guardia, antes de un drain, del OOMKilled al PR, revisar un plan, CI |
+| [La IA es opcional](docs/guia/ia.md) | Qué usa IA y qué no, qué aporta de verdad, qué datos salen y qué necesitas |
 | [Catálogo de reglas](docs/guia/reglas.md) | Las nueve reglas: cómo reconocer cada problema, confirmarlo a mano y arreglarlo |
 | [Seguridad](docs/guia/seguridad.md) | Garantías, dónde se hacen cumplir y cómo verificar lo que instalas |
 | [Ayuda](docs/guia/ayuda.md) | Qué hacer cuando algo no funciona, con los mensajes exactos |

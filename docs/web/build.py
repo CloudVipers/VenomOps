@@ -56,6 +56,13 @@ PAGES: list[tuple[str, str, str, str, str]] = [
         "Usar",
     ),
     (
+        "ia.md",
+        "ia.html",
+        "La IA es opcional",
+        "Qué funciona sin IA, qué aporta de verdad, qué datos salen y qué necesitas en AWS si decides usarla.",
+        "Usar",
+    ),
+    (
         "reglas.md",
         "reglas.html",
         "Catálogo de reglas",

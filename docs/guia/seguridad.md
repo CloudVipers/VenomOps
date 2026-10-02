@@ -23,7 +23,8 @@ Nada, por defecto. **`venom doctor` sin `--explain` no hace ninguna llamada de I
 - `venom review` envía el **plan de Terraform** enmascarado (valores sensibles y secretos fuera) y, si lo pasas, los hallazgos previos.
 - `venom fix --agent` envía el hallazgo y deja que el modelo use un conjunto reducido de herramientas (leer y editar archivos dentro del repositorio indicado, `terraform validate/plan`).
 
-Los datos van a **tu** cuenta de AWS, con las credenciales que tú configures; no pasan por ningún servicio de CloudVipers.
+Los datos van a **tu** cuenta de AWS, con las credenciales que tú configures; no pasan por ningún servicio de CloudVipers. El enmascarado es por patrones y no puede garantizar que no quede información sensible de
+otro tipo. Qué se envía exactamente en cada función, qué aporta de verdad y qué necesitas en AWS: [la IA es opcional](ia.md).
 
 ## Verificar lo que instalas
 

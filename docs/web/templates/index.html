@@ -25,7 +25,7 @@
     <div>
       <p class="eyebrow"><i></i> Código abierto · Solo lectura · Apache 2.0</p>
       <h1 class="hero-title">Encuentra qué está roto en tu clúster. <em>Arréglalo con un Pull Request.</em></h1>
-      <p class="lead">VenomOps explica en lenguaje claro por qué falla Kubernetes o EKS, convierte el hallazgo en el cambio mínimo de Terraform y revisa tus planes con un comité de agentes antes del <code>apply</code>. No modifica nada por su cuenta: la decisión siempre es de una persona.</p>
+      <p class="lead">VenomOps explica en lenguaje claro por qué falla Kubernetes o EKS, convierte el hallazgo en el cambio mínimo de Terraform y, si quieres una segunda opinión con IA, revisa tus planes con un comité de agentes antes del <code>apply</code>. No modifica nada por su cuenta: la decisión siempre es de una persona.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="instalacion.html">Empezar
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
@@ -35,7 +35,7 @@
         <span class="prompt">$</span><code>sudo dnf install venom</code>
         <button class="copy" type="button" data-copy="sudo dnf install venom" aria-label="Copiar el comando">Copiar</button>
       </div>
-      <p class="hero-meta"><span>Sin IA por defecto</span><span>Paquetes firmados con GPG</span><span>Plugin de kubectl para Linux, macOS y Windows</span></p>
+      <p class="hero-meta"><span>Funciona sin IA ni cuenta de AWS</span><span>Paquetes firmados con GPG</span><span>Plugin de kubectl para Linux, macOS y Windows</span></p>
     </div>
 
     <div class="terminal" aria-label="Ejemplo de salida de venom doctor">
@@ -107,7 +107,7 @@ Causa probable: La aplicación terminó con un error (código 1).
         <div class="cmd-head">
           <span class="tag">venom review</span>
           <h3>Revisa</h3>
-          <p>Un comité de agentes revisa tu plan de Terraform, debate y deja por escrito los desacuerdos y los riesgos aceptados.</p>
+          <p>Un comité de agentes revisa tu plan de Terraform, debate y deja por escrito los desacuerdos y los riesgos aceptados. Es la única función que necesita IA.</p>
         </div>
         <div class="terminal">
 <pre>Hallazgos finales: <span class="t-high">10</span> (7 high, 3 medium)
@@ -122,6 +122,41 @@ Riesgos aceptados: 2
         </div>
       </article>
     </div>
+  </div>
+</section>
+
+<!-- ============ LA IA ES OPCIONAL ============ -->
+<section class="block" id="ia">
+  <div class="container">
+    <div class="section-head">
+      <p class="kicker">Sobre la IA</p>
+      <h2>Lo esencial funciona sin IA y sin cuenta de AWS.</h2>
+      <p>Diagnosticar, corregir y actualizar son funciones deterministas: dan el mismo resultado cada vez y no envían nada fuera de tu red. La IA es un extra opcional en tres sitios, y solo se usa si la pides.</p>
+    </div>
+    <div class="grid grid-2">
+      <div class="card ia-card ia-off">
+        <span class="tag">Sin IA · siempre disponible</span>
+        <h3>Lo que no la necesita</h3>
+        <ul class="checklist">
+          <li><strong>venom doctor</strong>: nueve reglas con causa, evidencia y pasos para arreglarlo</li>
+          <li><strong>venom fix</strong>: cuatro arreglos deterministas, siempre como Pull Request</li>
+          <li><strong>venom update</strong>: descarga la última versión y verifica su firma</li>
+        </ul>
+        <p>Funcionan sin salida a internet (salvo <code>update</code>), sin credenciales de AWS y sin enviar datos a ningún modelo.</p>
+      </div>
+      <div class="card ia-card">
+        <span class="tag">Con IA · solo si la pides</span>
+        <h3>Lo que la usa</h3>
+        <ul class="checklist plain">
+          <li><strong>--explain</strong>: explicación ampliada de cada hallazgo. Valor modesto: reformula lo que la regla ya dice</li>
+          <li><strong>--agent</strong>: un borrador de arreglo para hallazgos sin regla. Se revisa siempre en el PR</li>
+          <li><strong>venom review</strong>: la única que la necesita. Una segunda opinión, no un veredicto</li>
+        </ul>
+        <p>Usan Amazon Bedrock en <strong>tu</strong> cuenta, sin modelo por defecto y con los secretos enmascarados antes de enviar nada.</p>
+      </div>
+    </div>
+    <p style="margin-top:28px"><a class="btn btn-ghost" href="ia.html">Qué aporta de verdad, qué datos salen y qué necesitas
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
   </div>
 </section>
 
