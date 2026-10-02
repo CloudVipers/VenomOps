@@ -37,6 +37,8 @@ Probado en: Rocky 9, AlmaLinux 9, Amazon Linux 2023, Debian 12, Ubuntu 22.04 y 2
 
 ## Publicar
 
+Los releases de GitHub se publican con [`release/publish-release.sh`](release/README.md) (comprueba antes de publicar).
+
 El workflow [`release-venom.yml`](../.github/workflows/release-venom.yml) construye los paquetes x86_64 y arm64 al
 empujar un tag `venom-vX.Y.Z` y los adjunta a un release en borrador. También se puede lanzar a mano desde la pestaña Actions
 (`workflow_dispatch`, o `gh workflow run release-venom.yml`): en ese caso solo sube los paquetes como artefactos del workflow,
