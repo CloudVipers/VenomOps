@@ -97,7 +97,7 @@ gh api -X POST repos/CloudVipers/VenomOps/pages -f build_type=workflow
 **Cada release** (después de subir los `.rpm`/`.deb` a `venom-vX.Y.Z`):
 
 ```bash
-gh workflow run publish-repo.yml --repo CloudVipers/VenomOps -f tag=venom-v0.1.4 -f publish=true
+gh workflow run publish-repo.yml --repo CloudVipers/VenomOps -f tag=venom-v0.1.5 -f publish=true
 ```
 
 Está publicado en https://cloudvipers.github.io/VenomOps/ (clave `A7BE 1F5E 03EC 7AA9 C797  A9DE 3237 E8D7 9E6E 29C5`).
