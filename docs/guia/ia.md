@@ -49,6 +49,8 @@ Los datos van a **tu** cuenta de AWS, con las credenciales que tú configures; n
 
 ## Qué necesitas para usarla
 
+> ¿Quieres el paso a paso? Está en [Configurar Amazon Bedrock](bedrock.md).
+
 - **Una cuenta de AWS con Amazon Bedrock**, el **acceso al modelo concedido en tu región** y credenciales (`AWS_PROFILE`, variables de entorno o un rol).
 - **Un modelo que tú eliges**, con `--explain-model`, `--model-id` o la variable correspondiente. Es el único que hemos probado de verdad: `us.anthropic.claude-haiku-4-5-20251001-v1:0` (Claude Haiku 4.5); no hemos comparado otros.
   Si usas un identificador que empieza por `us.` (un *perfil de inferencia*), la región debe coincidir.
