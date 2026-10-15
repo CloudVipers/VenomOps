@@ -3,7 +3,7 @@
 **Encuentra qué está roto en tu clúster. Arréglalo con un Pull Request.**
 
 Herramientas para arquitectos cloud, parte del ecosistema **Ecosistema Nexus by ITera** y desarrolladas por [CloudVipers](https://cloudvipers.com).
-VenomOps explica en lenguaje claro por qué falla Kubernetes o EKS, convierte el hallazgo en el cambio mínimo de Terraform y, si quieres una segunda opinión con IA, revisa tus
+VenomOps explica en lenguaje claro por qué falla Kubernetes, incluido EKS, convierte el hallazgo en el cambio mínimo de Terraform y, si quieres una segunda opinión con IA, revisa tus
 planes con un comité de agentes antes del `apply`. Es de **solo lectura y simulación**: nada se aplica solo, cada cambio pasa por una persona,
 y la IA solo se usa si la pides.
 
@@ -71,7 +71,7 @@ La documentación técnica vive junto al código: [arquitectura](docs/arquitectu
 | Paquete | Qué hace | Lenguaje |
 |---|---|---|
 | [`venom`](packages/venom) | El comando único: `venom doctor`, `venom fix`, `venom review` | Python |
-| [`venom-doctor`](packages/venom-doctor) | Plugin de `kubectl` que diagnostica Kubernetes/EKS y explica cómo arreglarlo (nueve reglas) | Go |
+| [`venom-doctor`](packages/venom-doctor) | Plugin de `kubectl` que diagnostica Kubernetes (incluido EKS) y explica cómo arreglarlo (nueve reglas) | Go |
 | [`pr-agent`](packages/pr-agent) | Convierte un hallazgo en un Pull Request con el arreglo mínimo en Terraform | Python |
 | [`arch-committee`](packages/arch-committee) | Comité virtual de agentes que revisa un plan de Terraform y debate | Python |
 | [`findings-schema`](packages/findings-schema) | Contrato común de hallazgos (*findings*): JSON Schema + tipos | JSON Schema, Go, Python |

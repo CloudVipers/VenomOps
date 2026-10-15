@@ -1,7 +1,7 @@
 # venom-doctor
 
 Plugin de `kubectl` (`kubectl venom-doctor`) que explica **en lenguaje claro por qué algo está roto** en un clúster
-de Kubernetes/EKS y **cómo arreglarlo**. Es de **solo lectura**: nunca modifica el clúster.
+de Kubernetes (incluido EKS) y **cómo arreglarlo**. Es de **solo lectura**: nunca modifica el clúster.
 
 Produce *findings* en el formato común de [`findings-schema`](../findings-schema), que luego puede corregir
 [`pr-agent`](../pr-agent) y debatir [`arch-committee`](../arch-committee).
