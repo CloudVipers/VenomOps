@@ -91,7 +91,7 @@ cd packages/venom && make setup && .venv/bin/venom --help
 |---|---|
 | `venom doctor` | Un `kubeconfig` con acceso de lectura al clúster. Los [permisos exactos](uso.md#permisos-que-necesita-en-el-clúster) están documentados |
 | `venom fix` | `terraform` en el `PATH` (valida el arreglo) y, para abrir el PR de verdad, un `GITHUB_TOKEN` |
-| `--explain`, `--agent`, `venom review` | Credenciales de AWS con acceso a Amazon Bedrock y **un modelo indicado por ti** (no hay ninguno por defecto) |
+| `--explain`, `--agent`, `venom review` | Credenciales de AWS con acceso a Amazon Bedrock y **un modelo indicado por ti** (no hay ninguno por defecto). Paso a paso: [Configurar Bedrock](bedrock.md) |
 
 Nada de esto es obligatorio para diagnosticar: **`venom doctor` sin `--explain` no usa IA ni sale a ningún servicio externo**.
 

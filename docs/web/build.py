@@ -63,6 +63,13 @@ PAGES: list[tuple[str, str, str, str, str]] = [
         "Usar",
     ),
     (
+        "bedrock.md",
+        "bedrock.html",
+        "Configurar Bedrock",
+        "Paso a paso para configurar Amazon Bedrock: región, acceso al modelo, credenciales, permisos y cómo comprobarlo.",
+        "Usar",
+    ),
+    (
         "reglas.md",
         "reglas.html",
         "Catálogo de reglas",

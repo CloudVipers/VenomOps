@@ -81,7 +81,7 @@ Exporta un token con permiso sobre el repositorio de Terraform (`export GITHUB_T
 | `no Bedrock model configured (use --explain-model or VENOM_DOCTOR_BEDROCK_MODEL)` | Para `--explain`, indica el modelo |
 | `the answer was cut off at max_tokens=…; raise --max-output-tokens` | La respuesta del modelo se truncó; sube `--max-output-tokens` en `venom review` |
 
-El modelo debe estar **habilitado en tu cuenta y región** de AWS. Si usas un perfil de inferencia (los identificadores que empiezan por `us.`), la región tiene que coincidir.
+Guía completa de configuración y de errores de Bedrock: [Configurar Bedrock](bedrock.md). El modelo debe estar **habilitado en tu cuenta y región** de AWS. Si usas un perfil de inferencia (los identificadores que empiezan por `us.`), la región tiene que coincidir.
 
 ### `venom update`
 
