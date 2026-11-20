@@ -517,6 +517,43 @@ def test_an_unsigned_or_altered_inrelease_is_rejected(deb_repo: tuple[str, Path,
         update.verify_deb(url, deb_package(), deb)
 
 
+@needs_gpg
+@pytest.mark.parametrize("where", ["before", "after"])
+def test_hashes_outside_the_signed_part_of_inrelease_are_ignored(deb_repo: tuple[str, Path, Path], where: str) -> None:
+    """gpgv accepts a clearsigned file with unsigned text around it: only the verified content may name hashes."""
+    url, deb, root = deb_repo
+    dist = root / "deb" / "dists" / "stable"
+    evil_gz = gzip.compress(
+        b"Package: venom\nFilename: pool/main/venom_9.9.9_amd64.deb\nSHA256: "
+        + hashlib.sha256(b"evil deb").hexdigest().encode()
+        + b"\n"
+    )
+    (dist / "main" / "binary-amd64" / "Packages.gz").write_bytes(evil_gz)
+    forged = (
+        f"SHA256:\n {hashlib.sha256(evil_gz).hexdigest()} {len(evil_gz)} main/binary-amd64/Packages.gz\n\n".encode()
+    )
+    signed = (dist / "InRelease").read_bytes()
+    (dist / "InRelease").write_bytes(forged + signed if where == "before" else signed + b"\n" + forged)
+    deb.write_bytes(b"evil deb")
+    with pytest.raises(update.UpdateError, match="NOT valid|does not match the signed repository index"):
+        update.verify_deb(url, deb_package(), deb)
+
+
+@needs_gpg
+def test_an_inrelease_with_an_altered_signature_is_rejected(deb_repo: tuple[str, Path, Path]) -> None:
+    url, deb, root = deb_repo
+    inrelease = root / "deb" / "dists" / "stable" / "InRelease"
+    text = inrelease.read_bytes()
+    head, _, sig = text.partition(b"-----BEGIN PGP SIGNATURE-----")
+    body = bytearray(sig)
+    # flip one base64 character in the middle of the signature packet
+    i = len(body) // 2
+    body[i] = ord("A") if body[i] != ord("A") else ord("B")
+    inrelease.write_bytes(head + b"-----BEGIN PGP SIGNATURE-----" + bytes(body))
+    with pytest.raises(update.UpdateError, match="NOT valid"):
+        update.verify_deb(url, deb_package(), deb)
+
+
 # -------------------------------------------------------------------------------------- the pinned key is the real one
 
 
