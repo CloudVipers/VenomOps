@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from .. import hcl
+from .. import block_policy, hcl
 from ..safety import CommandResult, PathNotAllowedError, SafeRunner, resolve_in_repo
 
 MAX_READ_BYTES = 200_000
@@ -92,6 +92,15 @@ class ToolBox:
         self.edits.append(EditRecord(path, detail))
         return True
 
+    def _project_providers(self) -> frozenset[str]:
+        texts = []
+        for rel in self.list_files("**/*.tf"):
+            try:
+                texts.append(self.read_file(rel))
+            except (ToolError, UnicodeDecodeError):
+                continue  # unreadable files cannot widen the allowlist
+        return block_policy.project_providers(texts)
+
     @staticmethod
     def _split_address(patch: dict[str, Any]) -> tuple[str, str]:
         address = str(patch.get("resource", ""))
@@ -105,6 +114,9 @@ class ToolBox:
             content = str(patch.get("content", ""))
             if not content.strip():
                 raise hcl.EditError("append_block requires content")
+            # The content may come from the LLM and terraform evaluates it: only resource blocks of providers the
+            # repository already uses, without provisioners (see block_policy).
+            block_policy.check_appendable(content, self._project_providers())
             return hcl.append_block(text, content), "append block"
         if op == "replace_attr":
             rtype, rname = self._split_address(patch)
