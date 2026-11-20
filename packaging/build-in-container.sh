@@ -13,7 +13,7 @@ cd "$work"
 python3.12 -m venv /tmp/venv
 /tmp/venv/bin/pip install -q --upgrade pip
 # Regular (non-editable) installs: this also proves the wheels are self-contained (e.g. the schema ships inside).
-/tmp/venv/bin/pip install -q pyinstaller \
+/tmp/venv/bin/pip install -q pyinstaller==6.22.3 \
   ./packages/findings-schema/python ./packages/pr-agent ./packages/arch-committee ./packages/venom
 
 /tmp/venv/bin/pyinstaller --noconfirm --clean --name venom --onedir \
