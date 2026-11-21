@@ -194,3 +194,41 @@ def test_a_missing_binary_is_reported_not_raised(tmp_path: Path, monkeypatch: py
     result = SafeRunner(tmp_path).run(["terraform", "validate"])
     assert not result.ok and result.returncode == 127
     assert "was not found on PATH" in result.stderr and "terraform" in result.stderr
+
+
+def test_without_cloud_credentials_no_aws_secret_reaches_the_child(monkeypatch: pytest.MonkeyPatch) -> None:
+    import os
+
+    from pr_agent.safety import _sanitized_env
+
+    for name, value in {
+        "AWS_PROFILE": "demo",
+        "AWS_ACCESS_KEY_ID": "AKIAEXAMPLE",
+        "AWS_SECRET_ACCESS_KEY": "example",
+        "AWS_SESSION_TOKEN": "example",
+        "AWS_WEB_IDENTITY_TOKEN_FILE": "/var/run/token",
+        "AWS_CONTAINER_CREDENTIALS_FULL_URI": "http://169.254.170.2/creds",
+        "AWS_REGION": "us-east-1",
+        "TF_PLUGIN_CACHE_DIR": "/opt/tf-cache",
+    }.items():
+        monkeypatch.setenv(name, value)
+    env = _sanitized_env(None, cloud_credentials=False)
+    leaked = {k for k in env if k.startswith("AWS_")} - {
+        "AWS_REGION",
+        "AWS_SHARED_CREDENTIALS_FILE",
+        "AWS_CONFIG_FILE",
+        "AWS_EC2_METADATA_DISABLED",
+    }
+    assert leaked == set()
+    assert env["AWS_SHARED_CREDENTIALS_FILE"] == os.devnull and env["AWS_CONFIG_FILE"] == os.devnull
+    assert env["AWS_EC2_METADATA_DISABLED"] == "true" and env["TF_PLUGIN_CACHE_DIR"] == "/opt/tf-cache"
+
+
+def test_only_terraform_plan_gets_aws_credentials(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("AWS_PROFILE", "demo")
+    runner = SafeRunner(tmp_path)
+    assert runner.env_for(["terraform", "plan", "-no-color"])["AWS_PROFILE"] == "demo"
+    for argv in (["terraform", "init", "-backend=false"], ["terraform", "validate"], ["git", "status", "--porcelain"]):
+        assert "AWS_PROFILE" not in runner.env_for(argv)
+    runner.cloud_credentials = False  # LLM agent mode
+    assert "AWS_PROFILE" not in runner.env_for(["terraform", "plan", "-no-color"])

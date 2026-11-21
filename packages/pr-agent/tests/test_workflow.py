@@ -292,3 +292,18 @@ def test_github_failure_after_push_keeps_the_branch_and_returns_to_the_users_bra
         )
     assert git(remote, "rev-parse", "fix/tf-s3-001-demo-logs")  # already pushed: not deleted behind the user's back
     assert git(work, "rev-parse", "--abbrev-ref", "HEAD") == "main"
+
+
+def test_the_llm_agent_runs_terraform_without_aws_credentials(s3_repo: Path, tf_calls: list[list[str]]) -> None:
+    runners: list[SafeRunner] = []
+
+    def factory(cwd: Path) -> SafeRunner:
+        runner = FakeTerraformRunner(cwd, tf_calls)
+        runners.append(runner)
+        return runner
+
+    run_fix(load_finding("s3-no-encryption.json"), FixOptions(repo=s3_repo, dry_run=True), runner_factory=factory)
+    assert runners[-1].cloud_credentials  # deterministic fixer: plan may use the environment's credentials
+    agent = _agent(lambda t: _touch(t, "main.tf"), {"main.tf"})
+    run_fix(make_finding(id="CUSTOM-001"), FixOptions(repo=s3_repo, dry_run=True), runner_factory=factory, agent=agent)
+    assert not runners[-1].cloud_credentials

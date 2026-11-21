@@ -102,8 +102,14 @@ Ver [ADR 0002](../../docs/decisiones/0002-pr-agent-seguridad.md).
   **antes** de ejecutar nada (hay más de 60 casos de prueba).
 - **Rutas confinadas al repo:** se rechazan `..`, rutas absolutas, symlinks que escapan, `.git/`, `.terraform/`,
   `*.tfstate`, `*.tfvars`, `.env` y llaves; los archivos de secretos ni siquiera aparecen al listar.
-- **Edición estructurada y verificada:** solo tres operaciones (`append_block`, `replace_attr`, `ensure_tags`); el
+- **Edición estructurada y verificada:** solo operaciones acotadas (`append_block`, `replace_attr`, `ensure_tags`, `set_memory_limit`); el
   resultado se reparsea con `python-hcl2` y, si no es HCL válido, no se escribe nada.
+- **Política de bloques nuevos** (`block_policy.py`): `append_block` solo acepta bloques `resource` cuyo provider ya
+  usa el repo (`resource`/`data`/`provider`/`required_providers` existentes). Se rechazan `data` (incluido
+  `data "external"`), `module`, `provider`, `terraform` (`required_providers`, `backend`), `check`, `locals`, etc.;
+  cualquier `provisioner`/`connection` (`local-exec`, `remote-exec`); un meta-argumento `provider` desconocido; y los
+  providers `external`, `null`, `local`, `http` y `terraform` aunque el repo ya los use. Así, lo que escriba el LLM no
+  puede ejecutar programas en `plan` ni descargar providers o módulos nuevos en `init`.
 - **Diff mínimo verificado:** si el arreglo toca archivos no declarados, crea o borra archivos, o el diff supera 80
   líneas, se aborta.
 - **Sandbox:** todo se hace en una copia temporal; en `--dry-run` el repo real queda exactamente igual (sin
@@ -112,6 +118,11 @@ Ver [ADR 0002](../../docs/decisiones/0002-pr-agent-seguridad.md).
   existe ninguna operación de merge/aprobación/cierre. El PR lleva un checklist de revisión humana.
 - **Secretos:** el entorno de los procesos hijos se limpia (solo `PATH`, `TF_*`, `AWS_*`...), y el plan, la evidencia
   y todo lo enviado a un LLM pasan por un redactor de secretos.
+- **Credenciales de AWS:** `terraform init -backend=false`, `validate` y `git` nunca reciben credenciales (no las
+  necesitan). Solo `terraform plan` las recibe, y solo con un fixer determinista: aunque usa `-refresh=false`, el
+  provider se configura y los `data` existentes del repo se leen contra AWS. Con `--agent`, el plan corre **sin
+  credenciales** (se quitan `AWS_*` salvo la región y se anulan `~/.aws` y el IMDS): si el repo las necesita, el plan
+  falla, el PR lo indica y se puede revisar en el pipeline (o abortar con `--require-plan`).
 
 ### Agente LLM (opcional)
 

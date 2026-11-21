@@ -271,23 +271,40 @@ def verify_rpm(path: Path) -> None:
         )
 
 
-def _verify_inrelease(inrelease: Path) -> None:
+_CLEARSIGN_HEADER = b"-----BEGIN PGP SIGNED MESSAGE-----"
+
+
+def _verify_inrelease(inrelease: Path) -> str:
+    """Check the clearsigned ``InRelease`` with ``gpgv`` and the pinned key and return ONLY the signed content.
+
+    gpgv accepts unsigned text around the clearsigned part, so the raw file must never be parsed for hashes: the
+    content comes from ``gpgv --output``, which writes exactly what the signature covers. As apt does, a file that
+    does not start with the clearsign header is refused outright.
+    """
     gpgv = shutil.which("gpgv")
     if not gpgv:
         raise UpdateError("cannot verify the signature: `gpgv` is not installed (apt-get install gpgv)")
+    if not inrelease.read_bytes().startswith(_CLEARSIGN_HEADER):
+        raise UpdateError("the repository index is not a clearsigned InRelease: its signature is NOT valid.")
+    verified = inrelease.with_name(inrelease.name + ".verified")
+    verified.unlink(missing_ok=True)
     with _key_file("venom-repo.gpg") as keyring:
         result = subprocess.run(
-            [gpgv, "--status-fd", "1", "--keyring", str(keyring), str(inrelease)],
+            [gpgv, "--status-fd", "1", "--keyring", str(keyring), "--output", str(verified), str(inrelease)],
             capture_output=True,
             text=True,
             check=False,
         )
-    valid = re.search(r"^\[GNUPG:\] VALIDSIG (.+)$", result.stdout, re.M)
+    valid = re.findall(r"^\[GNUPG:\] VALIDSIG (.+)$", result.stdout, re.M)
     fingerprints = (
-        {f.upper() for f in valid.group(1).split() if re.fullmatch(r"[0-9A-Fa-f]{40}", f)} if valid else set()
+        {f.upper() for f in valid[0].split() if re.fullmatch(r"[0-9A-Fa-f]{40}", f)} if len(valid) == 1 else set()
     )
-    if result.returncode != 0 or KEY_FINGERPRINT not in fingerprints:
+    if result.returncode != 0 or KEY_FINGERPRINT not in fingerprints or not verified.is_file():
         raise UpdateError("the signature of the repository index is NOT valid for the VenomOps key. Do not install.")
+    try:
+        return verified.read_text(encoding="utf-8")
+    except UnicodeDecodeError as exc:
+        raise UpdateError(f"cannot read the signed repository index: {exc}") from exc
 
 
 def _release_hash(inrelease_text: str, wanted: str) -> str:
@@ -311,12 +328,10 @@ def verify_deb(base: str, pkg: Package, path: Path) -> None:
     with tempfile.TemporaryDirectory(prefix="venom-apt-") as tmp:
         inrelease = Path(tmp) / "InRelease"
         inrelease.write_bytes(http_get(f"{base}/deb/dists/stable/InRelease", MAX_INDEX_BYTES))
-        _verify_inrelease(inrelease)
+        signed = _verify_inrelease(inrelease)  # hashes are read from the verified content only, never the raw file
         packages_path = f"main/binary-{pkg.arch}/Packages.gz"
         packages_gz = http_get(f"{base}/deb/dists/stable/{packages_path}", MAX_INDEX_BYTES)
-        if hashlib.sha256(packages_gz).hexdigest() != _release_hash(
-            inrelease.read_text(encoding="utf-8"), packages_path
-        ):
+        if hashlib.sha256(packages_gz).hexdigest() != _release_hash(signed, packages_path):
             raise UpdateError("the Packages index does not match the signed repository index. Do not install.")
         try:
             index = gzip.decompress(packages_gz).decode("utf-8")

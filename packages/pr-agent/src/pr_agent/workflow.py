@@ -153,7 +153,11 @@ def run_fix(
 
     with tempfile.TemporaryDirectory(prefix="pr-agent-") as tmp:
         sandbox = make_sandbox(repo, Path(tmp))
-        tools = ToolBox(sandbox, runner_factory(sandbox))
+        runner = runner_factory(sandbox)
+        if fixer is None:
+            # LLM agent: the code it wrote is evaluated by terraform, so terraform never gets AWS credentials.
+            runner.cloud_credentials = False
+        tools = ToolBox(sandbox, runner)
         before = snapshot(sandbox)
 
         try:

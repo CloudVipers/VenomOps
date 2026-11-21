@@ -19,10 +19,13 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 ls "$PKG_DIR"/*.rpm "$PKG_DIR"/*.deb >/dev/null 2>&1 || { echo "no .rpm/.deb in $PKG_DIR" >&2; exit 2; }
 rm -rf "${OUT:?}/rpm" "${OUT:?}/deb"
 
+# Images pinned by their multi-arch index digest (rockylinux:9 and debian:12). Refresh them deliberately.
+RPM_IMAGE=${RPM_IMAGE:-rockylinux:9@sha256:03303863808e9cd79f0c58c833db3e5f9cde9f2abe16804a267b05dc54af86e4}
+DEB_IMAGE=${DEB_IMAGE:-debian:12@sha256:268fb24c39bca92d326dd83ea3abebe4a3f7751c804ffef23bb6d857dd343ff8}
 run() { # run <image> <script>: the container sees the packages (ro), the output (rw) and the key (ro)
   docker run --rm -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" -e GPG_PASSPHRASE="${GPG_PASSPHRASE:-}" \
     -v "$PKG_DIR":/pkgs:ro -v "$OUT":/out -v "$KEY":/key.asc:ro -v "$HERE":/scripts:ro "$1" bash "/scripts/$2"
 }
-echo "==> rpm repository (createrepo_c, signed packages and metadata)"; run rockylinux:9 make-rpm-repo.sh
-echo "==> apt repository (apt-ftparchive, signed Release)";              run debian:12 make-deb-repo.sh
+echo "==> rpm repository (createrepo_c, signed packages and metadata)"; run "$RPM_IMAGE" make-rpm-repo.sh
+echo "==> apt repository (apt-ftparchive, signed Release)";              run "$DEB_IMAGE" make-deb-repo.sh
 echo "==> done: $OUT"; find "$OUT" -maxdepth 3 -type f | sed "s|^$OUT/||" | sort | head -30

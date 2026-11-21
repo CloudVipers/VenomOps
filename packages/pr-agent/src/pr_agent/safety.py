@@ -199,10 +199,28 @@ _ENV_PASSTHROUGH = (
 )
 
 
-def _sanitized_env(extra: Mapping[str, str] | None) -> dict[str, str]:
+# AWS settings that are not credentials and do not point at them: kept even when credentials are withheld.
+_AWS_NON_SECRET = frozenset({"AWS_REGION", "AWS_DEFAULT_REGION"})
+
+
+def _sanitized_env(extra: Mapping[str, str] | None, *, cloud_credentials: bool = True) -> dict[str, str]:
+    """Minimal environment for a child process.
+
+    With ``cloud_credentials`` the ``AWS_*`` variables pass through (``terraform plan`` configures the provider and
+    reads data sources with them). Without it, no credential reaches the child: the ``AWS_*`` variables are dropped
+    (except the region) and the SDK is pointed away from ``~/.aws`` and the instance metadata service, because
+    ``HOME`` alone would let the provider pick up the default profile.
+    """
     env = {k: os.environ[k] for k in _ENV_PASSTHROUGH if k in os.environ}
-    # Terraform (plugin cache, region) and AWS credentials for `plan`; nothing else leaks through.
-    env.update({k: v for k, v in os.environ.items() if k.startswith(("TF_", "AWS_"))})
+    env.update({k: v for k, v in os.environ.items() if k.startswith("TF_")})
+    aws = {k: v for k, v in os.environ.items() if k.startswith("AWS_")}
+    if cloud_credentials:
+        env.update(aws)
+    else:
+        env.update({k: v for k, v in aws.items() if k in _AWS_NON_SECRET})
+        env["AWS_SHARED_CREDENTIALS_FILE"] = os.devnull
+        env["AWS_CONFIG_FILE"] = os.devnull
+        env["AWS_EC2_METADATA_DISABLED"] = "true"
     env["TF_IN_AUTOMATION"] = "1"
     env["TF_INPUT"] = "0"
     env["GIT_TERMINAL_PROMPT"] = "0"
@@ -211,13 +229,33 @@ def _sanitized_env(extra: Mapping[str, str] | None) -> dict[str, str]:
     return env
 
 
+def needs_cloud_credentials(argv: Sequence[str]) -> bool:
+    """Only ``terraform plan`` may need AWS credentials; ``init -backend=false``, ``validate`` and git never do."""
+    return len(argv) >= 2 and argv[0] == "terraform" and argv[1] == "plan"
+
+
 class SafeRunner:
     """Runs allowlisted commands in a fixed working directory, without a shell."""
 
-    def __init__(self, cwd: Path, *, timeout: int = 600, env: Mapping[str, str] | None = None) -> None:
+    def __init__(
+        self,
+        cwd: Path,
+        *,
+        timeout: int = 600,
+        env: Mapping[str, str] | None = None,
+        cloud_credentials: bool = True,
+    ) -> None:
         self.cwd = cwd
         self.timeout = timeout
         self._extra_env = dict(env or {})
+        # False for the LLM agent: what it wrote is evaluated by `terraform plan`, so it runs without AWS credentials.
+        self.cloud_credentials = cloud_credentials
+
+    def env_for(self, argv: Sequence[str]) -> dict[str, str]:
+        """The environment ``argv`` runs with: AWS credentials only for ``terraform plan`` and only if allowed."""
+        return _sanitized_env(
+            self._extra_env, cloud_credentials=self.cloud_credentials and needs_cloud_credentials(argv)
+        )
 
     def run(self, argv: Sequence[str]) -> CommandResult:
         check_command(argv)
@@ -225,7 +263,7 @@ class SafeRunner:
             proc = subprocess.run(  # noqa: S603 - argv validated by check_command, no shell
                 list(argv),
                 cwd=self.cwd,
-                env=_sanitized_env(self._extra_env),
+                env=self.env_for(argv),
                 capture_output=True,
                 text=True,
                 timeout=self.timeout,
