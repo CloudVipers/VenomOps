@@ -131,8 +131,9 @@ def test_score_and_union_over_saved_outputs(tmp_path: Path) -> None:
 # ---- E4 -----------------------------------------------------------------------------------------------------------
 
 
-def test_e4_reproduces_the_documented_baseline() -> None:
+def test_e4_reproduces_the_documented_results() -> None:
+    """Corpus 1.1.0, after closing the JSON, GitHub and Slack gaps (baseline 1.0.0: 7 of 21 leaked)."""
     for name, res in e4.run_all().items():
-        assert res["secrets"] == 21 and len(res["leaked"]) == 7, name
-        assert res["benign"] == 10 and res["altered"] == ["BEN-006"], name
-        assert res["by_category"]["json-key-value"] == {"n": 2, "leaked": 2}
+        assert res["secrets"] == 22 and sorted(res["leaked"]) == ["SEC-019", "SEC-020", "SEC-021"], name
+        assert res["benign"] == 12 and res["altered"] == ["BEN-006"], name
+        assert res["by_category"]["json-key-value"] == {"n": 3, "leaked": 0}

@@ -23,15 +23,20 @@ El mismo corpus se prueba contra los tres redactores:
 Las brechas conocidas están **fijadas a propósito**: si un cambio cierra una, la prueba falla hasta que se actualiza el
 corpus. Así la tasa de fuga medida nunca queda desactualizada.
 
-## Línea base (versión 1.0.0)
+## Resultados (intervalos de Wilson al 95 %)
 
-| Medida | Valor |
-|---|---|
-| Secretos | 21 |
-| Redactados | 14 (66,7 %) |
-| Fugas (`known_gap`) | 7 (33,3 %) |
-| Texto inofensivo alterado | 1 de 10 |
+| Corpus | Redactores | Secretos filtrados | Texto inofensivo alterado | Corrida |
+|---|---|---|---|---|
+| 1.0.0 (línea base) | antes de la corrección | 7/21 = 33,3 % [17,2 %, 54,6 %] | 1/10 | `research/results/20261123-e4-baseline` |
+| 1.1.0 | con reglas para JSON, GitHub y Slack | 3/22 = 13,6 % [4,7 %, 33,3 %] | 1/12 | `research/results/20261123-e4-after-redaction-fix` |
 
-Fugas encontradas: pares clave-valor en **JSON** (`"password": "..."`), tokens de GitHub (`ghp_`) y de Slack (`xoxb-`),
-secretos en prosa y datos de Secrets de Kubernetes cuya clave no parece sensible. El caso JSON es el más relevante: es el
-formato de los planes de Terraform y de los findings.
+La línea base encontró fugas en:
+
+- pares clave-valor en **JSON** (`"password": "..."`, también escapados dentro de otro JSON);
+- tokens de GitHub (`ghp_`) y de Slack (`xoxb-`);
+- secretos en prosa;
+- datos de Secrets de Kubernetes cuya clave no parece sensible.
+
+El caso JSON era el más relevante, porque es el formato de los planes de Terraform y de los findings. Se corrigió en los
+tres redactores. Siguen abiertos los secretos **sin formato** (prosa y claves de Kubernetes con nombres neutros). Ningún
+patrón los reconoce, y eso es justamente lo que plantea la hipótesis H4.

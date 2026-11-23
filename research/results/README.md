@@ -14,5 +14,6 @@ cd research/eval && make setup
 | Corrida | Experimento | Modelo | Nota |
 |---|---|---|---|
 | `20261123-e4-baseline` | E4 (redacción) | n/a (determinista) | Línea base antes de mejorar los redactores: 7 de 21 secretos se filtran |
+| `20261123-e4-after-redaction-fix` | E4 (redacción) | n/a (determinista) | Corpus 1.1.0 con reglas para JSON, GitHub y Slack: 3 de 22 se filtran (solo secretos sin formato) |
 
 > Solo datos sintéticos: los casos salen de `examples/benchmark/` y ninguna corrida toca infraestructura real.
