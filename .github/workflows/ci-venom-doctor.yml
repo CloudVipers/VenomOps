@@ -5,12 +5,14 @@ on:
     paths:
       - "packages/venom-doctor/**"
       - "packages/findings-schema/**"   # venom-doctor depende del contrato (replace ../findings-schema)
+      - "examples/benchmark/secrets/**"   # corpus compartido de secretos (E4)
       - ".github/workflows/ci-venom-doctor.yml"
   push:
     branches: [main]
     paths:
       - "packages/venom-doctor/**"
       - "packages/findings-schema/**"
+      - "examples/benchmark/secrets/**"   # corpus compartido de secretos (E4)
 
 permissions:
   contents: read

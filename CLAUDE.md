@@ -278,7 +278,8 @@ type Rule interface {
 - [ ] Benchmark de IaC etiquetado en `examples/benchmark/iac/` (≥ 50 casos con `labels.json`).
 - [ ] Arnés `research/eval/`: métricas (precision, recall, F1, tasa de supresión, tasa de fuga) con tests deterministas.
 - [x] Tests de regresión de inyección en `pr-agent` (el modelo simulado obedece la inyección y `SafeRunner` la bloquea).
-- [ ] E4 (redacción) automatizado en CI; E1–E3 ejecutados a mano contra Bedrock con resultados en `research/results/`.
+- [x] E4 (redacción): corpus compartido en `examples/benchmark/secrets/` probado en CI contra los tres redactores.
+- [ ] E1–E3 ejecutados a mano contra Bedrock con resultados en `research/results/`.
 
 **DoD:** las métricas se reproducen con un solo comando a partir de los resultados guardados; ninguna corrida ejecuta acciones fuera de la sección 2.
 

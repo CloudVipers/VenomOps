@@ -5,6 +5,7 @@ on:
     paths:
       - "packages/pr-agent/**"
       - "packages/findings-schema/**"   # pr-agent depende del contrato (se instala en modo editable)
+      - "examples/benchmark/secrets/**"   # corpus compartido de secretos (E4)
       - "examples/terraform/**"
       - "examples/findings/**"
       - ".github/workflows/ci-pr-agent.yml"
@@ -13,6 +14,7 @@ on:
     paths:
       - "packages/pr-agent/**"
       - "packages/findings-schema/**"
+      - "examples/benchmark/secrets/**"   # corpus compartido de secretos (E4)
       - "examples/terraform/**"
       - "examples/findings/**"
 
