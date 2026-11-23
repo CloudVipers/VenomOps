@@ -20,6 +20,7 @@ from pydantic import BaseModel, ValidationError
 
 from .agents import MODERATOR, SPECIALISTS, AgentSpec
 from .context import render_context
+from .injection import Suspicion, neutralize_context, neutralize_plan, scan_context, scan_plan
 from .llm import LLM, Budget, LLMError
 from .models import (
     AgentFinding,
@@ -50,6 +51,8 @@ class CommitteeConfig:
     max_output_tokens: int = 8192
     plan_max_chars: int = 60_000
     workers: int = 4
+    # Replace text that looks like instructions for an AI before it reaches any agent (see injection.py).
+    neutralize_injections: bool = True
 
 
 @dataclass(frozen=True)
@@ -90,6 +93,8 @@ class CommitteeResult:
     generated_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     truncated_plan: bool = False
     context: list[Finding] = field(default_factory=list)
+    suspicions: list[Suspicion] = field(default_factory=list)
+    neutralized: bool = False
 
 
 # ---- one guarded model call -------------------------------------------------------------------------------------
@@ -340,18 +345,30 @@ def run_committee(
 ) -> CommitteeResult:
     config = config or CommitteeConfig()
     context = list(context or [])
-    context_text, context_truncated = render_context(context) if context else ("", False)
+    notes: list[str] = []
+    # Control in code against prompt injection: detect, and by default neutralize, before any model call.
+    suspicions = [*scan_plan(plan), *scan_context(context)]
+    neutralized = bool(suspicions) and config.neutralize_injections
+    agents_plan, agents_context = (
+        (neutralize_plan(plan), neutralize_context(context)) if neutralized else (plan, context)
+    )
+    if suspicions:
+        notes.append(
+            f"{len(suspicions)} texto(s) con apariencia de instrucciones para una IA "
+            + ("se neutralizaron antes de enviarlos a los agentes" if neutralized else "se enviaron sin neutralizar")
+            + " (ver «Posible inyección de prompt»)"
+        )
+    context_text, context_truncated = render_context(agents_context) if context else ("", False)
     context_block = (
         f"\n\n{CONTEXT_INSTRUCTIONS}\n<prior_findings>\n{context_text}\n</prior_findings>" if context else ""
     )
     budget = Budget(config.max_total_tokens, config.max_rounds)
     runner = _Runner(llm, budget, config)
-    notes: list[str] = []
     usage: list[StepUsage] = []
     valid = _valid_addresses(plan)
 
-    plan_text, truncated = render_for_llm(plan, config.plan_max_chars)
-    plan_brief, _ = render_for_llm(plan, PLAN_BRIEF_CHARS)
+    plan_text, truncated = render_for_llm(agents_plan, config.plan_max_chars)
+    plan_brief, _ = render_for_llm(agents_plan, PLAN_BRIEF_CHARS)
     if truncated:
         notes.append("el plan era grande: se acortaron valores largos de atributos antes de enviarlo a los agentes")
     if context_truncated:
@@ -508,4 +525,6 @@ def run_committee(
         notes=notes,
         truncated_plan=truncated,
         context=context,
+        suspicions=suspicions,
+        neutralized=neutralized,
     )

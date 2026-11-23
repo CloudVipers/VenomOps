@@ -103,37 +103,39 @@ def cmd_e2(args: argparse.Namespace) -> int:
 
     manifest = corpus.load_manifest()
     cases = _select("arch-committee", args.contains, args.limit)
-    _gate(args, len(cases), len(args.rounds) * 2)
+    _gate(args, len(cases), len(args.rounds) * len(args.defenses) * 2)
     llm = make_bedrock_llm(args.model_id, args.region)
     out = args.out or results.new_run_dir("e2")
     writer = results.ResultsWriter(out, "e2", {"model_id": args.model_id})
     bases = {b["id"]: b for b in manifest["bases"] if b["target"] == "arch-committee"}
     for rep in range(args.repetitions):
         for rounds in args.rounds:
-            clean: dict[str, list[dict[str, Any]]] = {}
-            for case in cases:
-                base = bases[case.base]
-                if case.base not in clean:
-                    plan = json.loads((REPO_ROOT / base["plan"]).read_text(encoding="utf-8"))
-                    clean[case.base], _ = e2.run_review(llm, plan, [], rounds)
-                plan, context = corpus.materialize_committee(manifest, case)
-                attacked, tokens = e2.run_review(llm, plan, context, rounds)
-                verdict = e2.judge(case.goal, clean[case.base], attacked, base["resource"])
-                writer.write(
-                    {
-                        "case_id": case.id,
-                        "goal": case.goal,
-                        "technique": case.technique,
-                        "vector": case.vector,
-                        "rounds": rounds,
-                        "repetition": rep,
-                        "verdict": verdict,
-                        "tokens": tokens,
-                        "clean": clean[case.base],
-                        "attacked": attacked,
-                    }
-                )
-                print(f"[{rep}] rounds={rounds} {case.id}: {verdict}")
+            for defense in args.defenses:
+                clean: dict[str, list[dict[str, Any]]] = {}
+                for case in cases:
+                    base = bases[case.base]
+                    if case.base not in clean:
+                        plan = json.loads((REPO_ROOT / base["plan"]).read_text(encoding="utf-8"))
+                        clean[case.base], _, _ = e2.run_review(llm, plan, [], rounds, defense)
+                    plan, context = corpus.materialize_committee(manifest, case)
+                    attacked, tokens, suspicions = e2.run_review(llm, plan, context, rounds, defense)
+                    verdict = e2.judge(case.goal, clean[case.base], attacked, base["resource"], suspicions)
+                    writer.write(
+                        {
+                            "case_id": case.id,
+                            "goal": case.goal,
+                            "technique": case.technique,
+                            "vector": case.vector,
+                            "rounds": rounds,
+                            "defense": defense,
+                            "repetition": rep,
+                            "verdict": verdict,
+                            "tokens": tokens,
+                            "clean": clean[case.base],
+                            "attacked": attacked,
+                        }
+                    )
+                    print(f"[{rep}] rounds={rounds} defense={defense} {case.id}: {verdict}")
     print(f"registros: {writer.path}")
     return 0
 
@@ -200,6 +202,7 @@ def build_parser() -> argparse.ArgumentParser:
             p.add_argument("--conditions", nargs="+", choices=list(e1.CONDITIONS))
         else:
             p.add_argument("--rounds", type=int, nargs="+", choices=[1, 2], default=[1, 2])
+            p.add_argument("--defenses", nargs="+", choices=list(e2.DEFENSES), default=list(e2.DEFENSES))
         p.set_defaults(func=func)
 
     p = sub.add_parser("e3", help="E3: detection compared, from saved outputs")

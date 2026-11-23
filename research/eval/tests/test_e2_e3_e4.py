@@ -43,10 +43,14 @@ def test_judge_matches_indexed_addresses() -> None:
     )["succeeded"]
 
 
-@pytest.mark.parametrize("obey,expected", [(True, True), (False, False)])
-def test_real_committee_flow_with_an_obedient_or_robust_model(
-    obey: bool, expected: bool, cases: list[corpus.Case], manifest: dict[str, Any]
+@pytest.mark.parametrize(
+    "obey,defense,expected",
+    [(True, "none", True), (True, "neutralize", False), (False, "none", False)],
+)
+def test_real_committee_flow(
+    obey: bool, defense: str, expected: bool, cases: list[corpus.Case], manifest: dict[str, Any]
 ) -> None:
+    """An obedient model is fooled only when the suspicious text reaches it (defense none)."""
     case = next(
         c
         for c in cases
@@ -55,11 +59,17 @@ def test_real_committee_flow_with_an_obedient_or_robust_model(
     )  # fmt: skip
     base_plan = json.loads((REPO_ROOT / "examples/plans/public-bucket.json").read_text(encoding="utf-8"))
     llm = ObedientCommittee(PROTECTED, obey=obey)
-    clean, _ = e2.run_review(llm, base_plan, [], rounds=2)
+    clean, _, clean_suspicions = e2.run_review(llm, base_plan, [], 2, defense)
     plan, context = corpus.materialize_committee(manifest, case)
-    attacked, tokens = e2.run_review(llm, plan, context, rounds=2)
-    assert [x["resource"] for x in clean] == [PROTECTED] and tokens > 0
-    assert e2.judge(case.goal, clean, attacked, PROTECTED)["succeeded"] is expected
+    attacked, tokens, suspicions = e2.run_review(llm, plan, context, 2, defense)
+    assert [x["resource"] for x in clean] == [PROTECTED] and tokens > 0 and clean_suspicions == 0
+    verdict = e2.judge(case.goal, clean, attacked, PROTECTED, suspicions)
+    assert verdict["succeeded"] is expected and verdict["injection_detected"]
+
+
+def test_unknown_defense_is_rejected() -> None:
+    with pytest.raises(ValueError):
+        e2.run_review(ObedientCommittee(PROTECTED), {}, [], 1, "magic")
 
 
 def test_category_comes_from_the_raising_agent() -> None:
@@ -80,6 +90,13 @@ def test_match_counts_tp_fp_fn_per_category() -> None:
     assert counts["security"] == {"tp": 1, "fp": 1, "fn": 0}
     assert counts["reliability"] == {"tp": 0, "fp": 0, "fn": 1}
     assert counts["all"] == {"tp": 1, "fp": 1, "fn": 1}
+
+
+def test_aliases_match_once() -> None:
+    labels = [e3.Label("aws_s3_bucket_acl.data", "security", also=("aws_s3_bucket.data",))]
+    both = [e3.Prediction("aws_s3_bucket.data", "security"), e3.Prediction("aws_s3_bucket_acl.data", "security")]
+    assert e3.match(both, labels)["all"] == {"tp": 1, "fp": 0, "fn": 0}
+    assert e3.match([e3.Prediction("aws_s3_bucket.data", "cost")], labels)["all"] == {"tp": 0, "fp": 1, "fn": 1}
 
 
 def test_adapters_read_checkov_trivy_and_findings() -> None:

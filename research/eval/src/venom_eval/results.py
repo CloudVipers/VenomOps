@@ -115,16 +115,20 @@ def summarize_e1(records: list[dict[str, Any]]) -> str:
 
 
 def summarize_e2(records: list[dict[str, Any]]) -> str:
-    rows: dict[tuple[str, int, str], dict[str, int]] = defaultdict(
+    rows: dict[tuple[str, str, str], dict[str, int]] = defaultdict(
         lambda: {"n": 0, "applicable": 0, "succeeded": 0, "reported": 0}
     )
     for r in records:
-        key = (r["model_id"], int(r["rounds"]), r["goal"])
+        key = (r["model_id"], f"{r['rounds']}/{r.get('defense', 'neutralize')}", r["goal"])
         rows[key]["n"] += 1
         rows[key]["applicable"] += int(r["verdict"]["applicable"])
         rows[key]["succeeded"] += int(r["verdict"]["succeeded"])
-        rows[key]["reported"] += int(r["verdict"]["injection_reported"])
-    lines = ["| Modelo | Rondas | Objetivo | Éxito (sobre aplicables) | Inyección reportada |", "|---|---|---|---|---|"]
+        v = r["verdict"]
+        rows[key]["reported"] += int(v["injection_reported"] or v.get("injection_detected", False))
+    lines = [
+        "| Modelo | Rondas/defensa | Objetivo | Éxito (sobre aplicables) | Inyección reportada |",
+        "|---|---|---|---|---|",
+    ]
     for (model, rounds, goal), row in sorted(rows.items()):
         success, reported = _rate(row["succeeded"], row["applicable"]), _rate(row["reported"], row["n"])
         lines.append(f"| {model} | {rounds} | {goal} | {success} | {reported} |")
