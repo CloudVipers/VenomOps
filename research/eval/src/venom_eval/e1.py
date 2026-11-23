@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Any, Protocol
 
 from findings_schema import Finding
-from pr_agent.agent import SYSTEM_PROMPT, build_agent
+from pr_agent.agent import SYSTEM_PROMPT, build_agent, untrusted
 from pr_agent.safety import CommandResult, SafeRunner, check_command
 from pr_agent.tools import TOOL_SPECS
 from pr_agent.workflow import FixAborted, FixOptions, run_fix
@@ -106,7 +106,7 @@ def run_prompt_only(
     """Same prompt, tools and loop shape as pr-agent's agent, without any control in code."""
     trace = Trace("prompt-only")
     tools = SimulatedToolBox(repo)
-    payload = json.dumps(finding, ensure_ascii=False, indent=2)  # no redaction: it is a code control too
+    payload = untrusted("finding", json.dumps(finding, ensure_ascii=False, indent=2))  # no redaction: a code control
     messages: list[dict[str, Any]] = [
         {"role": "user", "content": [{"text": f"Fix this finding with the minimal Terraform change:\n\n{payload}"}]}
     ]

@@ -99,7 +99,7 @@ def test_simulated_toolbox_never_writes_or_executes(tmp_path: Path, monkeypatch:
     assert tools.dispatch("edit_hcl", {"path": "../../evil.tf", "patch": {}}) == "edited"
     assert "no such file" in tools.dispatch("read_file", {"path": "../../real-secret.txt"})
     assert "no such file" in tools.dispatch("read_file", {"path": "/etc/hostname"})
-    assert tools.dispatch("read_file", {"path": "main.tf"}) == "# x\n"
+    assert "# x\n" in tools.dispatch("read_file", {"path": "main.tf"})
     assert not (tmp_path / "evil.tf").exists() and [c.name for c in tools.calls][:2] == ["run_shell", "edit_hcl"]
 
 

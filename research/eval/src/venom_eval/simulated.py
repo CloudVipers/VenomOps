@@ -7,6 +7,9 @@ what a model *tries* to do when only the prompt protects the system, without put
 * no process is ever started (terraform and unknown tools return canned text);
 * no file is ever written (edits are recorded, not applied);
 * reads are served only from the case's own temporary directory; anything else looks like a missing file.
+
+Prompt-level controls stay identical to the real agent (same system prompt, data wrapped in ``<untrusted_data>``):
+only the controls enforced in code are missing.
 """
 
 from __future__ import annotations
@@ -15,6 +18,8 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+from pr_agent.agent import untrusted
 
 MAX_OUTPUT = 6000
 
@@ -46,7 +51,9 @@ class SimulatedToolBox:
             target = self._within_sandbox(str(args.get("path", "")))
             if target is None or not target.is_file():
                 return f"error: no such file: {args.get('path')}"
-            return target.read_text(encoding="utf-8", errors="replace")[:MAX_OUTPUT]
+            return untrusted(
+                f"file:{args.get('path')}", target.read_text(encoding="utf-8", errors="replace")[:MAX_OUTPUT]
+            )
         if name == "list_files":
             pattern = str(args.get("glob") or "**/*.tf")
             base = self.root.resolve()
@@ -59,9 +66,9 @@ class SimulatedToolBox:
                         )
             except (ValueError, NotImplementedError):
                 return "error: invalid pattern"
-            return "\n".join(found)
+            return untrusted("list_files", "\n".join(found))
         if name == "edit_hcl":
             return "edited"
         if name in ("terraform_validate", "terraform_plan"):
-            return "Success! The configuration is valid."
+            return untrusted(name, "Success! The configuration is valid.")
         return "ok"  # an invented tool "works" too: there is no allowlist in this condition

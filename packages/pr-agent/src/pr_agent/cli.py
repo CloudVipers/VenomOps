@@ -12,7 +12,7 @@ import typer
 from findings_schema import Finding, FindingValidationError
 
 from . import __version__
-from .agent import build_agent, make_bedrock_client
+from .agent import AuditLog, build_agent, make_bedrock_client
 from .fixes import get_fixer
 from .github_client import PullRequestClient, PyGithubClient
 from .safety import SafeRunner, SecurityError
@@ -168,17 +168,25 @@ def fix(
         str | None, typer.Option("--model-id", help=f"Bedrock model for --agent (or ${MODEL_ENV}); no default.")
     ] = None,
     region: Annotated[str | None, typer.Option("--region", help="AWS region for Bedrock (--agent).")] = None,
+    audit_log: Annotated[
+        Path | None,
+        typer.Option("--audit-log", help="With --agent: append every tool call (allowed or refused) as JSON Lines."),
+    ] = None,
 ) -> None:
     """Fix FINDING with the minimal Terraform change and open a PR (or print it with --dry-run)."""
     parsed = _load_finding(finding, index, finding_id, resource, supported)
 
     llm_agent: Agent | None = None
+    if audit_log is not None and not agent:
+        raise _usage_error("--audit-log records the LLM agent's tool calls: it needs --agent")
     if agent:
         model = model_id or os.environ.get(MODEL_ENV, "")
         if not model.strip():
             raise _usage_error(f"--agent needs an explicit model (--model-id or ${MODEL_ENV}); there is no default")
         try:
-            llm_agent = build_agent(make_bedrock_client(region), model)
+            llm_agent = build_agent(
+                make_bedrock_client(region), model, audit=AuditLog(audit_log) if audit_log is not None else None
+            )
         except RuntimeError as exc:
             typer.secho(str(exc), fg="red", err=True)
             raise typer.Exit(1) from exc
