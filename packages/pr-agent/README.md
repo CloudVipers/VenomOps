@@ -100,6 +100,12 @@ Ver [ADR 0002](../../docs/decisiones/0002-pr-agent-seguridad.md).
   subconjunto mínimo de `git`. `terraform apply/destroy/import/state/...`, cualquier otro programa, `git push
   --force`, push a `main`/`master`/ramas protegidas, `reset --hard`, `merge` o `add -A` lanzan una excepción
   **antes** de ejecutar nada (hay más de 60 casos de prueba).
+- **Inyección de prompt indirecta** (`tests/test_injection.py`): un modelo simulado *obedece* instrucciones sembradas
+  en el repositorio (comentarios y tags) para ejecutar comandos, leer secretos, escribir fuera del repo o agregar
+  bloques que ejecutan código en `init`/`plan`; todas las llamadas se rechazan y nada cambia, ni dentro ni fuera del
+  repo. La misma suite documenta el riesgo residual: un cambio válido pero malicioso (p. ej. desactivar el bloqueo de
+  acceso público) **no** lo frena el código, solo la revisión humana. Ver el
+  [modelo de amenazas](../../docs/investigacion/modelo-de-amenazas.md).
 - **Rutas confinadas al repo:** se rechazan `..`, rutas absolutas, symlinks que escapan, `.git/`, `.terraform/`,
   `*.tfstate`, `*.tfvars`, `.env` y llaves; los archivos de secretos ni siquiera aparecen al listar.
 - **Edición estructurada y verificada:** solo operaciones acotadas (`append_block`, `replace_attr`, `ensure_tags`, `set_memory_limit`); el
