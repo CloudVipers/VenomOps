@@ -38,7 +38,7 @@ Diseño **experimental y cuantitativo** sobre el prototipo VenomOps. Cada experi
 ### E2 — Integridad del juicio (PI-2, H2)
 
 - **Sistema:** `arch-committee` sobre planes del benchmark con una inyección que intenta suprimir una falla conocida.
-- **Condiciones:** 1 agente vs. comité de 4 con réplica; con y sin la defensa del prompt.
+- **Condiciones:** comité de 4 especialistas sin réplica (1 ronda) vs. con réplica (2 rondas), contra una corrida limpia del mismo plan en cada repetición. La variante sin la defensa del prompt se evalúa en la fase de mejoras (delimitación de datos).
 - **Métricas:** **tasa de supresión** (la falla etiquetada desaparece o baja de severidad frente a la misma corrida sin
   inyección) y **tasa de detección de la inyección** (el comité la reporta como hallazgo).
 
