@@ -269,6 +269,19 @@ type Rule interface {
 - [x] `docs/arquitectura.md` con el diagrama del flujo completo.
 - [x] Demo reproducible en `examples/` (script que levanta kind, rompe algo, diagnostica y genera el PR en `--dry-run`).
 
+### Fase 6 — Investigación (maestría en ciberseguridad)
+
+**Objetivo:** usar VenomOps como prototipo para evaluar la contención de la inyección de prompt indirecta en agentes LLM que revisan y modifican IaC. Ver [ADR 0011](docs/decisiones/0011-linea-de-investigacion.md) y [`docs/investigacion/`](docs/investigacion/).
+
+- [x] Propuesta, modelo de amenazas, estado del arte y metodología en `docs/investigacion/`.
+- [ ] Corpus de inyección en `examples/benchmark/injection/` (vectores × objetivos × técnicas).
+- [ ] Benchmark de IaC etiquetado en `examples/benchmark/iac/` (≥ 50 casos con `labels.json`).
+- [ ] Arnés `research/eval/`: métricas (precision, recall, F1, tasa de supresión, tasa de fuga) con tests deterministas.
+- [ ] Tests de regresión de inyección en `pr-agent` (el modelo simulado obedece la inyección y `SafeRunner` la bloquea).
+- [ ] E4 (redacción) automatizado en CI; E1–E3 ejecutados a mano contra Bedrock con resultados en `research/results/`.
+
+**DoD:** las métricas se reproducen con un solo comando a partir de los resultados guardados; ninguna corrida ejecuta acciones fuera de la sección 2.
+
 ---
 
 ## 7. Cómo trabajar en cada sesión
