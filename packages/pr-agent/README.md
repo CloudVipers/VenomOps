@@ -134,6 +134,9 @@ Ver [ADR 0002](../../docs/decisiones/0002-pr-agent-seguridad.md).
   `<untrusted_data>`. El prompt indica que es contenido de terceros y nunca instrucciones, y el contenido no puede
   cerrar la etiqueta antes de tiempo. Si el modelo avisa de una posible inyección de prompt, el PR lo dice en un
   aviso para quien lo revise.
+- **Findings firmados** ([ADR 0012](../../docs/decisiones/0012-firma-de-findings.md)): con `--require-signature`
+  solo acepta un finding con firma HMAC válida (`<finding>.sig`, o `--signature` si lee desde stdin), usando la clave
+  de `VENOMOPS_FINDINGS_KEY`. Sin el flag, si hay firma y clave, igual la verifica.
 - **Bitácora de auditoría** (`--audit-log audit.jsonl`, solo con `--agent`): cada llamada del agente a una herramienta
   queda en JSON Lines con sus argumentos redactados, si se permitió o se rechazó y qué control la frenó
   (`PathNotAllowedError`, `BlockNotAllowedError`, etc.).

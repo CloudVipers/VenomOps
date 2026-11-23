@@ -60,6 +60,17 @@ issues = validate(data)            # lista de ValidationIssue (vacía = válido)
 finding = Finding.from_dict(data)  # valida y construye el modelo tipado
 ```
 
+Firma opcional separada (HMAC-SHA256 sobre los bytes exactos del archivo, en `<archivo>.sig`; ver el
+[ADR 0012](../../docs/decisiones/0012-firma-de-findings.md)). Go y Python comparten un vector de prueba:
+
+```python
+from findings_schema.signature import key_from_env, write_signature, verify_bytes
+```
+
+```go
+sig := findings.Sign(data, key); err := findings.Verify(data, sig, key)
+```
+
 CLI (mismo veredicto que el validador Python, lo usa el test de paridad):
 
 ```bash

@@ -102,6 +102,9 @@ Cada llamada reserva tokens del presupuesto global antes de ejecutarse. Si se ag
   genera un finding `AC-STA-*`. Las herramientas estáticas no leen lenguaje natural, así que una inyección no las
   engaña: sirven de red contra hallazgos suprimidos. El comité solo lee su JSON; no las ejecuta ni se lo envía al modelo.
 
+- **Firma** ([ADR 0012](../../docs/decisiones/0012-firma-de-findings.md)): si `VENOMOPS_FINDINGS_KEY` está definida,
+  `findings.json` se firma (`findings.json.sig`) para que `pr-agent --require-signature` lo acepte.
+
 ```bash
 checkov -f plan.json --framework terraform_plan -o json > checkov.json
 arch-committee review --plan plan.json --static-findings checkov.json --out ./out
