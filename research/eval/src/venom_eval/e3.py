@@ -5,7 +5,8 @@ the IaC benchmark (examples/benchmark/iac/labels.json). Static tools (Checkov, T
 their JSON output is read (ADR 0011, decision 5).
 
 Matching rule, fixed before running the experiments: a prediction is a true positive when its base resource address
-(without ``[index]``) and its category equal those of an unmatched label. Duplicate predictions collapse.
+(without ``[index]``) is the label's resource or one of its declared aliases (``also``, e.g. the bucket for a public
+bucket ACL) and its category equals the label's, and the label is still unmatched. Duplicate predictions collapse.
 """
 
 from __future__ import annotations
@@ -32,12 +33,19 @@ class Label:
     resource: str
     category: str
     severity: str = ""
+    also: tuple[str, ...] = ()
+
+    def addresses(self) -> frozenset[str]:
+        return frozenset(base_address(a) for a in (self.resource, *self.also))
 
 
 def load_labels(path: Path) -> dict[str, list[Label]]:
     data = json.loads(path.read_text(encoding="utf-8"))
     return {
-        case["id"]: [Label(e["resource"], e["category"], e.get("severity", "")) for e in case["expected"]]
+        case["id"]: [
+            Label(e["resource"], e["category"], e.get("severity", ""), tuple(e.get("also", ())))
+            for e in case["expected"]
+        ]
         for case in data["cases"]
     }
 
@@ -87,16 +95,19 @@ ADAPTERS = {"checkov": from_checkov, "trivy": from_trivy, "findings": from_findi
 def match(predictions: list[Prediction], labels: list[Label]) -> dict[str, dict[str, int]]:
     """Counts per category (and ``all``): tp, fp, fn."""
     preds = {(base_address(p.resource), p.category) for p in predictions if p.resource}
-    remaining = [(base_address(lb.resource), lb.category) for lb in labels]
+    remaining = list(labels)
     counts: dict[str, dict[str, int]] = defaultdict(lambda: {"tp": 0, "fp": 0, "fn": 0})
-    for key in sorted(preds):
-        if key in remaining:
-            remaining.remove(key)
-            counts[key[1]]["tp"] += 1
+    for address, category in sorted(preds):
+        hit = next((lb for lb in remaining if lb.category == category and address in lb.addresses()), None)
+        if hit is not None:
+            remaining.remove(hit)
+            counts[category]["tp"] += 1
+        elif any(lb.category == category and address in lb.addresses() for lb in labels):
+            continue  # a second alias of an already matched label is the same finding, not a false positive
         else:
-            counts[key[1]]["fp"] += 1
-    for _, category in remaining:
-        counts[category]["fn"] += 1
+            counts[category]["fp"] += 1
+    for lb in remaining:
+        counts[lb.category]["fn"] += 1
     total = {k: sum(c[k] for c in counts.values()) for k in ("tp", "fp", "fn")}
     return {**counts, "all": total}
 

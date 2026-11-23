@@ -1,0 +1,308 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.17.2",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_security_group.any",
+          "mode": "managed",
+          "type": "aws_security_group",
+          "name": "any",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 1,
+          "values": {
+            "description": "Everything",
+            "egress": [
+              {
+                "cidr_blocks": [
+                  "0.0.0.0/0"
+                ],
+                "description": "All outbound",
+                "from_port": 0,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "-1",
+                "security_groups": [],
+                "self": false,
+                "to_port": 0
+              }
+            ],
+            "ingress": [
+              {
+                "cidr_blocks": [
+                  "0.0.0.0/0"
+                ],
+                "description": "Everything",
+                "from_port": 0,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "-1",
+                "security_groups": [],
+                "self": false,
+                "to_port": 0
+              }
+            ],
+            "name": "bench-any",
+            "region": "us-east-1",
+            "revoke_rules_on_delete": false,
+            "tags": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "tags_all": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-0123456789abcdef0"
+          },
+          "sensitive_values": {
+            "egress": [
+              {
+                "cidr_blocks": [
+                  false
+                ],
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "security_groups": []
+              }
+            ],
+            "ingress": [
+              {
+                "cidr_blocks": [
+                  false
+                ],
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "security_groups": []
+              }
+            ],
+            "tags": {},
+            "tags_all": {}
+          },
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": null,
+            "id": null,
+            "region": null
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_security_group.any",
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "any",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "description": "Everything",
+          "egress": [
+            {
+              "cidr_blocks": [
+                "0.0.0.0/0"
+              ],
+              "description": "All outbound",
+              "from_port": 0,
+              "ipv6_cidr_blocks": [],
+              "prefix_list_ids": [],
+              "protocol": "-1",
+              "security_groups": [],
+              "self": false,
+              "to_port": 0
+            }
+          ],
+          "ingress": [
+            {
+              "cidr_blocks": [
+                "0.0.0.0/0"
+              ],
+              "description": "Everything",
+              "from_port": 0,
+              "ipv6_cidr_blocks": [],
+              "prefix_list_ids": [],
+              "protocol": "-1",
+              "security_groups": [],
+              "self": false,
+              "to_port": 0
+            }
+          ],
+          "name": "bench-any",
+          "region": "us-east-1",
+          "revoke_rules_on_delete": false,
+          "tags": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "tags_all": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "timeouts": null,
+          "vpc_id": "vpc-0123456789abcdef0"
+        },
+        "after_unknown": {
+          "arn": true,
+          "egress": [
+            {
+              "cidr_blocks": [
+                false
+              ],
+              "ipv6_cidr_blocks": [],
+              "prefix_list_ids": [],
+              "security_groups": []
+            }
+          ],
+          "id": true,
+          "ingress": [
+            {
+              "cidr_blocks": [
+                false
+              ],
+              "ipv6_cidr_blocks": [],
+              "prefix_list_ids": [],
+              "security_groups": []
+            }
+          ],
+          "name_prefix": true,
+          "owner_id": true,
+          "tags": {},
+          "tags_all": {}
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "egress": [
+            {
+              "cidr_blocks": [
+                false
+              ],
+              "ipv6_cidr_blocks": [],
+              "prefix_list_ids": [],
+              "security_groups": []
+            }
+          ],
+          "ingress": [
+            {
+              "cidr_blocks": [
+                false
+              ],
+              "ipv6_cidr_blocks": [],
+              "prefix_list_ids": [],
+              "security_groups": []
+            }
+          ],
+          "tags": {},
+          "tags_all": {}
+        },
+        "after_identity": {
+          "account_id": null,
+          "id": null,
+          "region": null
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "full_name": "registry.terraform.io/hashicorp/aws",
+        "version_constraint": ">= 5.0.0",
+        "expressions": {
+          "region": {
+            "constant_value": "us-east-1"
+          },
+          "skip_credentials_validation": {
+            "constant_value": true
+          },
+          "skip_metadata_api_check": {
+            "constant_value": true
+          },
+          "skip_requesting_account_id": {
+            "constant_value": true
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_security_group.any",
+          "mode": "managed",
+          "type": "aws_security_group",
+          "name": "any",
+          "provider_config_key": "aws",
+          "expressions": {
+            "description": {
+              "constant_value": "Everything"
+            },
+            "egress": {
+              "constant_value": [
+                {
+                  "cidr_blocks": [
+                    "0.0.0.0/0"
+                  ],
+                  "description": "All outbound",
+                  "from_port": 0,
+                  "ipv6_cidr_blocks": null,
+                  "prefix_list_ids": null,
+                  "protocol": "-1",
+                  "security_groups": null,
+                  "self": null,
+                  "to_port": 0
+                }
+              ]
+            },
+            "ingress": {
+              "constant_value": [
+                {
+                  "cidr_blocks": [
+                    "0.0.0.0/0"
+                  ],
+                  "description": "Everything",
+                  "from_port": 0,
+                  "ipv6_cidr_blocks": null,
+                  "prefix_list_ids": null,
+                  "protocol": "-1",
+                  "security_groups": null,
+                  "self": null,
+                  "to_port": 0
+                }
+              ]
+            },
+            "name": {
+              "constant_value": "bench-any"
+            },
+            "tags": {
+              "constant_value": {
+                "Environment": "prod",
+                "Owner": "team-a",
+                "Project": "bench"
+              }
+            },
+            "vpc_id": {
+              "constant_value": "vpc-0123456789abcdef0"
+            }
+          },
+          "schema_version": 1
+        }
+      ]
+    }
+  },
+  "timestamp": "2026-11-23T21:46:39Z",
+  "applyable": true,
+  "complete": true,
+  "errored": false
+}

@@ -1,0 +1,709 @@
+{
+  "version": "1.0.0",
+  "description": "Seeded faults of the IaC benchmark (experiment E3). Regenerate with build.py; do not edit.",
+  "cases": [
+    {
+      "id": "s3-public-acl",
+      "dir": "cases/s3-public-acl",
+      "plan": "cases/s3-public-acl/plan.json",
+      "expected": [
+        {
+          "resource": "aws_s3_bucket_acl.data",
+          "category": "security",
+          "severity": "high",
+          "description": "Public-read ACL on a production bucket",
+          "cwe": "CWE-284",
+          "also": [
+            "aws_s3_bucket.data",
+            "aws_s3_bucket_public_access_block.data"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s3-public-policy",
+      "dir": "cases/s3-public-policy",
+      "plan": "cases/s3-public-policy/plan.json",
+      "expected": [
+        {
+          "resource": "aws_s3_bucket_policy.data",
+          "category": "security",
+          "severity": "high",
+          "description": "Bucket policy grants s3:GetObject to everyone",
+          "cwe": "CWE-284",
+          "also": [
+            "aws_s3_bucket.data",
+            "aws_s3_bucket_public_access_block.data"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s3-public-access-block-disabled",
+      "dir": "cases/s3-public-access-block-disabled",
+      "plan": "cases/s3-public-access-block-disabled/plan.json",
+      "expected": [
+        {
+          "resource": "aws_s3_bucket_public_access_block.data",
+          "category": "security",
+          "severity": "high",
+          "description": "Every public access block setting is disabled",
+          "cwe": "CWE-284",
+          "also": [
+            "aws_s3_bucket.data"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s3-no-encryption-config",
+      "dir": "cases/s3-no-encryption-config",
+      "plan": "cases/s3-no-encryption-config/plan.json",
+      "expected": [
+        {
+          "resource": "aws_s3_bucket.data",
+          "category": "security",
+          "severity": "low",
+          "description": "No explicit server-side encryption with a customer-managed key (only the default SSE-S3)",
+          "cwe": "CWE-311"
+        }
+      ]
+    },
+    {
+      "id": "sg-ssh-open",
+      "dir": "cases/sg-ssh-open",
+      "plan": "cases/sg-ssh-open/plan.json",
+      "expected": [
+        {
+          "resource": "aws_security_group.admin",
+          "category": "security",
+          "severity": "high",
+          "description": "SSH open to the Internet",
+          "cwe": "CWE-284"
+        }
+      ]
+    },
+    {
+      "id": "sg-rdp-open",
+      "dir": "cases/sg-rdp-open",
+      "plan": "cases/sg-rdp-open/plan.json",
+      "expected": [
+        {
+          "resource": "aws_security_group.windows",
+          "category": "security",
+          "severity": "high",
+          "description": "RDP open to the Internet",
+          "cwe": "CWE-284"
+        }
+      ]
+    },
+    {
+      "id": "sg-all-open",
+      "dir": "cases/sg-all-open",
+      "plan": "cases/sg-all-open/plan.json",
+      "expected": [
+        {
+          "resource": "aws_security_group.any",
+          "category": "security",
+          "severity": "critical",
+          "description": "All ports and protocols open to the Internet",
+          "cwe": "CWE-284"
+        }
+      ]
+    },
+    {
+      "id": "sg-database-open",
+      "dir": "cases/sg-database-open",
+      "plan": "cases/sg-database-open/plan.json",
+      "expected": [
+        {
+          "resource": "aws_security_group.db",
+          "category": "security",
+          "severity": "high",
+          "description": "Database port open to the Internet",
+          "cwe": "CWE-284"
+        }
+      ]
+    },
+    {
+      "id": "rds-public",
+      "dir": "cases/rds-public",
+      "plan": "cases/rds-public/plan.json",
+      "expected": [
+        {
+          "resource": "aws_db_instance.orders",
+          "category": "security",
+          "severity": "high",
+          "description": "Production database is publicly accessible",
+          "cwe": "CWE-284"
+        }
+      ]
+    },
+    {
+      "id": "rds-unencrypted",
+      "dir": "cases/rds-unencrypted",
+      "plan": "cases/rds-unencrypted/plan.json",
+      "expected": [
+        {
+          "resource": "aws_db_instance.orders",
+          "category": "security",
+          "severity": "high",
+          "description": "Database storage is not encrypted",
+          "cwe": "CWE-311"
+        }
+      ]
+    },
+    {
+      "id": "ebs-unencrypted",
+      "dir": "cases/ebs-unencrypted",
+      "plan": "cases/ebs-unencrypted/plan.json",
+      "expected": [
+        {
+          "resource": "aws_ebs_volume.data",
+          "category": "security",
+          "severity": "medium",
+          "description": "EBS volume is not encrypted",
+          "cwe": "CWE-311"
+        }
+      ]
+    },
+    {
+      "id": "iam-admin-policy",
+      "dir": "cases/iam-admin-policy",
+      "plan": "cases/iam-admin-policy/plan.json",
+      "expected": [
+        {
+          "resource": "aws_iam_policy.deploy",
+          "category": "security",
+          "severity": "critical",
+          "description": "Policy allows every action on every resource",
+          "cwe": "CWE-269"
+        }
+      ]
+    },
+    {
+      "id": "iam-passrole-any",
+      "dir": "cases/iam-passrole-any",
+      "plan": "cases/iam-passrole-any/plan.json",
+      "expected": [
+        {
+          "resource": "aws_iam_policy.ci",
+          "category": "security",
+          "severity": "high",
+          "description": "iam:PassRole on any role enables privilege escalation",
+          "cwe": "CWE-269"
+        }
+      ]
+    },
+    {
+      "id": "iam-trust-anyone",
+      "dir": "cases/iam-trust-anyone",
+      "plan": "cases/iam-trust-anyone/plan.json",
+      "expected": [
+        {
+          "resource": "aws_iam_role.app",
+          "category": "security",
+          "severity": "critical",
+          "description": "Any AWS principal can assume the role",
+          "cwe": "CWE-284"
+        }
+      ]
+    },
+    {
+      "id": "iam-long-lived-key",
+      "dir": "cases/iam-long-lived-key",
+      "plan": "cases/iam-long-lived-key/plan.json",
+      "expected": [
+        {
+          "resource": "aws_iam_access_key.ci",
+          "category": "security",
+          "severity": "medium",
+          "description": "Long-lived access key for a CI user",
+          "cwe": "CWE-798",
+          "also": [
+            "aws_iam_user.ci"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ec2-imdsv1",
+      "dir": "cases/ec2-imdsv1",
+      "plan": "cases/ec2-imdsv1/plan.json",
+      "expected": [
+        {
+          "resource": "aws_instance.web",
+          "category": "security",
+          "severity": "medium",
+          "description": "IMDSv1 allowed (http_tokens = optional)",
+          "cwe": "CWE-918"
+        }
+      ]
+    },
+    {
+      "id": "kms-no-rotation",
+      "dir": "cases/kms-no-rotation",
+      "plan": "cases/kms-no-rotation/plan.json",
+      "expected": [
+        {
+          "resource": "aws_kms_key.data",
+          "category": "security",
+          "severity": "medium",
+          "description": "Key rotation disabled",
+          "cwe": "CWE-320"
+        }
+      ]
+    },
+    {
+      "id": "sqs-no-encryption",
+      "dir": "cases/sqs-no-encryption",
+      "plan": "cases/sqs-no-encryption/plan.json",
+      "expected": [
+        {
+          "resource": "aws_sqs_queue.orders",
+          "category": "security",
+          "severity": "medium",
+          "description": "Queue without server-side encryption",
+          "cwe": "CWE-311"
+        }
+      ]
+    },
+    {
+      "id": "ssm-plaintext-secret",
+      "dir": "cases/ssm-plaintext-secret",
+      "plan": "cases/ssm-plaintext-secret/plan.json",
+      "expected": [
+        {
+          "resource": "aws_ssm_parameter.db_password",
+          "category": "security",
+          "severity": "high",
+          "description": "Password stored as a plain String parameter",
+          "cwe": "CWE-312"
+        }
+      ]
+    },
+    {
+      "id": "ecr-mutable-no-scan",
+      "dir": "cases/ecr-mutable-no-scan",
+      "plan": "cases/ecr-mutable-no-scan/plan.json",
+      "expected": [
+        {
+          "resource": "aws_ecr_repository.app",
+          "category": "security",
+          "severity": "low",
+          "description": "Mutable tags and no vulnerability scan on push",
+          "cwe": "CWE-494"
+        }
+      ]
+    },
+    {
+      "id": "sns-public-policy",
+      "dir": "cases/sns-public-policy",
+      "plan": "cases/sns-public-policy/plan.json",
+      "expected": [
+        {
+          "resource": "aws_sns_topic_policy.events",
+          "category": "security",
+          "severity": "high",
+          "description": "Anyone can publish to the topic",
+          "cwe": "CWE-284",
+          "also": [
+            "aws_sns_topic.events"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rds-single-az-prod",
+      "dir": "cases/rds-single-az-prod",
+      "plan": "cases/rds-single-az-prod/plan.json",
+      "expected": [
+        {
+          "resource": "aws_db_instance.orders",
+          "category": "reliability",
+          "severity": "high",
+          "description": "Production database in a single AZ"
+        }
+      ]
+    },
+    {
+      "id": "rds-no-backups",
+      "dir": "cases/rds-no-backups",
+      "plan": "cases/rds-no-backups/plan.json",
+      "expected": [
+        {
+          "resource": "aws_db_instance.orders",
+          "category": "reliability",
+          "severity": "high",
+          "description": "Automated backups disabled"
+        }
+      ]
+    },
+    {
+      "id": "rds-no-deletion-protection",
+      "dir": "cases/rds-no-deletion-protection",
+      "plan": "cases/rds-no-deletion-protection/plan.json",
+      "expected": [
+        {
+          "resource": "aws_db_instance.orders",
+          "category": "reliability",
+          "severity": "medium",
+          "description": "Production database without deletion protection"
+        }
+      ]
+    },
+    {
+      "id": "dynamodb-no-pitr",
+      "dir": "cases/dynamodb-no-pitr",
+      "plan": "cases/dynamodb-no-pitr/plan.json",
+      "expected": [
+        {
+          "resource": "aws_dynamodb_table.orders",
+          "category": "reliability",
+          "severity": "medium",
+          "description": "Point-in-time recovery disabled in production"
+        }
+      ]
+    },
+    {
+      "id": "asg-single-az",
+      "dir": "cases/asg-single-az",
+      "plan": "cases/asg-single-az/plan.json",
+      "expected": [
+        {
+          "resource": "aws_autoscaling_group.web",
+          "category": "reliability",
+          "severity": "medium",
+          "description": "Production Auto Scaling group in one AZ"
+        }
+      ]
+    },
+    {
+      "id": "s3-no-versioning-prod",
+      "dir": "cases/s3-no-versioning-prod",
+      "plan": "cases/s3-no-versioning-prod/plan.json",
+      "expected": [
+        {
+          "resource": "aws_s3_bucket.data",
+          "category": "reliability",
+          "severity": "medium",
+          "description": "Production data bucket without versioning"
+        }
+      ]
+    },
+    {
+      "id": "nat-single-az-prod",
+      "dir": "cases/nat-single-az-prod",
+      "plan": "cases/nat-single-az-prod/plan.json",
+      "expected": [
+        {
+          "resource": "aws_nat_gateway.main",
+          "category": "reliability",
+          "severity": "medium",
+          "description": "One NAT Gateway for private subnets in three AZs (single point of failure)",
+          "cwe": [
+            "aws_route_table.private"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ebs-gp2",
+      "dir": "cases/ebs-gp2",
+      "plan": "cases/ebs-gp2/plan.json",
+      "expected": [
+        {
+          "resource": "aws_ebs_volume.data",
+          "category": "cost",
+          "severity": "low",
+          "description": "gp2 volume: gp3 is cheaper for the same baseline"
+        }
+      ]
+    },
+    {
+      "id": "ec2-oversized-dev",
+      "dir": "cases/ec2-oversized-dev",
+      "plan": "cases/ec2-oversized-dev/plan.json",
+      "expected": [
+        {
+          "resource": "aws_instance.dev_box",
+          "category": "cost",
+          "severity": "medium",
+          "description": "m5.8xlarge for a development instance"
+        }
+      ]
+    },
+    {
+      "id": "nat-per-subnet-dev",
+      "dir": "cases/nat-per-subnet-dev",
+      "plan": "cases/nat-per-subnet-dev/plan.json",
+      "expected": [
+        {
+          "resource": "aws_nat_gateway.per_subnet",
+          "category": "cost",
+          "severity": "medium",
+          "description": "One NAT Gateway per subnet in a dev environment",
+          "cwe": [
+            "aws_eip.nat"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s3-logs-no-lifecycle",
+      "dir": "cases/s3-logs-no-lifecycle",
+      "plan": "cases/s3-logs-no-lifecycle/plan.json",
+      "expected": [
+        {
+          "resource": "aws_s3_bucket.logs",
+          "category": "cost",
+          "severity": "low",
+          "description": "Log bucket with versioning and no lifecycle expiration",
+          "cwe": [
+            "aws_s3_bucket_versioning.logs"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "eip-unattached",
+      "dir": "cases/eip-unattached",
+      "plan": "cases/eip-unattached/plan.json",
+      "expected": [
+        {
+          "resource": "aws_eip.spare",
+          "category": "cost",
+          "severity": "low",
+          "description": "Elastic IP not attached to anything"
+        }
+      ]
+    },
+    {
+      "id": "ebs-io1-dev",
+      "dir": "cases/ebs-io1-dev",
+      "plan": "cases/ebs-io1-dev/plan.json",
+      "expected": [
+        {
+          "resource": "aws_ebs_volume.data",
+          "category": "cost",
+          "severity": "medium",
+          "description": "Provisioned IOPS (io1, 10000) in dev"
+        }
+      ]
+    },
+    {
+      "id": "rds-oversized-dev",
+      "dir": "cases/rds-oversized-dev",
+      "plan": "cases/rds-oversized-dev/plan.json",
+      "expected": [
+        {
+          "resource": "aws_db_instance.orders",
+          "category": "cost",
+          "severity": "medium",
+          "description": "db.r5.4xlarge for a development database"
+        }
+      ]
+    },
+    {
+      "id": "log-group-no-retention",
+      "dir": "cases/log-group-no-retention",
+      "plan": "cases/log-group-no-retention/plan.json",
+      "expected": [
+        {
+          "resource": "aws_cloudwatch_log_group.app",
+          "category": "cost",
+          "severity": "low",
+          "description": "Logs never expire (no retention)"
+        }
+      ]
+    },
+    {
+      "id": "sqs-missing-tags",
+      "dir": "cases/sqs-missing-tags",
+      "plan": "cases/sqs-missing-tags/plan.json",
+      "expected": [
+        {
+          "resource": "aws_sqs_queue.jobs",
+          "category": "operations",
+          "severity": "low",
+          "description": "No tags (owner, environment, project)"
+        }
+      ]
+    },
+    {
+      "id": "ebs-missing-tags",
+      "dir": "cases/ebs-missing-tags",
+      "plan": "cases/ebs-missing-tags/plan.json",
+      "expected": [
+        {
+          "resource": "aws_ebs_volume.data",
+          "category": "operations",
+          "severity": "low",
+          "description": "No tags (owner, environment, project)"
+        }
+      ]
+    },
+    {
+      "id": "vpc-no-flow-logs",
+      "dir": "cases/vpc-no-flow-logs",
+      "plan": "cases/vpc-no-flow-logs/plan.json",
+      "expected": [
+        {
+          "resource": "aws_vpc.main",
+          "category": "operations",
+          "severity": "medium",
+          "description": "Production VPC without flow logs",
+          "cwe": "CWE-778"
+        }
+      ]
+    },
+    {
+      "id": "rds-combo",
+      "dir": "cases/rds-combo",
+      "plan": "cases/rds-combo/plan.json",
+      "expected": [
+        {
+          "resource": "aws_db_instance.orders",
+          "category": "security",
+          "severity": "critical",
+          "description": "Public and unencrypted database",
+          "cwe": "CWE-284"
+        },
+        {
+          "resource": "aws_db_instance.orders",
+          "category": "reliability",
+          "severity": "high",
+          "description": "Single-AZ production database"
+        }
+      ]
+    },
+    {
+      "id": "web-combo",
+      "dir": "cases/web-combo",
+      "plan": "cases/web-combo/plan.json",
+      "expected": [
+        {
+          "resource": "aws_security_group.web",
+          "category": "security",
+          "severity": "high",
+          "description": "SSH open to the Internet",
+          "cwe": "CWE-284"
+        },
+        {
+          "resource": "aws_instance.web",
+          "category": "cost",
+          "severity": "medium",
+          "description": "m5.4xlarge in dev"
+        },
+        {
+          "resource": "aws_instance.web",
+          "category": "operations",
+          "severity": "low",
+          "description": "Instance without tags"
+        }
+      ]
+    },
+    {
+      "id": "s3-combo",
+      "dir": "cases/s3-combo",
+      "plan": "cases/s3-combo/plan.json",
+      "expected": [
+        {
+          "resource": "aws_s3_bucket_policy.data",
+          "category": "security",
+          "severity": "critical",
+          "description": "Anyone can read and write objects",
+          "cwe": "CWE-284",
+          "also": [
+            "aws_s3_bucket.data",
+            "aws_s3_bucket_public_access_block.data"
+          ]
+        },
+        {
+          "resource": "aws_s3_bucket.data",
+          "category": "reliability",
+          "severity": "medium",
+          "description": "Production bucket without versioning"
+        }
+      ]
+    },
+    {
+      "id": "clean-s3",
+      "dir": "cases/clean-s3",
+      "plan": "cases/clean-s3/plan.json",
+      "expected": []
+    },
+    {
+      "id": "clean-sg",
+      "dir": "cases/clean-sg",
+      "plan": "cases/clean-sg/plan.json",
+      "expected": []
+    },
+    {
+      "id": "clean-rds",
+      "dir": "cases/clean-rds",
+      "plan": "cases/clean-rds/plan.json",
+      "expected": []
+    },
+    {
+      "id": "clean-ebs",
+      "dir": "cases/clean-ebs",
+      "plan": "cases/clean-ebs/plan.json",
+      "expected": []
+    },
+    {
+      "id": "clean-iam",
+      "dir": "cases/clean-iam",
+      "plan": "cases/clean-iam/plan.json",
+      "expected": []
+    },
+    {
+      "id": "clean-kms",
+      "dir": "cases/clean-kms",
+      "plan": "cases/clean-kms/plan.json",
+      "expected": []
+    },
+    {
+      "id": "clean-dynamodb",
+      "dir": "cases/clean-dynamodb",
+      "plan": "cases/clean-dynamodb/plan.json",
+      "expected": []
+    },
+    {
+      "id": "clean-instance",
+      "dir": "cases/clean-instance",
+      "plan": "cases/clean-instance/plan.json",
+      "expected": []
+    },
+    {
+      "id": "clean-log-group",
+      "dir": "cases/clean-log-group",
+      "plan": "cases/clean-log-group/plan.json",
+      "expected": []
+    },
+    {
+      "id": "clean-ssm",
+      "dir": "cases/clean-ssm",
+      "plan": "cases/clean-ssm/plan.json",
+      "expected": []
+    },
+    {
+      "id": "clean-sqs",
+      "dir": "cases/clean-sqs",
+      "plan": "cases/clean-sqs/plan.json",
+      "expected": []
+    },
+    {
+      "id": "clean-vpc",
+      "dir": "cases/clean-vpc",
+      "plan": "cases/clean-vpc/plan.json",
+      "expected": []
+    },
+    {
+      "id": "clean-ecr",
+      "dir": "cases/clean-ecr",
+      "plan": "cases/clean-ecr/plan.json",
+      "expected": []
+    }
+  ]
+}

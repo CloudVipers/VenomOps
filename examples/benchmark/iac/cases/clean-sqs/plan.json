@@ -1,0 +1,166 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.17.2",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_sqs_queue.jobs",
+          "mode": "managed",
+          "type": "aws_sqs_queue",
+          "name": "jobs",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "content_based_deduplication": false,
+            "delay_seconds": 0,
+            "fifo_queue": false,
+            "kms_data_key_reuse_period_seconds": 0,
+            "kms_master_key_id": null,
+            "max_message_size": 262144,
+            "message_retention_seconds": 345600,
+            "name": "bench-jobs",
+            "receive_wait_time_seconds": 0,
+            "region": "us-east-1",
+            "sqs_managed_sse_enabled": true,
+            "tags": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "tags_all": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "timeouts": null,
+            "visibility_timeout_seconds": 30
+          },
+          "sensitive_values": {
+            "tags": {},
+            "tags_all": {}
+          },
+          "identity_schema_version": 1,
+          "identity": {
+            "url": null
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_sqs_queue.jobs",
+      "mode": "managed",
+      "type": "aws_sqs_queue",
+      "name": "jobs",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "content_based_deduplication": false,
+          "delay_seconds": 0,
+          "fifo_queue": false,
+          "kms_data_key_reuse_period_seconds": 0,
+          "kms_master_key_id": null,
+          "max_message_size": 262144,
+          "message_retention_seconds": 345600,
+          "name": "bench-jobs",
+          "receive_wait_time_seconds": 0,
+          "region": "us-east-1",
+          "sqs_managed_sse_enabled": true,
+          "tags": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "tags_all": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "timeouts": null,
+          "visibility_timeout_seconds": 30
+        },
+        "after_unknown": {
+          "arn": true,
+          "deduplication_scope": true,
+          "fifo_throughput_limit": true,
+          "id": true,
+          "name_prefix": true,
+          "policy": true,
+          "redrive_allow_policy": true,
+          "redrive_policy": true,
+          "tags": {},
+          "tags_all": {},
+          "url": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "tags": {},
+          "tags_all": {}
+        },
+        "after_identity": {
+          "url": null
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "full_name": "registry.terraform.io/hashicorp/aws",
+        "version_constraint": ">= 5.0.0",
+        "expressions": {
+          "region": {
+            "constant_value": "us-east-1"
+          },
+          "skip_credentials_validation": {
+            "constant_value": true
+          },
+          "skip_metadata_api_check": {
+            "constant_value": true
+          },
+          "skip_requesting_account_id": {
+            "constant_value": true
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_sqs_queue.jobs",
+          "mode": "managed",
+          "type": "aws_sqs_queue",
+          "name": "jobs",
+          "provider_config_key": "aws",
+          "expressions": {
+            "name": {
+              "constant_value": "bench-jobs"
+            },
+            "sqs_managed_sse_enabled": {
+              "constant_value": true
+            },
+            "tags": {
+              "constant_value": {
+                "Environment": "prod",
+                "Owner": "team-a",
+                "Project": "bench"
+              }
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  },
+  "timestamp": "2026-11-23T21:50:31Z",
+  "applyable": true,
+  "complete": true,
+  "errored": false
+}

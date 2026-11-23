@@ -1,0 +1,322 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.17.2",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_db_instance.orders",
+          "mode": "managed",
+          "type": "aws_db_instance",
+          "name": "orders",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 2,
+          "values": {
+            "allocated_storage": 50,
+            "allow_major_version_upgrade": null,
+            "apply_immediately": false,
+            "auto_minor_version_upgrade": true,
+            "backup_retention_period": 14,
+            "blue_green_update": [],
+            "copy_tags_to_snapshot": false,
+            "custom_iam_instance_profile": null,
+            "customer_owned_ip_enabled": null,
+            "dedicated_log_volume": false,
+            "delete_automated_backups": true,
+            "deletion_protection": true,
+            "domain": null,
+            "domain_auth_secret_arn": null,
+            "domain_dns_ips": null,
+            "domain_iam_role_name": null,
+            "domain_ou": null,
+            "enabled_cloudwatch_logs_exports": null,
+            "engine": "postgres",
+            "engine_version": "16",
+            "final_snapshot_identifier": "bench-orders-final",
+            "iam_database_authentication_enabled": null,
+            "identifier": "bench-orders",
+            "instance_class": "db.t3.medium",
+            "manage_master_user_password": true,
+            "max_allocated_storage": null,
+            "monitoring_interval": 0,
+            "multi_az": true,
+            "password": null,
+            "password_wo": null,
+            "password_wo_version": null,
+            "performance_insights_enabled": false,
+            "publicly_accessible": false,
+            "region": "us-east-1",
+            "replicate_source_db": null,
+            "restore_to_point_in_time": [],
+            "s3_import": [],
+            "skip_final_snapshot": false,
+            "storage_encrypted": true,
+            "tags": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "tags_all": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "timeouts": null,
+            "upgrade_storage_config": null,
+            "username": "app",
+            "warning_event_categories": null
+          },
+          "sensitive_values": {
+            "blue_green_update": [],
+            "listener_endpoint": [],
+            "master_user_secret": [],
+            "password": true,
+            "password_wo": true,
+            "replicas": [],
+            "restore_to_point_in_time": [],
+            "s3_import": [],
+            "tags": {},
+            "tags_all": {},
+            "vpc_security_group_ids": []
+          },
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": null,
+            "identifier": null,
+            "region": null
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_db_instance.orders",
+      "mode": "managed",
+      "type": "aws_db_instance",
+      "name": "orders",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "allocated_storage": 50,
+          "allow_major_version_upgrade": null,
+          "apply_immediately": false,
+          "auto_minor_version_upgrade": true,
+          "backup_retention_period": 14,
+          "blue_green_update": [],
+          "copy_tags_to_snapshot": false,
+          "custom_iam_instance_profile": null,
+          "customer_owned_ip_enabled": null,
+          "dedicated_log_volume": false,
+          "delete_automated_backups": true,
+          "deletion_protection": true,
+          "domain": null,
+          "domain_auth_secret_arn": null,
+          "domain_dns_ips": null,
+          "domain_iam_role_name": null,
+          "domain_ou": null,
+          "enabled_cloudwatch_logs_exports": null,
+          "engine": "postgres",
+          "engine_version": "16",
+          "final_snapshot_identifier": "bench-orders-final",
+          "iam_database_authentication_enabled": null,
+          "identifier": "bench-orders",
+          "instance_class": "db.t3.medium",
+          "manage_master_user_password": true,
+          "max_allocated_storage": null,
+          "monitoring_interval": 0,
+          "multi_az": true,
+          "password": null,
+          "password_wo": null,
+          "password_wo_version": null,
+          "performance_insights_enabled": false,
+          "publicly_accessible": false,
+          "region": "us-east-1",
+          "replicate_source_db": null,
+          "restore_to_point_in_time": [],
+          "s3_import": [],
+          "skip_final_snapshot": false,
+          "storage_encrypted": true,
+          "tags": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "tags_all": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "timeouts": null,
+          "upgrade_storage_config": null,
+          "username": "app",
+          "warning_event_categories": null
+        },
+        "after_unknown": {
+          "address": true,
+          "arn": true,
+          "availability_zone": true,
+          "backup_target": true,
+          "backup_window": true,
+          "blue_green_update": [],
+          "ca_cert_identifier": true,
+          "character_set_name": true,
+          "database_insights_mode": true,
+          "db_name": true,
+          "db_subnet_group_name": true,
+          "domain_fqdn": true,
+          "endpoint": true,
+          "engine_lifecycle_support": true,
+          "engine_version_actual": true,
+          "hosted_zone_id": true,
+          "id": true,
+          "identifier_prefix": true,
+          "iops": true,
+          "kms_key_id": true,
+          "latest_restorable_time": true,
+          "license_model": true,
+          "listener_endpoint": true,
+          "maintenance_window": true,
+          "master_user_secret": true,
+          "master_user_secret_kms_key_id": true,
+          "monitoring_role_arn": true,
+          "multi_tenant": true,
+          "nchar_character_set_name": true,
+          "network_type": true,
+          "option_group_name": true,
+          "parameter_group_name": true,
+          "performance_insights_kms_key_id": true,
+          "performance_insights_retention_period": true,
+          "port": true,
+          "replica_mode": true,
+          "replicas": true,
+          "resource_id": true,
+          "restore_to_point_in_time": [],
+          "s3_import": [],
+          "snapshot_identifier": true,
+          "status": true,
+          "storage_throughput": true,
+          "storage_type": true,
+          "tags": {},
+          "tags_all": {},
+          "timezone": true,
+          "upgrade_rollout_order": true,
+          "vpc_security_group_ids": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "blue_green_update": [],
+          "listener_endpoint": [],
+          "master_user_secret": [],
+          "password": true,
+          "password_wo": true,
+          "replicas": [],
+          "restore_to_point_in_time": [],
+          "s3_import": [],
+          "tags": {},
+          "tags_all": {},
+          "vpc_security_group_ids": []
+        },
+        "after_identity": {
+          "account_id": null,
+          "identifier": null,
+          "region": null
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "full_name": "registry.terraform.io/hashicorp/aws",
+        "version_constraint": ">= 5.0.0",
+        "expressions": {
+          "region": {
+            "constant_value": "us-east-1"
+          },
+          "skip_credentials_validation": {
+            "constant_value": true
+          },
+          "skip_metadata_api_check": {
+            "constant_value": true
+          },
+          "skip_requesting_account_id": {
+            "constant_value": true
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_db_instance.orders",
+          "mode": "managed",
+          "type": "aws_db_instance",
+          "name": "orders",
+          "provider_config_key": "aws",
+          "expressions": {
+            "allocated_storage": {
+              "constant_value": 50
+            },
+            "backup_retention_period": {
+              "constant_value": 14
+            },
+            "deletion_protection": {
+              "constant_value": true
+            },
+            "engine": {
+              "constant_value": "postgres"
+            },
+            "engine_version": {
+              "constant_value": "16"
+            },
+            "final_snapshot_identifier": {
+              "constant_value": "bench-orders-final"
+            },
+            "identifier": {
+              "constant_value": "bench-orders"
+            },
+            "instance_class": {
+              "constant_value": "db.t3.medium"
+            },
+            "manage_master_user_password": {
+              "constant_value": true
+            },
+            "multi_az": {
+              "constant_value": true
+            },
+            "publicly_accessible": {
+              "constant_value": false
+            },
+            "skip_final_snapshot": {
+              "constant_value": false
+            },
+            "storage_encrypted": {
+              "constant_value": true
+            },
+            "tags": {
+              "constant_value": {
+                "Environment": "prod",
+                "Owner": "team-a",
+                "Project": "bench"
+              }
+            },
+            "username": {
+              "constant_value": "app"
+            }
+          },
+          "schema_version": 2
+        }
+      ]
+    }
+  },
+  "timestamp": "2026-11-23T21:49:21Z",
+  "applyable": true,
+  "complete": true,
+  "errored": false
+}

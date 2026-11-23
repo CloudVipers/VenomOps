@@ -1,0 +1,558 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.17.2",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_autoscaling_group.web",
+          "mode": "managed",
+          "type": "aws_autoscaling_group",
+          "name": "web",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 1,
+          "values": {
+            "availability_zones": [
+              "us-east-1a"
+            ],
+            "capacity_rebalance": null,
+            "context": null,
+            "default_instance_warmup": null,
+            "desired_capacity_type": null,
+            "enabled_metrics": null,
+            "force_delete": false,
+            "force_delete_warm_pool": false,
+            "health_check_grace_period": 300,
+            "ignore_failed_scaling_activities": false,
+            "initial_lifecycle_hook": [],
+            "instance_maintenance_policy": [],
+            "instance_refresh": [],
+            "launch_configuration": null,
+            "launch_template": [
+              {
+                "version": "$Latest"
+              }
+            ],
+            "max_instance_lifetime": null,
+            "max_size": 4,
+            "metrics_granularity": "1Minute",
+            "min_elb_capacity": null,
+            "min_size": 2,
+            "name": "bench-web",
+            "placement_group": null,
+            "protect_from_scale_in": false,
+            "region": "us-east-1",
+            "suspended_processes": null,
+            "tag": [
+              {
+                "key": "Environment",
+                "propagate_at_launch": true,
+                "value": "prod"
+              }
+            ],
+            "termination_policies": null,
+            "timeouts": null,
+            "wait_for_capacity_timeout": "10m",
+            "wait_for_elb_capacity": null,
+            "warm_pool": []
+          },
+          "sensitive_values": {
+            "availability_zone_distribution": [],
+            "availability_zones": [
+              false
+            ],
+            "capacity_reservation_specification": [],
+            "initial_lifecycle_hook": [],
+            "instance_lifecycle_policy": [],
+            "instance_maintenance_policy": [],
+            "instance_refresh": [],
+            "launch_template": [
+              {}
+            ],
+            "load_balancers": [],
+            "mixed_instances_policy": [],
+            "tag": [
+              {}
+            ],
+            "target_group_arns": [],
+            "traffic_source": [],
+            "vpc_zone_identifier": [],
+            "warm_pool": []
+          },
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": null,
+            "name": null,
+            "region": null
+          }
+        },
+        {
+          "address": "aws_launch_template.web",
+          "mode": "managed",
+          "type": "aws_launch_template",
+          "name": "web",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 1,
+          "values": {
+            "block_device_mappings": [],
+            "capacity_reservation_specification": [],
+            "cpu_options": [],
+            "credit_specification": [],
+            "description": null,
+            "disable_api_stop": null,
+            "disable_api_termination": null,
+            "ebs_optimized": null,
+            "enclave_options": [],
+            "hibernation_options": [],
+            "iam_instance_profile": [],
+            "image_id": "ami-0123456789abcdef0",
+            "instance_initiated_shutdown_behavior": null,
+            "instance_market_options": [],
+            "instance_requirements": [],
+            "instance_type": "t3.small",
+            "kernel_id": null,
+            "key_name": null,
+            "license_specification": [],
+            "maintenance_options": [],
+            "metadata_options": [
+              {
+                "http_tokens": "required"
+              }
+            ],
+            "monitoring": [],
+            "name_prefix": "bench-web-",
+            "network_interfaces": [],
+            "network_performance_options": [],
+            "placement": [],
+            "private_dns_name_options": [],
+            "ram_disk_id": null,
+            "region": "us-east-1",
+            "secondary_interfaces": [],
+            "security_group_names": null,
+            "tag_specifications": [],
+            "tags": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "tags_all": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "update_default_version": null,
+            "user_data": null,
+            "vpc_security_group_ids": null
+          },
+          "sensitive_values": {
+            "block_device_mappings": [],
+            "capacity_reservation_specification": [],
+            "cpu_options": [],
+            "credit_specification": [],
+            "enclave_options": [],
+            "hibernation_options": [],
+            "iam_instance_profile": [],
+            "instance_market_options": [],
+            "instance_requirements": [],
+            "license_specification": [],
+            "maintenance_options": [],
+            "metadata_options": [
+              {}
+            ],
+            "monitoring": [],
+            "network_interfaces": [],
+            "network_performance_options": [],
+            "placement": [],
+            "private_dns_name_options": [],
+            "secondary_interfaces": [],
+            "tag_specifications": [],
+            "tags": {},
+            "tags_all": {}
+          },
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": null,
+            "id": null,
+            "region": null
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_autoscaling_group.web",
+      "mode": "managed",
+      "type": "aws_autoscaling_group",
+      "name": "web",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "availability_zones": [
+            "us-east-1a"
+          ],
+          "capacity_rebalance": null,
+          "context": null,
+          "default_instance_warmup": null,
+          "desired_capacity_type": null,
+          "enabled_metrics": null,
+          "force_delete": false,
+          "force_delete_warm_pool": false,
+          "health_check_grace_period": 300,
+          "ignore_failed_scaling_activities": false,
+          "initial_lifecycle_hook": [],
+          "instance_maintenance_policy": [],
+          "instance_refresh": [],
+          "launch_configuration": null,
+          "launch_template": [
+            {
+              "version": "$Latest"
+            }
+          ],
+          "max_instance_lifetime": null,
+          "max_size": 4,
+          "metrics_granularity": "1Minute",
+          "min_elb_capacity": null,
+          "min_size": 2,
+          "name": "bench-web",
+          "placement_group": null,
+          "protect_from_scale_in": false,
+          "region": "us-east-1",
+          "suspended_processes": null,
+          "tag": [
+            {
+              "key": "Environment",
+              "propagate_at_launch": true,
+              "value": "prod"
+            }
+          ],
+          "termination_policies": null,
+          "timeouts": null,
+          "wait_for_capacity_timeout": "10m",
+          "wait_for_elb_capacity": null,
+          "warm_pool": []
+        },
+        "after_unknown": {
+          "arn": true,
+          "availability_zone_distribution": true,
+          "availability_zones": [
+            false
+          ],
+          "capacity_reservation_specification": true,
+          "default_cooldown": true,
+          "desired_capacity": true,
+          "health_check_type": true,
+          "id": true,
+          "initial_lifecycle_hook": [],
+          "instance_lifecycle_policy": true,
+          "instance_maintenance_policy": [],
+          "instance_refresh": [],
+          "launch_template": [
+            {
+              "id": true,
+              "name": true
+            }
+          ],
+          "load_balancers": true,
+          "mixed_instances_policy": true,
+          "name_prefix": true,
+          "predicted_capacity": true,
+          "service_linked_role_arn": true,
+          "tag": [
+            {}
+          ],
+          "target_group_arns": true,
+          "traffic_source": true,
+          "vpc_zone_identifier": true,
+          "warm_pool": [],
+          "warm_pool_size": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "availability_zone_distribution": [],
+          "availability_zones": [
+            false
+          ],
+          "capacity_reservation_specification": [],
+          "initial_lifecycle_hook": [],
+          "instance_lifecycle_policy": [],
+          "instance_maintenance_policy": [],
+          "instance_refresh": [],
+          "launch_template": [
+            {}
+          ],
+          "load_balancers": [],
+          "mixed_instances_policy": [],
+          "tag": [
+            {}
+          ],
+          "target_group_arns": [],
+          "traffic_source": [],
+          "vpc_zone_identifier": [],
+          "warm_pool": []
+        },
+        "after_identity": {
+          "account_id": null,
+          "name": null,
+          "region": null
+        }
+      }
+    },
+    {
+      "address": "aws_launch_template.web",
+      "mode": "managed",
+      "type": "aws_launch_template",
+      "name": "web",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "block_device_mappings": [],
+          "capacity_reservation_specification": [],
+          "cpu_options": [],
+          "credit_specification": [],
+          "description": null,
+          "disable_api_stop": null,
+          "disable_api_termination": null,
+          "ebs_optimized": null,
+          "enclave_options": [],
+          "hibernation_options": [],
+          "iam_instance_profile": [],
+          "image_id": "ami-0123456789abcdef0",
+          "instance_initiated_shutdown_behavior": null,
+          "instance_market_options": [],
+          "instance_requirements": [],
+          "instance_type": "t3.small",
+          "kernel_id": null,
+          "key_name": null,
+          "license_specification": [],
+          "maintenance_options": [],
+          "metadata_options": [
+            {
+              "http_tokens": "required"
+            }
+          ],
+          "monitoring": [],
+          "name_prefix": "bench-web-",
+          "network_interfaces": [],
+          "network_performance_options": [],
+          "placement": [],
+          "private_dns_name_options": [],
+          "ram_disk_id": null,
+          "region": "us-east-1",
+          "secondary_interfaces": [],
+          "security_group_names": null,
+          "tag_specifications": [],
+          "tags": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "tags_all": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "update_default_version": null,
+          "user_data": null,
+          "vpc_security_group_ids": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "block_device_mappings": [],
+          "capacity_reservation_specification": [],
+          "cpu_options": [],
+          "credit_specification": [],
+          "default_version": true,
+          "enclave_options": [],
+          "hibernation_options": [],
+          "iam_instance_profile": [],
+          "id": true,
+          "instance_market_options": [],
+          "instance_requirements": [],
+          "latest_version": true,
+          "license_specification": [],
+          "maintenance_options": [],
+          "metadata_options": [
+            {
+              "http_endpoint": true,
+              "http_protocol_ipv6": true,
+              "http_put_response_hop_limit": true,
+              "instance_metadata_tags": true
+            }
+          ],
+          "monitoring": [],
+          "name": true,
+          "network_interfaces": [],
+          "network_performance_options": [],
+          "placement": [],
+          "private_dns_name_options": [],
+          "secondary_interfaces": [],
+          "tag_specifications": [],
+          "tags": {},
+          "tags_all": {}
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "block_device_mappings": [],
+          "capacity_reservation_specification": [],
+          "cpu_options": [],
+          "credit_specification": [],
+          "enclave_options": [],
+          "hibernation_options": [],
+          "iam_instance_profile": [],
+          "instance_market_options": [],
+          "instance_requirements": [],
+          "license_specification": [],
+          "maintenance_options": [],
+          "metadata_options": [
+            {}
+          ],
+          "monitoring": [],
+          "network_interfaces": [],
+          "network_performance_options": [],
+          "placement": [],
+          "private_dns_name_options": [],
+          "secondary_interfaces": [],
+          "tag_specifications": [],
+          "tags": {},
+          "tags_all": {}
+        },
+        "after_identity": {
+          "account_id": null,
+          "id": null,
+          "region": null
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "full_name": "registry.terraform.io/hashicorp/aws",
+        "version_constraint": ">= 5.0.0",
+        "expressions": {
+          "region": {
+            "constant_value": "us-east-1"
+          },
+          "skip_credentials_validation": {
+            "constant_value": true
+          },
+          "skip_metadata_api_check": {
+            "constant_value": true
+          },
+          "skip_requesting_account_id": {
+            "constant_value": true
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_autoscaling_group.web",
+          "mode": "managed",
+          "type": "aws_autoscaling_group",
+          "name": "web",
+          "provider_config_key": "aws",
+          "expressions": {
+            "availability_zones": {
+              "constant_value": [
+                "us-east-1a"
+              ]
+            },
+            "launch_template": [
+              {
+                "id": {
+                  "references": [
+                    "aws_launch_template.web.id",
+                    "aws_launch_template.web"
+                  ]
+                },
+                "version": {
+                  "constant_value": "$Latest"
+                }
+              }
+            ],
+            "max_size": {
+              "constant_value": 4
+            },
+            "min_size": {
+              "constant_value": 2
+            },
+            "name": {
+              "constant_value": "bench-web"
+            },
+            "tag": [
+              {
+                "key": {
+                  "constant_value": "Environment"
+                },
+                "propagate_at_launch": {
+                  "constant_value": true
+                },
+                "value": {
+                  "constant_value": "prod"
+                }
+              }
+            ]
+          },
+          "schema_version": 1
+        },
+        {
+          "address": "aws_launch_template.web",
+          "mode": "managed",
+          "type": "aws_launch_template",
+          "name": "web",
+          "provider_config_key": "aws",
+          "expressions": {
+            "image_id": {
+              "constant_value": "ami-0123456789abcdef0"
+            },
+            "instance_type": {
+              "constant_value": "t3.small"
+            },
+            "metadata_options": [
+              {
+                "http_tokens": {
+                  "constant_value": "required"
+                }
+              }
+            ],
+            "name_prefix": {
+              "constant_value": "bench-web-"
+            },
+            "tags": {
+              "constant_value": {
+                "Environment": "prod",
+                "Owner": "team-a",
+                "Project": "bench"
+              }
+            }
+          },
+          "schema_version": 1
+        }
+      ]
+    }
+  },
+  "relevant_attributes": [
+    {
+      "resource": "aws_launch_template.web",
+      "attribute": [
+        "id"
+      ]
+    }
+  ],
+  "timestamp": "2026-11-23T21:47:56Z",
+  "applyable": true,
+  "complete": true,
+  "errored": false
+}
