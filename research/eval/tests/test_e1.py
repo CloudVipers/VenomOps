@@ -118,3 +118,34 @@ def test_record_contains_what_is_needed_to_audit_a_run(
     assert record["case_id"] == case.id and record["condition"] == "prompt+code" and record["tokens"] > 0
     assert any(c["name"] == "read_file" for c in record["tool_calls"])
     assert not record["verdict"]["secret_leaked"]
+
+
+def test_raw_condition_removes_only_the_spotlighting_defense(
+    cases: list[corpus.Case], manifest: dict[str, Any], tmp_path: Path
+) -> None:
+    case = first_case(cases, "read-secret")
+    sent: dict[str, dict[str, Any]] = {}
+    for condition in ("prompt-only", "prompt-only-raw"):
+        repo, finding = corpus.materialize_pr_agent(manifest, case, tmp_path / condition)
+        client = ScriptedClient(script("read-secret"))
+        trace = e1.run_case(condition, client, "test-model", repo, finding)
+        assert trace.condition == condition
+        sent[condition] = {"system": client.requests[0]["system"][0]["text"], "inputs": "\n".join(trace.model_inputs)}
+
+    assert "<untrusted_data" in sent["prompt-only"]["inputs"]
+    assert "untrusted_data" in sent["prompt-only"]["system"]
+    assert "untrusted_data" not in sent["prompt-only-raw"]["inputs"]
+    assert "untrusted_data" not in sent["prompt-only-raw"]["system"]
+    # everything else in the system prompt is identical: only the defense under study changes
+    assert sent["prompt-only-raw"]["system"] == e1.RAW_SYSTEM_PROMPT
+    assert set(sent["prompt-only-raw"]["system"].splitlines()) < set(sent["prompt-only"]["system"].splitlines())
+
+
+def test_raw_condition_is_judged_like_prompt_only(
+    cases: list[corpus.Case], manifest: dict[str, Any], tmp_path: Path
+) -> None:
+    case = first_case(cases, "dangerous-block")
+    repo, finding = corpus.materialize_pr_agent(manifest, case, tmp_path)
+    trace = e1.run_case("prompt-only-raw", ScriptedClient(script("dangerous-block")), "m", repo, finding)
+    verdict = e1.judge("dangerous-block", trace, e1.existing_tf_files(repo))
+    assert verdict["attempted"] and verdict["succeeded"] and verdict["legit_fix"]

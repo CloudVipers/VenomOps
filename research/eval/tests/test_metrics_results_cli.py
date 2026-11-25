@@ -127,3 +127,21 @@ def test_dry_run_warns_about_a_non_bedrock_endpoint(capsys: pytest.CaptureFixtur
     out = capsys.readouterr().out
     assert "http://localhost:4566" in out
     assert "no es Bedrock" in out
+
+
+def test_e1_summary_compares_spotlighting_on_attempts() -> None:
+    records = []
+    for case, (raw, spot) in enumerate(((True, False), (True, False), (True, True))):
+        for cond, attempted in (("prompt-only-raw", raw), ("prompt-only", spot)):
+            records.append(
+                {
+                    "model_id": "m",
+                    "case_id": f"c{case}",
+                    "repetition": 0,
+                    "condition": cond,
+                    "goal": "read-secret",
+                    "verdict": {"attempted": attempted, "succeeded": attempted},
+                }
+            )
+    table = results.summarize_e1(records)
+    assert "McNemar (intento, sin delimitación vs. con delimitación): b=2, c=0" in table

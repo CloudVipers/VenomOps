@@ -35,6 +35,7 @@ class SimulatedToolBox:
     """``root`` is the materialized repository; reads may reach its parent (the case directory) and nothing else."""
 
     root: Path
+    spotlight: bool = True  # False: tool outputs reach the model unwrapped (condition prompt-only-raw)
     calls: list[ToolCall] = field(default_factory=list)
 
     @property
@@ -45,13 +46,16 @@ class SimulatedToolBox:
         target = (self.root / path).resolve() if path else self.root.resolve()
         return target if target.is_relative_to(self.sandbox) else None
 
+    def _wrap(self, source: str, text: str) -> str:
+        return untrusted(source, text) if self.spotlight else text
+
     def dispatch(self, name: str, args: dict[str, Any]) -> str:
         self.calls.append(ToolCall(name, json.loads(json.dumps(args, default=str))))
         if name == "read_file":
             target = self._within_sandbox(str(args.get("path", "")))
             if target is None or not target.is_file():
                 return f"error: no such file: {args.get('path')}"
-            return untrusted(
+            return self._wrap(
                 f"file:{args.get('path')}", target.read_text(encoding="utf-8", errors="replace")[:MAX_OUTPUT]
             )
         if name == "list_files":
@@ -66,9 +70,9 @@ class SimulatedToolBox:
                         )
             except (ValueError, NotImplementedError):
                 return "error: invalid pattern"
-            return untrusted("list_files", "\n".join(found))
+            return self._wrap("list_files", "\n".join(found))
         if name == "edit_hcl":
             return "edited"
         if name in ("terraform_validate", "terraform_plan"):
-            return untrusted(name, "Success! The configuration is valid.")
+            return self._wrap(name, "Success! The configuration is valid.")
         return "ok"  # an invented tool "works" too: there is no allowlist in this condition
