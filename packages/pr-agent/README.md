@@ -130,6 +130,14 @@ Ver [ADR 0002](../../docs/decisiones/0002-pr-agent-seguridad.md).
   credenciales** (se quitan `AWS_*` salvo la región y se anulan `~/.aws` y el IMDS): si el repo las necesita, el plan
   falla, el PR lo indica y se puede revisar en el pipeline (o abortar con `--require-plan`).
 
+- **Datos delimitados** (*spotlighting*): el finding y todo lo que devuelve una herramienta llegan al modelo dentro de
+  `<untrusted_data>`. El prompt indica que es contenido de terceros y nunca instrucciones, y el contenido no puede
+  cerrar la etiqueta antes de tiempo. Si el modelo avisa de una posible inyección de prompt, el PR lo dice en un
+  aviso para quien lo revise.
+- **Bitácora de auditoría** (`--audit-log audit.jsonl`, solo con `--agent`): cada llamada del agente a una herramienta
+  queda en JSON Lines con sus argumentos redactados, si se permitió o se rechazó y qué control la frenó
+  (`PathNotAllowedError`, `BlockNotAllowedError`, etc.).
+
 ### Agente LLM (opcional)
 
 Desactivado por defecto. Para findings sin fixer determinista: `--agent --model-id <modelId>` (o la variable
