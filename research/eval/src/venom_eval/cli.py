@@ -2,12 +2,17 @@
 
 Experiments that call a model (E1, E2) need an explicit ``--model-id`` **and** ``--confirm`` (they cost money);
 without ``--confirm`` they only print what they would run. E3 reads saved outputs and E4 is deterministic.
+
+``--endpoint-url`` (or ``AWS_ENDPOINT_URL_BEDROCK_RUNTIME`` / ``AWS_ENDPOINT_URL``) points E1/E2 at a Bedrock-compatible
+emulator, e.g. LocalStack backed by a local model, to rehearse a run for free. Every record stores the endpoint, so a
+rehearsal can never be mistaken for a Bedrock result.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import tempfile
 from collections.abc import Sequence
@@ -16,14 +21,27 @@ from typing import Any
 
 from . import BENCHMARK, REPO_ROOT, corpus, e1, e2, e3, e4, results
 
+ENDPOINT_ENV = ("AWS_ENDPOINT_URL_BEDROCK_RUNTIME", "AWS_ENDPOINT_URL")
 
-def _client(region: str | None) -> Any:
+
+def endpoint_url(flag: str | None) -> str | None:
+    """The endpoint boto3 will call: the flag, else the same environment variables boto3 itself honors."""
+    if flag:
+        return flag
+    return next((os.environ[name] for name in ENDPOINT_ENV if os.environ.get(name)), None)
+
+
+def run_meta(model_id: str, endpoint: str | None) -> dict[str, str]:
+    return {"model_id": model_id, "endpoint": endpoint or "bedrock"}
+
+
+def _client(region: str | None, endpoint: str | None) -> Any:
     import boto3
 
     session = boto3.Session(region_name=region)
     if session.get_credentials() is None:
         raise SystemExit("no AWS credentials available (configure AWS_PROFILE or environment variables)")
-    return session.client("bedrock-runtime")
+    return session.client("bedrock-runtime", endpoint_url=endpoint)
 
 
 def _select(target: str, contains: str | None, limit: int | None) -> list[corpus.Case]:
@@ -33,15 +51,19 @@ def _select(target: str, contains: str | None, limit: int | None) -> list[corpus
     return cases[:limit] if limit else cases
 
 
-def _gate(args: argparse.Namespace, n_cases: int, per_case: int) -> None:
+def _gate(args: argparse.Namespace, n_cases: int, per_case: int) -> str | None:
     if not args.model_id or not args.model_id.strip():
         raise SystemExit("an explicit --model-id is required (there is no default model)")
+    endpoint = endpoint_url(args.endpoint_url)
     calls = n_cases * per_case * args.repetitions
     print(
         f"{n_cases} casos × {per_case} × {args.repetitions} repeticiones = {calls} ejecuciones contra {args.model_id}"
     )
+    if endpoint:
+        print(f"endpoint {endpoint}: no es Bedrock; la corrida es un ensayo y no cuenta como resultado de la tesis")
     if not args.confirm:
         raise SystemExit("dry run: añade --confirm para llamar al modelo (tiene costo)")
+    return endpoint
 
 
 def cmd_cases(args: argparse.Namespace) -> int:
@@ -80,10 +102,10 @@ def cmd_e1(args: argparse.Namespace) -> int:
     manifest = corpus.load_manifest()
     cases = _select("pr-agent", args.contains, args.limit)
     conditions = args.conditions or list(e1.CONDITIONS)
-    _gate(args, len(cases), len(conditions))
-    client = _client(args.region)
+    endpoint = _gate(args, len(cases), len(conditions))
+    client = _client(args.region, endpoint)
     out = args.out or results.new_run_dir("e1")
-    writer = results.ResultsWriter(out, "e1", {"model_id": args.model_id})
+    writer = results.ResultsWriter(out, "e1", run_meta(args.model_id, endpoint))
     for rep in range(args.repetitions):
         for case in cases:
             for condition in conditions:
@@ -99,14 +121,14 @@ def cmd_e1(args: argparse.Namespace) -> int:
 
 
 def cmd_e2(args: argparse.Namespace) -> int:
-    from arch_committee.llm import make_bedrock_llm
+    from arch_committee.llm import BedrockLLM
 
     manifest = corpus.load_manifest()
     cases = _select("arch-committee", args.contains, args.limit)
-    _gate(args, len(cases), len(args.rounds) * len(args.defenses) * 2)
-    llm = make_bedrock_llm(args.model_id, args.region)
+    endpoint = _gate(args, len(cases), len(args.rounds) * len(args.defenses) * 2)
+    llm = BedrockLLM(_client(args.region, endpoint), args.model_id)
     out = args.out or results.new_run_dir("e2")
-    writer = results.ResultsWriter(out, "e2", {"model_id": args.model_id})
+    writer = results.ResultsWriter(out, "e2", run_meta(args.model_id, endpoint))
     bases = {b["id"]: b for b in manifest["bases"] if b["target"] == "arch-committee"}
     for rep in range(args.repetitions):
         for rounds in args.rounds:
@@ -193,6 +215,9 @@ def build_parser() -> argparse.ArgumentParser:
         p = sub.add_parser(name, help=help_text)
         p.add_argument("--model-id", required=True, help="explicit Bedrock model id (no default)")
         p.add_argument("--region")
+        p.add_argument(
+            "--endpoint-url", help="Bedrock-compatible emulator for a free rehearsal (recorded in each record)"
+        )
         p.add_argument("--repetitions", type=int, default=5)
         p.add_argument("--contains", help="only cases whose id contains this text")
         p.add_argument("--limit", type=int)
