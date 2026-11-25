@@ -90,7 +90,9 @@ Decisiones: [ADR 0002](decisiones/0002-pr-agent-seguridad.md) (seguridad de pr-a
 [ADR 0007](decisiones/0007-dependencias-python.md) (dependencias Python) y
 [ADR 0008](decisiones/0008-regla-irsa-venom-doctor.md) (regla de IRSA de venom-doctor),
 [ADR 0009](decisiones/0009-source-venom-doctor.md) (valor `venom-doctor` en el contrato) y
-[ADR 0010](decisiones/0010-ids-de-regla-vd.md) (IDs `VD-K8S-*`).
+[ADR 0010](decisiones/0010-ids-de-regla-vd.md) (IDs `VD-K8S-*`) y
+[ADR 0011](decisiones/0011-linea-de-investigacion.md) (línea de investigación; ver [`investigacion/`](investigacion/) y el
+[modelo de amenazas](investigacion/modelo-de-amenazas.md)).
 
 Las guías de uso (instalación, comandos, casos de uso, catálogo de reglas, seguridad y ayuda) están en [`docs/guia/`](guia/) y se publican como web en
 <https://cloudvipers.github.io/VenomOps/>.
