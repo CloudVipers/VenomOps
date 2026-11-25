@@ -274,7 +274,7 @@ type Rule interface {
 **Objetivo:** usar VenomOps como prototipo para evaluar la contención de la inyección de prompt indirecta en agentes LLM que revisan y modifican IaC. Ver [ADR 0011](docs/decisiones/0011-linea-de-investigacion.md) y [`docs/investigacion/`](docs/investigacion/).
 
 - [x] Propuesta, modelo de amenazas, estado del arte y metodología en `docs/investigacion/`.
-- [ ] Corpus de inyección en `examples/benchmark/injection/` (vectores × objetivos × técnicas).
+- [x] Corpus de inyección en `examples/benchmark/injection/` (vectores × objetivos × técnicas).
 - [ ] Benchmark de IaC etiquetado en `examples/benchmark/iac/` (≥ 50 casos con `labels.json`).
 - [ ] Arnés `research/eval/`: métricas (precision, recall, F1, tasa de supresión, tasa de fuga) con tests deterministas.
 - [x] Tests de regresión de inyección en `pr-agent` (el modelo simulado obedece la inyección y `SafeRunner` la bloquea).
