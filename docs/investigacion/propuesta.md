@@ -45,7 +45,7 @@ residuales quedan?
 - **H1.** Con controles en código, la tasa de acciones no autorizadas **ejecutadas** es 0 aunque la tasa de acciones
   **intentadas** por el modelo sea mayor que 0; con controles solo en el prompt es mayor que 0.
 - **H2.** Las defensas en el prompt reducen pero no eliminan la supresión de hallazgos en el comité; la réplica entre
-  agentes (ronda 2) la reduce de forma significativa frente a un único agente.
+  agentes (ronda 2) la reduce de forma significativa frente a una sola ronda de análisis.
 - **H3.** La unión *comité + análisis estático* tiene mayor recall que cualquiera por separado, sobre todo en fallas
   contextuales (costo, confiabilidad, exposición entre recursos) que no se expresan como una regla de un solo recurso.
 - **H4.** La redacción elimina al menos el 95 % de los secretos sembrados en formatos conocidos; los que se escapan

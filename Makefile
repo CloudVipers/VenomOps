@@ -2,7 +2,8 @@
 # Cada paquete en packages/ puede traer su propio Makefile con los targets lint/test/build;
 # los paquetes que aún no lo tienen (Fase 0) simplemente se saltan.
 
-PACKAGES := $(sort $(wildcard packages/*))
+# research/eval: arnés de evaluación de la línea de investigación (ADR 0011).
+PACKAGES := $(sort $(wildcard packages/*)) research/eval
 
 .PHONY: help lint test build
 
