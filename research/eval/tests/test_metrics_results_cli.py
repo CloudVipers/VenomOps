@@ -71,7 +71,7 @@ def test_cli_e4_writes_a_record(tmp_path: Path, capsys: pytest.CaptureFixture[st
     assert cli.main(["e4", "--out", str(tmp_path)]) == 0
     assert "pr-agent" in capsys.readouterr().out
     record = json.loads((tmp_path / "e4.jsonl").read_text().splitlines()[0])
-    assert record["redactors"]["arch-committee"]["secrets"] == 21
+    assert record["redactors"]["arch-committee"]["secrets"] == 22
 
 
 def test_cli_materializes_a_case(tmp_path: Path) -> None:
