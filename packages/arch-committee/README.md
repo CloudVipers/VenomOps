@@ -90,6 +90,22 @@ Cada llamada reserva tokens del presupuesto global antes de ejecutarse. Si se ag
 - Los agentes responden mediante una herramienta de salida obligatoria (JSON con esquema), nunca texto libre, y **no
   tienen herramientas con efectos**. El contenido del plan se trata como datos: los prompts ordenan ignorar instrucciones
   incrustadas en tags o descripciones (inyección de prompt) y reportarlas como hallazgo.
+- **Detección de inyección en código** (`injection.py`): antes de llamar a cualquier modelo, un detector determinista
+  busca en el plan y en los findings de contexto texto dirigido a una IA. Detecta pedidos de omitir o rebajar un
+  hallazgo, supuestas aprobaciones previas, órdenes de ejecutar comandos e instrucciones en base64. Ese texto se
+  **neutraliza** (los agentes no lo ven), se lista en la sección «Posible inyección de prompt» del informe y genera un
+  finding `AC-INJ-*`. Con `--keep-suspicious-text` solo se reporta, sin neutralizar; existe para los experimentos de la
+  [línea de investigación](../../docs/investigacion/). Es una heurística: puede no detectar una inyección bien
+  disfrazada, y por eso el informe muestra el extracto a la persona.
+- **Contraste con análisis estático** (`--static-findings checkov.json|trivy.json`, repetible): cada regla fallida de
+  Checkov o Trivy sobre un recurso que el comité no trató en seguridad se lista en «Contraste con análisis estático» y
+  genera un finding `AC-STA-*`. Las herramientas estáticas no leen lenguaje natural, así que una inyección no las
+  engaña: sirven de red contra hallazgos suprimidos. El comité solo lee su JSON; no las ejecuta ni se lo envía al modelo.
+
+```bash
+checkov -f plan.json --framework terraform_plan -o json > checkov.json
+arch-committee review --plan plan.json --static-findings checkov.json --out ./out
+```
 
 ## Ejemplo de informe (real)
 

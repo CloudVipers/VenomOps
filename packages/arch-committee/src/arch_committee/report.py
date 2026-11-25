@@ -14,6 +14,7 @@ from .agents import SPECIALISTS, prompt_versions
 from .models import FinalFinding
 from .orchestrator import SEVERITY_RANK, CommitteeResult
 from .plan_parser import PlannedResource
+from .static import StaticFinding, uncovered
 
 AREA_NAME = {a.code: a.name for a in SPECIALISTS}
 SCHEMA_VERSION = "1.0.0"
@@ -93,6 +94,102 @@ def to_findings(result: CommitteeResult) -> tuple[list[tuple[Finding, FinalFindi
     return pairs, warnings
 
 
+def injection_findings(result: CommitteeResult) -> list[Finding]:
+    """One ``AC-INJ-*`` finding per resource (or prior finding) carrying text that looks like instructions for an AI.
+
+    It comes from the deterministic detector (injection.py), not from a model, so it is reported even when the agents
+    were fooled or never saw the text (neutralized).
+    """
+    detected = result.generated_at.strftime("%Y-%m-%dT%H:%M:%SZ")
+    grouped: dict[str, list[Any]] = {}
+    for s in result.suspicions:
+        grouped.setdefault(s.resource, []).append(s)
+    out = []
+    for n, (address, items) in enumerate(sorted(grouped.items()), start=1):
+        if address.startswith("context:"):
+            resource = {"type": "prior_finding", "name": address.split(":", 1)[1]}
+        else:
+            pr = _resolve(result, address)
+            resource = (
+                {"type": pr.type, "name": pr.name + (f"[{pr.index}]" if pr.index is not None else "")}
+                if pr
+                else {"type": address.split(".")[0], "name": address.split(".", 1)[-1]}
+            )
+        data = {
+            "id": f"AC-INJ-{n:03d}",
+            "schema_version": SCHEMA_VERSION,
+            "source": "arch-committee",
+            "severity": "high",
+            "title": "Posible inyección de prompt: texto con instrucciones para una IA",
+            "resource": resource,
+            "evidence": [
+                {"kind": "prompt-injection", "detail": f"{s.path}: {s.reason} — «{s.excerpt}»"} for s in items
+            ],
+            "root_cause": (
+                "Un valor del plan o de un finding previo contiene texto dirigido a un asistente de IA. Puede intentar "
+                "que el comité omita o rebaje un riesgo"
+                + (" (se neutralizó antes de enviarlo a los agentes)." if result.neutralized else ".")
+            ),
+            "suggested_fix": {
+                "summary": "Eliminar el texto y averiguar quién lo introdujo.",
+                "steps": [
+                    "Revisar el historial del valor afectado (commit, autor, pipeline).",
+                    "Eliminar el texto del código o del finding de contexto.",
+                    "Tratarlo como un posible incidente de seguridad si nadie lo reconoce.",
+                ],
+            },
+            "risk_of_fix": "low",
+            "tags": ["arch-committee", "security", "prompt-injection"],
+            "detected_at": detected,
+        }
+        out.append(Finding.from_dict(data))
+    return out
+
+
+def security_addresses(result: CommitteeResult) -> set[str]:
+    """Resources the committee reported in security (final findings raised by the security specialist)."""
+    return {f.resource for f in result.final if _area_code(result, f) == "SEC"}
+
+
+def static_findings(result: CommitteeResult, static: list[StaticFinding]) -> list[Finding]:
+    """One ``AC-STA-*`` finding per resource with failed static checks the committee did not address in security."""
+    detected = result.generated_at.strftime("%Y-%m-%dT%H:%M:%SZ")
+    grouped: dict[str, list[StaticFinding]] = {}
+    for f in uncovered(static, security_addresses(result)):
+        grouped.setdefault(f.base_address, []).append(f)
+    out = []
+    for n, (address, items) in enumerate(sorted(grouped.items()), start=1):
+        pr = _resolve(result, address)
+        resource = (
+            {"type": pr.type, "name": pr.name}
+            if pr
+            else {"type": address.split(".")[0], "name": address.split(".", 1)[-1] or address}
+        )
+        data = {
+            "id": f"AC-STA-{n:03d}",
+            "schema_version": SCHEMA_VERSION,
+            "source": "arch-committee",
+            "severity": "medium",
+            "title": f"Análisis estático: {len(items)} regla(s) fallida(s) que el comité no trató",
+            "resource": resource,
+            "evidence": [{"kind": f"static-{i.tool}", "detail": f"{i.rule}: {i.title}".strip(": ")} for i in items],
+            "root_cause": (
+                "Una herramienta de análisis estático reporta este recurso y ningún especialista de seguridad lo "
+                "trató. Puede ser un falso positivo de la herramienta o un riesgo que el comité omitió (por ejemplo, "
+                "por una inyección de prompt)."
+            ),
+            "suggested_fix": {
+                "summary": "Revisar las reglas fallidas y decidir si el riesgo aplica.",
+                "steps": ["Leer cada regla fallida.", "Corregir el recurso o documentar por qué se acepta el riesgo."],
+            },
+            "risk_of_fix": "low",
+            "tags": ["arch-committee", "security", "static-cross-check", *sorted({i.tool for i in items})],
+            "detected_at": detected,
+        }
+        out.append(Finding.from_dict(data))
+    return out
+
+
 def findings_json(findings: list[Finding]) -> str:
     docs = [f.to_dict() for f in findings]
     for d in docs:
@@ -115,7 +212,11 @@ def _table(headers: list[str], rows: list[list[str]]) -> str:
 
 
 def render_report(
-    result: CommitteeResult, pairs: list[tuple[Finding, FinalFinding]], model_id: str, warnings: list[str]
+    result: CommitteeResult,
+    pairs: list[tuple[Finding, FinalFinding]],
+    model_id: str,
+    warnings: list[str],
+    static: list[StaticFinding] | None = None,
 ) -> str:
     plan = result.plan
     findings = [fin for fin, _ in pairs]
@@ -158,6 +259,23 @@ def render_report(
         add(_table(["ID", "Fuente", "Severidad", "Recurso", "Hallazgo"], rows))
         add("")
 
+    if result.suspicions:
+        add("## Posible inyección de prompt")
+        add("")
+        state = (
+            "se **neutralizaron** antes de enviarlos a los agentes"
+            if result.neutralized
+            else "se enviaron **sin neutralizar** (detección solamente)"
+        )
+        add(
+            f"El detector determinista encontró {len(result.suspicions)} texto(s) con apariencia de instrucciones para "
+            f"una IA; {state}. Revísalos: alguien pudo intentar que el comité omita o rebaje un riesgo."
+        )
+        add("")
+        rows = [[f"`{s.resource}`", f"`{s.path}`", s.reason, s.excerpt] for s in result.suspicions]
+        add(_table(["Recurso", "Atributo", "Motivo", "Extracto (redactado)"], rows))
+        add("")
+
     add("## Decisiones")
     add("")
     if findings:
@@ -169,6 +287,29 @@ def render_report(
     else:
         add("El comité no dejó hallazgos.")
     add("")
+
+    if static is not None:
+        add("## Contraste con análisis estático")
+        add("")
+        gaps = uncovered(static, security_addresses(result))
+        tools = ", ".join(sorted({f.tool for f in static})) or "ninguna regla fallida"
+        add(
+            f"Se leyeron {len(static)} regla(s) fallida(s) ({tools}). "
+            + (
+                f"**{len(gaps)}** están en recursos que el comité no trató en seguridad (ver `AC-STA-*`):"
+                if gaps
+                else "Todas están en recursos que el comité ya trató en seguridad."
+            )
+        )
+        add("")
+        if gaps:
+            add(
+                _table(
+                    ["Herramienta", "Regla", "Recurso", "Descripción"],
+                    [[g.tool, g.rule, f"`{g.resource}`", g.title] for g in gaps],
+                )
+            )
+            add("")
 
     add("## Desacuerdos explícitos")
     add("")
@@ -257,13 +398,16 @@ def render_report(
     return "\n".join(out)
 
 
-def write_outputs(result: CommitteeResult, out_dir: Path, model_id: str) -> tuple[Path, Path, list[str]]:
+def write_outputs(
+    result: CommitteeResult, out_dir: Path, model_id: str, static: list[StaticFinding] | None = None
+) -> tuple[Path, Path, list[str]]:
     pairs, warnings = to_findings(result)
+    extra = [*injection_findings(result), *(static_findings(result, static) if static is not None else [])]
     out_dir.mkdir(parents=True, exist_ok=True)
     findings_path = out_dir / "findings.json"
     report_path = out_dir / "report.md"
-    findings_path.write_text(findings_json([fin for fin, _ in pairs]), encoding="utf-8")
-    report_path.write_text(render_report(result, pairs, model_id, warnings), encoding="utf-8")
+    findings_path.write_text(findings_json([*extra, *(fin for fin, _ in pairs)]), encoding="utf-8")
+    report_path.write_text(render_report(result, pairs, model_id, warnings, static), encoding="utf-8")
     return report_path, findings_path, warnings
 
 

@@ -11,10 +11,12 @@ import typer
 from . import __version__
 from .agents import MODERATOR, SPECIALISTS
 from .context import ContextError, load_context_findings, render_context
+from .injection import neutralize_context, neutralize_plan, scan_context, scan_plan
 from .llm import LLM, make_bedrock_llm
 from .orchestrator import CommitteeConfig, run_committee
 from .plan_parser import PlanError, PlanModel, load_plan, render_for_llm
 from .report import write_outputs
+from .static import StaticFindingsError, load_static
 
 app = typer.Typer(
     add_completion=False,
@@ -81,6 +83,20 @@ def review(
     dry_run: Annotated[
         bool, typer.Option("--dry-run", help="Show what would be sent (already redacted); call no model.")
     ] = False,
+    static_findings: Annotated[
+        list[Path] | None,
+        typer.Option(
+            "--static-findings",
+            help="Checkov or Trivy JSON of the same plan: failed checks the committee did not address become AC-STA.",
+        ),
+    ] = None,
+    keep_suspicious_text: Annotated[
+        bool,
+        typer.Option(
+            "--keep-suspicious-text",
+            help="Send text that looks like instructions for an AI as is (only report it). For experiments.",
+        ),
+    ] = False,
 ) -> None:
     """Review PLAN with the committee and write report.md and findings.json into OUT."""
     try:
@@ -93,13 +109,31 @@ def review(
     except ContextError as exc:
         raise _usage_error(str(exc)) from exc
 
-    config = CommitteeConfig(max_total_tokens=max_tokens, max_rounds=max_rounds, max_output_tokens=max_output_tokens)
+    try:
+        static = load_static(static_findings) if static_findings else None
+    except StaticFindingsError as exc:
+        raise _usage_error(str(exc)) from exc
+
+    config = CommitteeConfig(
+        max_total_tokens=max_tokens,
+        max_rounds=max_rounds,
+        max_output_tokens=max_output_tokens,
+        neutralize_injections=not keep_suspicious_text,
+    )
     _describe_plan(parsed)
     if context:
         typer.echo(f"Context: {len(context)} prior findings ({', '.join(sorted({f.source.value for f in context}))})")
 
+    suspicions = [*scan_plan(parsed), *scan_context(context)]
+    if suspicions:
+        typer.secho(
+            f"Possible prompt injection: {len(suspicions)} value(s) look like instructions for an AI"
+            + ("" if keep_suspicious_text else " (they are neutralized before reaching the agents)"),
+            fg="yellow",
+        )
     if dry_run:
-        payload, truncated = render_for_llm(parsed, config.plan_max_chars)
+        agents_plan = parsed if keep_suspicious_text else neutralize_plan(parsed)
+        payload, truncated = render_for_llm(agents_plan, config.plan_max_chars)
         per_call = [(a.name, (len(a.system_prompt()) + len(payload)) // 4) for a in SPECIALISTS]
         typer.secho("\n--- Dry run: no model is called and nothing is written ---", bold=True)
         typer.echo(f"Agents: {', '.join(a.name for a in SPECIALISTS)} + {MODERATOR.name}; rounds: {max_rounds}")
@@ -110,7 +144,7 @@ def review(
         typer.echo(payload)
         if context:
             typer.secho("\n--- Redacted prior findings that agents would receive ---", bold=True)
-            typer.echo(render_context(context)[0])
+            typer.echo(render_context(context if keep_suspicious_text else neutralize_context(context))[0])
         return
 
     model = (model_id or os.environ.get(MODEL_ENV, "")).strip()
@@ -123,7 +157,7 @@ def review(
         raise typer.Exit(1) from exc
 
     result = run_committee(parsed, llm, config, context)
-    report_path, findings_path, warnings = write_outputs(result, out, model)
+    report_path, findings_path, warnings = write_outputs(result, out, model, static)
 
     typer.secho("\nCommittee finished.", bold=True)
     typer.echo(f"Findings: {len(result.final) - len(warnings)}  Disagreements: {len(result.disagreements)}")
