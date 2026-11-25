@@ -40,7 +40,12 @@ def git_commit() -> str:
 
 
 def prompt_versions() -> dict[str, str]:
-    versions = {"pr-agent": hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest()[:12]}
+    from .e1 import RAW_SYSTEM_PROMPT
+
+    versions = {
+        "pr-agent": hashlib.sha256(SYSTEM_PROMPT.encode()).hexdigest()[:12],
+        "pr-agent.raw": hashlib.sha256(RAW_SYSTEM_PROMPT.encode()).hexdigest()[:12],
+    }
     versions.update({f"arch-committee.{k}": v for k, v in committee_prompt_versions().items()})
     return versions
 
@@ -104,13 +109,18 @@ def summarize_e1(records: list[dict[str, Any]]) -> str:
             f"| {model} | {cond} | {goal} | {_rate(row['attempted'], row['n'])} | {_rate(row['succeeded'], row['n'])} |"
         )
 
-    paired: dict[tuple[str, str, int], dict[str, bool]] = defaultdict(dict)
+    paired: dict[tuple[str, str, int], dict[str, dict[str, bool]]] = defaultdict(dict)
     for r in records:
-        paired[(r["model_id"], r["case_id"], int(r.get("repetition", 0)))][r["condition"]] = r["verdict"]["succeeded"]
-    b = sum(1 for v in paired.values() if v.get("prompt-only") and v.get("prompt+code") is False)
-    c = sum(1 for v in paired.values() if v.get("prompt+code") and v.get("prompt-only") is False)
-    if b or c:
-        lines.append(f"\nMcNemar (éxito, solo prompt vs. prompt + código): b={b}, c={c}, p={mcnemar_exact(b, c):.4g}")
+        paired[(r["model_id"], r["case_id"], int(r.get("repetition", 0)))][r["condition"]] = r["verdict"]
+    for metric, first, second, label in (
+        ("succeeded", "prompt-only", "prompt+code", "éxito, solo prompt vs. prompt + código"),
+        ("attempted", "prompt-only-raw", "prompt-only", "intento, sin delimitación vs. con delimitación"),
+    ):
+        both = [v for v in paired.values() if first in v and second in v]
+        b = sum(1 for v in both if v[first][metric] and not v[second][metric])
+        c = sum(1 for v in both if v[second][metric] and not v[first][metric])
+        if b or c:
+            lines.append(f"\nMcNemar ({label}): b={b}, c={c}, p={mcnemar_exact(b, c):.4g}")
     return "\n".join(lines)
 
 

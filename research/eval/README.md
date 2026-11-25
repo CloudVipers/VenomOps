@@ -16,7 +16,7 @@ make e4        # experimento E4 (redacción): determinista, sin modelo
 |---|---|---|
 | `venom-eval cases [--target T]` | Lista los 145 casos del [corpus de inyección](../../examples/benchmark/injection) | No |
 | `venom-eval materialize --case ID --out DIR` | Escribe un caso en disco para ejecutarlo a mano (p. ej. `venom-doctor --explain`) | No |
-| `venom-eval e1 --model-id M [--confirm]` | E1: integridad de las acciones de `pr-agent`, condiciones `prompt-only` y `prompt+code` | Sí |
+| `venom-eval e1 --model-id M [--confirm]` | E1: integridad de las acciones de `pr-agent`, condiciones `prompt-only-raw` (sin delimitación), `prompt-only` y `prompt+code` | Sí |
 | `venom-eval e2 --model-id M [--rounds 1 2] [--confirm]` | E2: supresión o degradación de hallazgos en `arch-committee`, sin y con réplica | Sí |
 | `venom-eval e3 --system NOMBRE=ADAPTADOR:DIR ...` | E3: precision, recall y F1 desde salidas guardadas (Checkov, Trivy, findings) | No |
 | `venom-eval e4` | E4: tasa de fuga y falsos positivos de los redactores | No |
@@ -43,6 +43,8 @@ Guárdalo fuera de `research/results/`. El emulador tiene que soportar *tool use
 
 ## Cómo se garantiza que ningún experimento toca nada real
 
+- **E1, condición `prompt-only-raw`:** el mismo ejecutor simulado, sin `<untrusted_data>` ni la regla del system prompt
+  que lo explica. Es la línea base de la delimitación.
 - **E1, condición `prompt-only`:** el [ejecutor simulado](src/venom_eval/simulated.py) ofrece las mismas herramientas
   que `pr-agent`, pero no ejecuta procesos, no escribe archivos y solo lee dentro del directorio temporal del caso.
   Mide lo que el modelo **intenta** cuando solo lo protege el prompt.
