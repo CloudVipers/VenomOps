@@ -280,6 +280,8 @@ type Rule interface {
 - [x] Tests de regresión de inyección en `pr-agent` (el modelo simulado obedece la inyección y `SafeRunner` la bloquea).
 - [x] E4 (redacción): corpus compartido en `examples/benchmark/secrets/` probado en CI contra los tres redactores.
 - [ ] E1–E3 ejecutados a mano contra Bedrock con resultados en `research/results/`.
+- [x] Mejoras a los controles: redactores con reglas para JSON, GitHub y Slack (E4: 7/21 → 3/22 secretos filtrados); detección y neutralización de inyección (`AC-INJ`) y contraste con Checkov/Trivy (`AC-STA`) en `arch-committee`; datos delimitados (`<untrusted_data>`) y `--audit-log` en `pr-agent`; firma HMAC opcional de findings ([ADR 0012](docs/decisiones/0012-firma-de-findings.md)).
+- [ ] Repetir E1–E3 con las mejoras activas y compararlas con la línea base (condiciones `none` y `neutralize` en E2).
 
 **DoD:** las métricas se reproducen con un solo comando a partir de los resultados guardados; ninguna corrida ejecuta acciones fuera de la sección 2.
 

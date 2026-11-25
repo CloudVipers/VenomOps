@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from findings_schema.signature import ENV_KEY, SignatureError, key_from_env, write_signature
 
 from . import __version__
 from .agents import MODERATOR, SPECIALISTS
@@ -147,6 +148,11 @@ def review(
             typer.echo(render_context(context if keep_suspicious_text else neutralize_context(context))[0])
         return
 
+    try:
+        sign_key = key_from_env()
+    except SignatureError as exc:
+        raise _usage_error(str(exc)) from exc
+
     model = (model_id or os.environ.get(MODEL_ENV, "")).strip()
     if not model:
         raise _usage_error(f"a model is required (--model-id or ${MODEL_ENV}); there is no default")
@@ -164,6 +170,8 @@ def review(
     typer.echo(f"Tokens: {result.tokens_used:,} / {result.tokens_max:,}  Rounds: {result.rounds_run}")
     typer.echo(f"Report:   {report_path}")
     typer.echo(f"Findings: {findings_path}")
+    if sign_key is not None:
+        typer.echo(f"Signed:   {write_signature(findings_path, sign_key)} (HMAC-SHA256, key from ${ENV_KEY})")
     for note in [*result.notes, *warnings]:
         typer.secho(f"note: {note}", fg="yellow")
 

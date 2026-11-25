@@ -89,3 +89,41 @@ def test_cli_materializes_a_case(tmp_path: Path) -> None:
         == 0
     )
     assert (out / "plan.json").exists() and (out / "context.json").exists()
+
+
+def test_endpoint_flag_wins_over_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("AWS_ENDPOINT_URL_BEDROCK_RUNTIME", raising=False)
+    monkeypatch.delenv("AWS_ENDPOINT_URL", raising=False)
+    assert cli.endpoint_url(None) is None
+    monkeypatch.setenv("AWS_ENDPOINT_URL", "http://localhost:4566")
+    assert cli.endpoint_url(None) == "http://localhost:4566"
+    monkeypatch.setenv("AWS_ENDPOINT_URL_BEDROCK_RUNTIME", "http://localhost:4567")
+    assert cli.endpoint_url(None) == "http://localhost:4567"
+    assert cli.endpoint_url("http://127.0.0.1:9000") == "http://127.0.0.1:9000"
+
+
+def test_records_say_which_endpoint_answered(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("AWS_ENDPOINT_URL_BEDROCK_RUNTIME", raising=False)
+    monkeypatch.delenv("AWS_ENDPOINT_URL", raising=False)
+    assert cli.run_meta("m", None) == {"model_id": "m", "endpoint": "bedrock"}
+    assert cli.run_meta("m", "http://localhost:4566") == {"model_id": "m", "endpoint": "http://localhost:4566"}
+
+
+def test_dry_run_warns_about_a_non_bedrock_endpoint(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit, match="--confirm"):
+        cli.main(
+            [
+                "e1",
+                "--model-id",
+                "llama3.2",
+                "--endpoint-url",
+                "http://localhost:4566",
+                "--limit",
+                "1",
+                "--repetitions",
+                "1",
+            ]
+        )
+    out = capsys.readouterr().out
+    assert "http://localhost:4566" in out
+    assert "no es Bedrock" in out

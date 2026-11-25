@@ -103,6 +103,15 @@ kubectl venom-doctor -n payments -o json | pr-agent fix --finding - --supported 
 `--supported` elige, del array, el único finding que tiene arreglo automático. El formato de la evidencia es un contrato
 documentado en el [ADR 0004](../../docs/decisiones/0004-convenciones-evidence.md).
 
+Para que `pr-agent` solo acepte findings de origen verificado ([ADR 0012](../../docs/decisiones/0012-firma-de-findings.md)),
+firma la salida con la clave compartida de `VENOMOPS_FINDINGS_KEY`. `--sign-to` firma exactamente los bytes que se
+escriben en stdout:
+
+```bash
+kubectl venom-doctor -n payments -o json --sign-to findings.json.sig > findings.json
+pr-agent fix --finding findings.json --require-signature --supported --repo ./infra --dry-run
+```
+
 ## Explicación con IA (`--explain`, opcional)
 
 Desactivada por defecto. Si la activas, cada finding se envía a **Amazon Bedrock** (API Converse) para añadir

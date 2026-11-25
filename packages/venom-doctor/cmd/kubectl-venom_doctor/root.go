@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -13,6 +15,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 
+	findings "github.com/CloudVipers/VenomOps/packages/findings-schema/go"
 	"github.com/CloudVipers/VenomOps/packages/venom-doctor/internal/cluster"
 	"github.com/CloudVipers/VenomOps/packages/venom-doctor/internal/engine"
 	"github.com/CloudVipers/VenomOps/packages/venom-doctor/internal/explain"
@@ -29,6 +32,7 @@ type options struct {
 	explain       bool
 	explainModel  string
 	allNamespaces bool
+	signTo        string // with -o json: write a detached HMAC signature of stdout here (ADR 0012)
 }
 
 func newRootCmd(stdout, stderr io.Writer) *cobra.Command {
@@ -93,6 +97,7 @@ está desactivada por defecto y solo envía el hallazgo con los secretos ya enma
 	cmd.Flags().StringVarP(&o.output, "output", "o", "table", "Formato de salida: table|json")
 	cmd.Flags().BoolVar(&o.explain, "explain", false, "Agregar una explicación ampliada con Amazon Bedrock (opcional; envía el hallazgo sin secretos)")
 	cmd.Flags().StringVar(&o.explainModel, "explain-model", "", "Modelo de Bedrock para --explain (o variable "+modelEnv+")")
+	cmd.Flags().StringVar(&o.signTo, "sign-to", "", "Con -o json: escribir aquí la firma HMAC de la salida (clave en "+findings.SignatureEnvKey+")")
 	return cmd
 }
 
@@ -124,6 +129,18 @@ func run(ctx context.Context, o options, reader engine.ClusterReader, explainer 
 	if err != nil {
 		return err
 	}
+	var signKey []byte
+	if o.signTo != "" {
+		if format != output.FormatJSON {
+			return errors.New("--sign-to solo aplica con -o json")
+		}
+		if signKey, err = findings.SignatureKeyFromEnv(); err != nil {
+			return err
+		}
+		if signKey == nil {
+			return fmt.Errorf("--sign-to necesita la clave compartida en %s (al menos %d bytes)", findings.SignatureEnvKey, findings.SignatureMinKeySize)
+		}
+	}
 	eng, err := engine.New(rules.Default(o.namespace)...)
 	if err != nil {
 		return err
@@ -144,7 +161,10 @@ func run(ctx context.Context, o options, reader engine.ClusterReader, explainer 
 		for _, re := range report.Errors { // keep stdout pure JSON: rule errors go to stderr
 			warnf(stderr, "aviso: %v\n", re)
 		}
-		return output.JSON(stdout, report.Findings)
+		if signKey == nil {
+			return output.JSON(stdout, report.Findings)
+		}
+		return writeSigned(stdout, report.Findings, signKey, o.signTo)
 	default:
 		if err := output.Table(stdout, report.Findings, report.Errors); err != nil {
 			return err
@@ -156,4 +176,23 @@ func run(ctx context.Context, o options, reader engine.ClusterReader, explainer 
 		}
 		return nil
 	}
+}
+
+// writeSigned writes the JSON findings to stdout and the detached signature of exactly those bytes to path.
+func writeSigned(stdout io.Writer, fs []findings.Finding, key []byte, path string) error {
+	var buf bytes.Buffer
+	if err := output.JSON(&buf, fs); err != nil {
+		return err
+	}
+	if _, err := stdout.Write(buf.Bytes()); err != nil {
+		return err
+	}
+	sig, err := json.Marshal(findings.Sign(buf.Bytes(), key))
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(path, append(sig, '\n'), 0o600); err != nil {
+		return fmt.Errorf("write signature: %w", err)
+	}
+	return nil
 }

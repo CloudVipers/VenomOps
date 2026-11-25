@@ -10,6 +10,7 @@ from typing import Annotated, Any
 
 import typer
 from findings_schema import Finding, FindingValidationError
+from findings_schema.signature import ENV_KEY, SignatureError, key_from_env, sidecar, verify_bytes
 
 from . import __version__
 from .agent import AuditLog, build_agent, make_bedrock_client
@@ -86,10 +87,43 @@ def _select(data: list[Any], index: int | None, finding_id: str | None, resource
     raise _usage_error(f"{len(candidates)} findings match; narrow it with --id/--resource/--index ({listing})")
 
 
+def _check_signature(data: bytes, source: str, signature: Path | None, required: bool) -> None:
+    """Verify the detached HMAC signature of the input (ADR 0012).
+
+    With ``--require-signature`` a valid signature is mandatory. Without it, a signature that is present is still
+    verified when the key is available, so a tampered document is never accepted silently.
+    """
+    try:
+        key = key_from_env()
+    except SignatureError as exc:
+        raise _usage_error(str(exc)) from exc
+    sig_path = signature or (sidecar(Path(source)) if source != "-" else None)
+    if required:
+        if key is None:
+            raise _usage_error(f"--require-signature needs the shared key in ${ENV_KEY}")
+        if sig_path is None:
+            raise _usage_error("reading from stdin: pass the signature file with --signature")
+    elif key is None or sig_path is None or not sig_path.exists():
+        return
+    try:
+        verify_bytes(data, sig_path, key)
+    except SignatureError as exc:
+        typer.secho(f"Refusing the finding: {exc}", fg="red", err=True)
+        raise typer.Exit(2) from exc
+
+
 def _load_finding(
-    source: str, index: int | None, finding_id: str | None, resource: str | None, supported: bool
+    source: str,
+    index: int | None,
+    finding_id: str | None,
+    resource: str | None,
+    supported: bool,
+    signature: Path | None = None,
+    require_signature: bool = False,
 ) -> Finding:
-    raw = sys.stdin.read() if source == "-" else Path(source).read_text(encoding="utf-8")
+    payload = sys.stdin.buffer.read() if source == "-" else Path(source).read_bytes()
+    _check_signature(payload, source, signature, require_signature)
+    raw = payload.decode("utf-8")
     try:
         data: Any = json.loads(raw)
     except json.JSONDecodeError as exc:
@@ -168,13 +202,23 @@ def fix(
         str | None, typer.Option("--model-id", help=f"Bedrock model for --agent (or ${MODEL_ENV}); no default.")
     ] = None,
     region: Annotated[str | None, typer.Option("--region", help="AWS region for Bedrock (--agent).")] = None,
+    signature: Annotated[
+        Path | None,
+        typer.Option("--signature", help="Detached signature of the finding file (default: <finding>.sig)."),
+    ] = None,
+    require_signature: Annotated[
+        bool,
+        typer.Option(
+            "--require-signature", help=f"Refuse findings without a valid HMAC signature (key in ${ENV_KEY})."
+        ),
+    ] = False,
     audit_log: Annotated[
         Path | None,
         typer.Option("--audit-log", help="With --agent: append every tool call (allowed or refused) as JSON Lines."),
     ] = None,
 ) -> None:
     """Fix FINDING with the minimal Terraform change and open a PR (or print it with --dry-run)."""
-    parsed = _load_finding(finding, index, finding_id, resource, supported)
+    parsed = _load_finding(finding, index, finding_id, resource, supported, signature, require_signature)
 
     llm_agent: Agent | None = None
     if audit_log is not None and not agent:

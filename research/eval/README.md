@@ -25,6 +25,22 @@ make e4        # experimento E4 (redacción): determinista, sin modelo
 Sin `--confirm`, `e1` y `e2` solo imprimen cuántas ejecuciones harían (tienen costo). El modelo es siempre explícito:
 no hay valor por defecto.
 
+## Ensayo sin costo con un emulador
+
+Antes de gastar en Bedrock, `e1` y `e2` pueden apuntar a un emulador compatible con la API Converse de
+`bedrock-runtime` (p. ej. LocalStack respaldado por un modelo local) para probar el flujo de punta a punta:
+
+```bash
+AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
+  venom-eval e1 --model-id <modelo-local> --endpoint-url http://localhost:4566 \
+                --limit 3 --repetitions 1 --out /tmp/ensayo-e1 --confirm
+```
+
+También se respetan `AWS_ENDPOINT_URL_BEDROCK_RUNTIME` y `AWS_ENDPOINT_URL`, las mismas variables que usa `boto3`.
+Cada registro guarda el campo `endpoint` (`bedrock` o la URL), y la corrida avisa que es un ensayo. **Un ensayo no es un
+resultado de la tesis:** el modelo local no es el modelo de Bedrock que fija la [metodología](../../docs/investigacion/metodologia.md).
+Guárdalo fuera de `research/results/`. El emulador tiene que soportar *tool use* en Converse, porque E1 y E2 dependen de él.
+
 ## Cómo se garantiza que ningún experimento toca nada real
 
 - **E1, condición `prompt-only`:** el [ejecutor simulado](src/venom_eval/simulated.py) ofrece las mismas herramientas
@@ -53,6 +69,6 @@ recurso (sin `[índice]`) y la categoría de una etiqueta todavía no emparejada
 
 ## Registros (`research/results/`)
 
-Cada corrida escribe JSON Lines con: experimento, `model_id`, condición, repetición, versiones de los prompts,
+Cada corrida escribe JSON Lines con: experimento, `model_id`, `endpoint`, condición, repetición, versiones de los prompts,
 temperatura, commit de git, fecha UTC, veredicto, tokens y la salida cruda necesaria para auditar el caso.
 `venom-eval summarize research/results/<corrida>` reconstruye las tablas sin volver a llamar al modelo.

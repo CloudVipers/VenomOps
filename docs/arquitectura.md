@@ -82,6 +82,8 @@ Las reglas inviolables de [`CLAUDE.md`](../CLAUDE.md) (sección 2) se aplican **
 | Sin push a `main`, sin `--force` | `git` acotado a ramas `fix/*`; sin operaciones de merge | `pr-agent` |
 | LLM opcional y explícito | `--explain`, `--agent` y `--model-id` obligatorios; sin modelo por defecto; `--dry-run` muestra el payload redactado | los tres |
 | PRs con aprobación humana | El cliente de GitHub solo abre PRs; checklist de revisión en cada PR | `pr-agent` |
+| Inyección de prompt indirecta | Datos delimitados (`<untrusted_data>`) y bitácora `--audit-log` en el agente; detector y neutralización (`AC-INJ`) y contraste con Checkov/Trivy (`AC-STA`) en el comité | `pr-agent`, `arch-committee` |
+| Origen de los findings | Firma HMAC separada (`.sig`), `--sign-to` y `--require-signature` ([ADR 0012](decisiones/0012-firma-de-findings.md)) | los tres |
 
 Decisiones: [ADR 0002](decisiones/0002-pr-agent-seguridad.md) (seguridad de pr-agent) y
 [ADR 0003](decisiones/0003-orquestacion-arch-committee.md) (orquestación del comité) y
@@ -92,7 +94,8 @@ Decisiones: [ADR 0002](decisiones/0002-pr-agent-seguridad.md) (seguridad de pr-a
 [ADR 0009](decisiones/0009-source-venom-doctor.md) (valor `venom-doctor` en el contrato) y
 [ADR 0010](decisiones/0010-ids-de-regla-vd.md) (IDs `VD-K8S-*`) y
 [ADR 0011](decisiones/0011-linea-de-investigacion.md) (línea de investigación; ver [`investigacion/`](investigacion/) y el
-[modelo de amenazas](investigacion/modelo-de-amenazas.md)).
+[modelo de amenazas](investigacion/modelo-de-amenazas.md)) y
+[ADR 0012](decisiones/0012-firma-de-findings.md) (firma opcional de findings).
 
 Las guías de uso (instalación, comandos, casos de uso, catálogo de reglas, seguridad y ayuda) están en [`docs/guia/`](guia/) y se publican como web en
 <https://cloudvipers.github.io/VenomOps/>.

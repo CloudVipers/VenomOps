@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -170,5 +172,41 @@ func TestNamespaceScopedTableRunsSaysNodesAndKarpenterWereSkipped(t *testing.T) 
 				t.Fatal("the note must go to stderr, never to stdout")
 			}
 		})
+	}
+}
+
+func TestRunJSONCanBeSigned(t *testing.T) {
+	key := "test-key-0123456789abcdef0123456789abcdef"
+	t.Setenv(findings.SignatureEnvKey, key)
+	sigPath := filepath.Join(t.TempDir(), "findings.json.sig")
+	reader := cluster.New(fake.NewSimpleClientset(crashingPod("payments", "api")))
+	var out, errOut bytes.Buffer
+	if err := run(context.Background(), options{output: "json", signTo: sigPath}, reader, nil, &out, &errOut); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile(sigPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var sig findings.Signature
+	if err := json.Unmarshal(raw, &sig); err != nil {
+		t.Fatal(err)
+	}
+	if err := findings.Verify(out.Bytes(), sig, []byte(key)); err != nil {
+		t.Fatalf("the signature must cover exactly what was written to stdout: %v", err)
+	}
+}
+
+func TestSignToNeedsJSONAndAKey(t *testing.T) {
+	reader := cluster.New(fake.NewSimpleClientset())
+	t.Setenv(findings.SignatureEnvKey, "")
+	err := run(context.Background(), options{output: "json", signTo: "x.sig"}, reader, nil, &bytes.Buffer{}, &bytes.Buffer{})
+	if err == nil || !strings.Contains(err.Error(), findings.SignatureEnvKey) {
+		t.Fatalf("missing key must fail: %v", err)
+	}
+	t.Setenv(findings.SignatureEnvKey, "test-key-0123456789abcdef0123456789abcdef")
+	err = run(context.Background(), options{output: "table", signTo: "x.sig"}, reader, nil, &bytes.Buffer{}, &bytes.Buffer{})
+	if err == nil || !strings.Contains(err.Error(), "-o json") {
+		t.Fatalf("table output must refuse --sign-to: %v", err)
 	}
 }
