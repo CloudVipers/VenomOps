@@ -1,0 +1,168 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.17.2",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_ebs_volume.data",
+          "mode": "managed",
+          "type": "aws_ebs_volume",
+          "name": "data",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "availability_zone": "us-east-1a",
+            "encrypted": true,
+            "final_snapshot": false,
+            "multi_attach_enabled": null,
+            "outpost_arn": null,
+            "region": "us-east-1",
+            "size": 50,
+            "tags": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "tags_all": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "timeouts": null,
+            "type": "gp3",
+            "volume_initialization_rate": null
+          },
+          "sensitive_values": {
+            "tags": {},
+            "tags_all": {}
+          },
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": null,
+            "id": null,
+            "region": null
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_ebs_volume.data",
+      "mode": "managed",
+      "type": "aws_ebs_volume",
+      "name": "data",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "availability_zone": "us-east-1a",
+          "encrypted": true,
+          "final_snapshot": false,
+          "multi_attach_enabled": null,
+          "outpost_arn": null,
+          "region": "us-east-1",
+          "size": 50,
+          "tags": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "tags_all": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "timeouts": null,
+          "type": "gp3",
+          "volume_initialization_rate": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "create_time": true,
+          "id": true,
+          "iops": true,
+          "kms_key_id": true,
+          "snapshot_id": true,
+          "tags": {},
+          "tags_all": {},
+          "throughput": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "tags": {},
+          "tags_all": {}
+        },
+        "after_identity": {
+          "account_id": null,
+          "id": null,
+          "region": null
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "full_name": "registry.terraform.io/hashicorp/aws",
+        "version_constraint": ">= 5.0.0",
+        "expressions": {
+          "region": {
+            "constant_value": "us-east-1"
+          },
+          "skip_credentials_validation": {
+            "constant_value": true
+          },
+          "skip_metadata_api_check": {
+            "constant_value": true
+          },
+          "skip_requesting_account_id": {
+            "constant_value": true
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_ebs_volume.data",
+          "mode": "managed",
+          "type": "aws_ebs_volume",
+          "name": "data",
+          "provider_config_key": "aws",
+          "expressions": {
+            "availability_zone": {
+              "constant_value": "us-east-1a"
+            },
+            "encrypted": {
+              "constant_value": true
+            },
+            "size": {
+              "constant_value": 50
+            },
+            "tags": {
+              "constant_value": {
+                "Environment": "prod",
+                "Owner": "team-a",
+                "Project": "bench"
+              }
+            },
+            "type": {
+              "constant_value": "gp3"
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  },
+  "timestamp": "2026-11-23T21:49:31Z",
+  "applyable": true,
+  "complete": true,
+  "errored": false
+}

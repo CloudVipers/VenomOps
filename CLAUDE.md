@@ -275,7 +275,7 @@ type Rule interface {
 
 - [x] Propuesta, modelo de amenazas, estado del arte y metodología en `docs/investigacion/`.
 - [x] Corpus de inyección en `examples/benchmark/injection/` (vectores × objetivos × técnicas).
-- [ ] Benchmark de IaC etiquetado en `examples/benchmark/iac/` (≥ 50 casos con `labels.json`).
+- [x] Benchmark de IaC etiquetado en `examples/benchmark/iac/` (55 casos, 46 fallas etiquetadas, `labels.json` y `plan.json` por caso).
 - [x] Arnés `research/eval/`: métricas (precision, recall, F1, tasa de supresión, tasa de fuga) con tests deterministas.
 - [x] Tests de regresión de inyección en `pr-agent` (el modelo simulado obedece la inyección y `SafeRunner` la bloquea).
 - [x] E4 (redacción): corpus compartido en `examples/benchmark/secrets/` probado en CI contra los tres redactores.

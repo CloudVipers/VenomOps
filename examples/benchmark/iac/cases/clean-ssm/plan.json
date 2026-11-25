@@ -1,0 +1,168 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.17.2",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_ssm_parameter.api_url",
+          "mode": "managed",
+          "type": "aws_ssm_parameter",
+          "name": "api_url",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "allowed_pattern": null,
+            "description": null,
+            "name": "/bench/api_url",
+            "overwrite": null,
+            "region": "us-east-1",
+            "tags": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "tags_all": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "type": "String",
+            "value": "https://api.example.com",
+            "value_wo": null,
+            "value_wo_version": null
+          },
+          "sensitive_values": {
+            "tags": {},
+            "tags_all": {},
+            "value": true,
+            "value_wo": true
+          },
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": null,
+            "name": null,
+            "region": null
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_ssm_parameter.api_url",
+      "mode": "managed",
+      "type": "aws_ssm_parameter",
+      "name": "api_url",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "allowed_pattern": null,
+          "description": null,
+          "name": "/bench/api_url",
+          "overwrite": null,
+          "region": "us-east-1",
+          "tags": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "tags_all": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "type": "String",
+          "value": "https://api.example.com",
+          "value_wo": null,
+          "value_wo_version": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "data_type": true,
+          "has_value_wo": true,
+          "id": true,
+          "insecure_value": true,
+          "key_id": true,
+          "tags": {},
+          "tags_all": {},
+          "tier": true,
+          "version": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "tags": {},
+          "tags_all": {},
+          "value": true,
+          "value_wo": true
+        },
+        "after_identity": {
+          "account_id": null,
+          "name": null,
+          "region": null
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "full_name": "registry.terraform.io/hashicorp/aws",
+        "version_constraint": ">= 5.0.0",
+        "expressions": {
+          "region": {
+            "constant_value": "us-east-1"
+          },
+          "skip_credentials_validation": {
+            "constant_value": true
+          },
+          "skip_metadata_api_check": {
+            "constant_value": true
+          },
+          "skip_requesting_account_id": {
+            "constant_value": true
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_ssm_parameter.api_url",
+          "mode": "managed",
+          "type": "aws_ssm_parameter",
+          "name": "api_url",
+          "provider_config_key": "aws",
+          "expressions": {
+            "name": {
+              "constant_value": "/bench/api_url"
+            },
+            "tags": {
+              "constant_value": {
+                "Environment": "prod",
+                "Owner": "team-a",
+                "Project": "bench"
+              }
+            },
+            "type": {
+              "constant_value": "String"
+            },
+            "value": {
+              "constant_value": "https://api.example.com"
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  },
+  "timestamp": "2026-11-23T21:50:21Z",
+  "applyable": true,
+  "complete": true,
+  "errored": false
+}

@@ -1,0 +1,185 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.17.2",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_ecr_repository.app",
+          "mode": "managed",
+          "type": "aws_ecr_repository",
+          "name": "app",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "encryption_configuration": [],
+            "force_delete": null,
+            "image_scanning_configuration": [
+              {
+                "scan_on_push": false
+              }
+            ],
+            "image_tag_mutability": "MUTABLE",
+            "image_tag_mutability_exclusion_filter": [],
+            "name": "bench-app",
+            "region": "us-east-1",
+            "tags": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "tags_all": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "timeouts": null
+          },
+          "sensitive_values": {
+            "encryption_configuration": [],
+            "image_scanning_configuration": [
+              {}
+            ],
+            "image_tag_mutability_exclusion_filter": [],
+            "tags": {},
+            "tags_all": {}
+          },
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": null,
+            "name": null,
+            "region": null
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_ecr_repository.app",
+      "mode": "managed",
+      "type": "aws_ecr_repository",
+      "name": "app",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "encryption_configuration": [],
+          "force_delete": null,
+          "image_scanning_configuration": [
+            {
+              "scan_on_push": false
+            }
+          ],
+          "image_tag_mutability": "MUTABLE",
+          "image_tag_mutability_exclusion_filter": [],
+          "name": "bench-app",
+          "region": "us-east-1",
+          "tags": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "tags_all": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "timeouts": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "encryption_configuration": [],
+          "id": true,
+          "image_scanning_configuration": [
+            {}
+          ],
+          "image_tag_mutability_exclusion_filter": [],
+          "registry_id": true,
+          "repository_url": true,
+          "tags": {},
+          "tags_all": {}
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "encryption_configuration": [],
+          "image_scanning_configuration": [
+            {}
+          ],
+          "image_tag_mutability_exclusion_filter": [],
+          "tags": {},
+          "tags_all": {}
+        },
+        "after_identity": {
+          "account_id": null,
+          "name": null,
+          "region": null
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "full_name": "registry.terraform.io/hashicorp/aws",
+        "version_constraint": ">= 5.0.0",
+        "expressions": {
+          "region": {
+            "constant_value": "us-east-1"
+          },
+          "skip_credentials_validation": {
+            "constant_value": true
+          },
+          "skip_metadata_api_check": {
+            "constant_value": true
+          },
+          "skip_requesting_account_id": {
+            "constant_value": true
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_ecr_repository.app",
+          "mode": "managed",
+          "type": "aws_ecr_repository",
+          "name": "app",
+          "provider_config_key": "aws",
+          "expressions": {
+            "image_scanning_configuration": [
+              {
+                "scan_on_push": {
+                  "constant_value": false
+                }
+              }
+            ],
+            "image_tag_mutability": {
+              "constant_value": "MUTABLE"
+            },
+            "name": {
+              "constant_value": "bench-app"
+            },
+            "tags": {
+              "constant_value": {
+                "Environment": "prod",
+                "Owner": "team-a",
+                "Project": "bench"
+              }
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  },
+  "timestamp": "2026-11-23T21:47:31Z",
+  "applyable": true,
+  "complete": true,
+  "errored": false
+}

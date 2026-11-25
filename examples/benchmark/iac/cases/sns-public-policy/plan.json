@@ -1,0 +1,256 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.17.2",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_sns_topic.events",
+          "mode": "managed",
+          "type": "aws_sns_topic",
+          "name": "events",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "application_failure_feedback_role_arn": null,
+            "application_success_feedback_role_arn": null,
+            "application_success_feedback_sample_rate": null,
+            "archive_policy": null,
+            "content_based_deduplication": false,
+            "delivery_policy": null,
+            "display_name": null,
+            "fifo_topic": false,
+            "firehose_failure_feedback_role_arn": null,
+            "firehose_success_feedback_role_arn": null,
+            "firehose_success_feedback_sample_rate": null,
+            "http_failure_feedback_role_arn": null,
+            "http_success_feedback_role_arn": null,
+            "http_success_feedback_sample_rate": null,
+            "kms_master_key_id": "alias/aws/sns",
+            "lambda_failure_feedback_role_arn": null,
+            "lambda_success_feedback_role_arn": null,
+            "lambda_success_feedback_sample_rate": null,
+            "name": "bench-events",
+            "region": "us-east-1",
+            "sqs_failure_feedback_role_arn": null,
+            "sqs_success_feedback_role_arn": null,
+            "sqs_success_feedback_sample_rate": null,
+            "tags": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "tags_all": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            }
+          },
+          "sensitive_values": {
+            "tags": {},
+            "tags_all": {}
+          },
+          "identity_schema_version": 0,
+          "identity": {
+            "arn": null
+          }
+        },
+        {
+          "address": "aws_sns_topic_policy.events",
+          "mode": "managed",
+          "type": "aws_sns_topic_policy",
+          "name": "events",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "policy": "{\"Statement\":[{\"Action\":\"SNS:Publish\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"arn:aws:sns:us-east-1:123456789012:bench-events\"}],\"Version\":\"2012-10-17\"}",
+            "region": "us-east-1"
+          },
+          "sensitive_values": {},
+          "identity_schema_version": 0,
+          "identity": {
+            "arn": null
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_sns_topic.events",
+      "mode": "managed",
+      "type": "aws_sns_topic",
+      "name": "events",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "application_failure_feedback_role_arn": null,
+          "application_success_feedback_role_arn": null,
+          "application_success_feedback_sample_rate": null,
+          "archive_policy": null,
+          "content_based_deduplication": false,
+          "delivery_policy": null,
+          "display_name": null,
+          "fifo_topic": false,
+          "firehose_failure_feedback_role_arn": null,
+          "firehose_success_feedback_role_arn": null,
+          "firehose_success_feedback_sample_rate": null,
+          "http_failure_feedback_role_arn": null,
+          "http_success_feedback_role_arn": null,
+          "http_success_feedback_sample_rate": null,
+          "kms_master_key_id": "alias/aws/sns",
+          "lambda_failure_feedback_role_arn": null,
+          "lambda_success_feedback_role_arn": null,
+          "lambda_success_feedback_sample_rate": null,
+          "name": "bench-events",
+          "region": "us-east-1",
+          "sqs_failure_feedback_role_arn": null,
+          "sqs_success_feedback_role_arn": null,
+          "sqs_success_feedback_sample_rate": null,
+          "tags": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "tags_all": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          }
+        },
+        "after_unknown": {
+          "arn": true,
+          "beginning_archive_time": true,
+          "fifo_throughput_scope": true,
+          "id": true,
+          "maximum_message_size": true,
+          "name_prefix": true,
+          "owner": true,
+          "policy": true,
+          "signature_version": true,
+          "tags": {},
+          "tags_all": {},
+          "tracing_config": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "tags": {},
+          "tags_all": {}
+        },
+        "after_identity": {
+          "arn": null
+        }
+      }
+    },
+    {
+      "address": "aws_sns_topic_policy.events",
+      "mode": "managed",
+      "type": "aws_sns_topic_policy",
+      "name": "events",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "policy": "{\"Statement\":[{\"Action\":\"SNS:Publish\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Resource\":\"arn:aws:sns:us-east-1:123456789012:bench-events\"}],\"Version\":\"2012-10-17\"}",
+          "region": "us-east-1"
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "owner": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {},
+        "after_identity": {
+          "arn": null
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "full_name": "registry.terraform.io/hashicorp/aws",
+        "version_constraint": ">= 5.0.0",
+        "expressions": {
+          "region": {
+            "constant_value": "us-east-1"
+          },
+          "skip_credentials_validation": {
+            "constant_value": true
+          },
+          "skip_metadata_api_check": {
+            "constant_value": true
+          },
+          "skip_requesting_account_id": {
+            "constant_value": true
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_sns_topic.events",
+          "mode": "managed",
+          "type": "aws_sns_topic",
+          "name": "events",
+          "provider_config_key": "aws",
+          "expressions": {
+            "kms_master_key_id": {
+              "constant_value": "alias/aws/sns"
+            },
+            "name": {
+              "constant_value": "bench-events"
+            },
+            "tags": {
+              "constant_value": {
+                "Environment": "prod",
+                "Owner": "team-a",
+                "Project": "bench"
+              }
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_sns_topic_policy.events",
+          "mode": "managed",
+          "type": "aws_sns_topic_policy",
+          "name": "events",
+          "provider_config_key": "aws",
+          "expressions": {
+            "arn": {
+              "references": [
+                "aws_sns_topic.events.arn",
+                "aws_sns_topic.events"
+              ]
+            },
+            "policy": {}
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  },
+  "relevant_attributes": [
+    {
+      "resource": "aws_sns_topic.events",
+      "attribute": [
+        "arn"
+      ]
+    }
+  ],
+  "timestamp": "2026-11-23T21:47:36Z",
+  "applyable": true,
+  "complete": true,
+  "errored": false
+}

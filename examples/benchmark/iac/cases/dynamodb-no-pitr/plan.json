@@ -1,0 +1,267 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.17.2",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_dynamodb_table.orders",
+          "mode": "managed",
+          "type": "aws_dynamodb_table",
+          "name": "orders",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 1,
+          "values": {
+            "attribute": [
+              {
+                "name": "id",
+                "type": "S"
+              }
+            ],
+            "billing_mode": "PAY_PER_REQUEST",
+            "deletion_protection_enabled": null,
+            "hash_key": "id",
+            "import_table": [],
+            "local_secondary_index": [],
+            "name": "bench-orders",
+            "on_demand_throughput": [],
+            "point_in_time_recovery": [
+              {
+                "enabled": false
+              }
+            ],
+            "range_key": null,
+            "region": "us-east-1",
+            "replica": [],
+            "restore_backup_arn": null,
+            "restore_date_time": null,
+            "restore_source_name": null,
+            "restore_source_table_arn": null,
+            "restore_to_latest_time": null,
+            "stream_enabled": null,
+            "table_class": null,
+            "tags": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "tags_all": {
+              "Environment": "prod",
+              "Owner": "team-a",
+              "Project": "bench"
+            },
+            "timeouts": null
+          },
+          "sensitive_values": {
+            "attribute": [
+              {}
+            ],
+            "global_secondary_index": [],
+            "global_table_witness": [],
+            "import_table": [],
+            "local_secondary_index": [],
+            "on_demand_throughput": [],
+            "point_in_time_recovery": [
+              {}
+            ],
+            "replica": [],
+            "server_side_encryption": [],
+            "tags": {},
+            "tags_all": {},
+            "ttl": [],
+            "warm_throughput": []
+          },
+          "identity_schema_version": 0,
+          "identity": {
+            "account_id": null,
+            "name": null,
+            "region": null
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_dynamodb_table.orders",
+      "mode": "managed",
+      "type": "aws_dynamodb_table",
+      "name": "orders",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "attribute": [
+            {
+              "name": "id",
+              "type": "S"
+            }
+          ],
+          "billing_mode": "PAY_PER_REQUEST",
+          "deletion_protection_enabled": null,
+          "hash_key": "id",
+          "import_table": [],
+          "local_secondary_index": [],
+          "name": "bench-orders",
+          "on_demand_throughput": [],
+          "point_in_time_recovery": [
+            {
+              "enabled": false
+            }
+          ],
+          "range_key": null,
+          "region": "us-east-1",
+          "replica": [],
+          "restore_backup_arn": null,
+          "restore_date_time": null,
+          "restore_source_name": null,
+          "restore_source_table_arn": null,
+          "restore_to_latest_time": null,
+          "stream_enabled": null,
+          "table_class": null,
+          "tags": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "tags_all": {
+            "Environment": "prod",
+            "Owner": "team-a",
+            "Project": "bench"
+          },
+          "timeouts": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "attribute": [
+            {}
+          ],
+          "global_secondary_index": true,
+          "global_table_witness": true,
+          "id": true,
+          "import_table": [],
+          "local_secondary_index": [],
+          "on_demand_throughput": [],
+          "point_in_time_recovery": [
+            {
+              "recovery_period_in_days": true
+            }
+          ],
+          "read_capacity": true,
+          "replica": [],
+          "server_side_encryption": true,
+          "stream_arn": true,
+          "stream_label": true,
+          "stream_view_type": true,
+          "tags": {},
+          "tags_all": {},
+          "ttl": true,
+          "warm_throughput": true,
+          "write_capacity": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "attribute": [
+            {}
+          ],
+          "global_secondary_index": [],
+          "global_table_witness": [],
+          "import_table": [],
+          "local_secondary_index": [],
+          "on_demand_throughput": [],
+          "point_in_time_recovery": [
+            {}
+          ],
+          "replica": [],
+          "server_side_encryption": [],
+          "tags": {},
+          "tags_all": {},
+          "ttl": [],
+          "warm_throughput": []
+        },
+        "after_identity": {
+          "account_id": null,
+          "name": null,
+          "region": null
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "full_name": "registry.terraform.io/hashicorp/aws",
+        "version_constraint": ">= 5.0.0",
+        "expressions": {
+          "region": {
+            "constant_value": "us-east-1"
+          },
+          "skip_credentials_validation": {
+            "constant_value": true
+          },
+          "skip_metadata_api_check": {
+            "constant_value": true
+          },
+          "skip_requesting_account_id": {
+            "constant_value": true
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_dynamodb_table.orders",
+          "mode": "managed",
+          "type": "aws_dynamodb_table",
+          "name": "orders",
+          "provider_config_key": "aws",
+          "expressions": {
+            "attribute": [
+              {
+                "name": {
+                  "constant_value": "id"
+                },
+                "type": {
+                  "constant_value": "S"
+                }
+              }
+            ],
+            "billing_mode": {
+              "constant_value": "PAY_PER_REQUEST"
+            },
+            "hash_key": {
+              "constant_value": "id"
+            },
+            "name": {
+              "constant_value": "bench-orders"
+            },
+            "point_in_time_recovery": [
+              {
+                "enabled": {
+                  "constant_value": false
+                }
+              }
+            ],
+            "tags": {
+              "constant_value": {
+                "Environment": "prod",
+                "Owner": "team-a",
+                "Project": "bench"
+              }
+            }
+          },
+          "schema_version": 1
+        }
+      ]
+    }
+  },
+  "timestamp": "2026-11-23T21:47:52Z",
+  "applyable": true,
+  "complete": true,
+  "errored": false
+}
